@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import time
 import random
@@ -22,11 +23,42 @@ class GeminiMedicalReasoningService:
     RATE_LIMITED = "RATE_LIMITED"
 
     def __init__(self):
-        self.api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY", "")
         self.model_name = "gemini-2.0-flash"
         self.last_error: Optional[str] = None
         self._cached_models: List[str] = []
         self._cached_models_time: float = 0.0
+        self.key_cooldown: Dict[str, float] = {}
+        self.current_key_idx: int = 0
+        self._init_api_keys()
+
+    def _init_api_keys(self):
+        raw = os.getenv("GEMINI_API_KEYS", "") or os.getenv("GEMINI_API_KEY", "") or os.getenv("GOOGLE_API_KEY", "")
+        keys = [k.strip() for k in re.split(r'[,;]+', raw) if k.strip() and len(k.strip()) >= 10]
+        self.api_keys = keys
+        self.api_key = keys[0] if keys else ""
+
+    def get_active_api_key(self, override_key: Optional[str] = None) -> Optional[str]:
+        if override_key and len(override_key.strip()) >= 10:
+            return override_key.strip()
+        if not self.api_keys:
+            self._init_api_keys()
+        if not self.api_keys:
+            return None
+        now = time.time()
+        for i in range(len(self.api_keys)):
+            idx = (self.current_key_idx + i) % len(self.api_keys)
+            k = self.api_keys[idx]
+            if self.key_cooldown.get(k, 0) < now:
+                self.current_key_idx = idx
+                return k
+        # If all keys cooled down, pick earliest
+        return min(self.api_keys, key=lambda k: self.key_cooldown.get(k, 0))
+
+    def mark_key_rate_limited(self, key: str, cooldown_seconds: float = 60.0):
+        self.key_cooldown[key] = time.time() + cooldown_seconds
+        logger.warning(f"Key ...{key[-6:] if len(key)>6 else key} put into cooldown for {cooldown_seconds}s.")
+        if self.api_keys:
+            self.current_key_idx = (self.current_key_idx + 1) % len(self.api_keys)
 
     def _get_available_models(self, key_to_use: str) -> List[str]:
         """
@@ -246,13 +278,11 @@ class GeminiMedicalReasoningService:
         Gọi Google Gemini API với giới hạn thời gian phản hồi nhanh <= 3.5s.
         """
         self.last_error = None
-        key_to_use = (api_key or self.api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY", "")).strip()
-        if not key_to_use or len(key_to_use) < 10:
+        keys_to_attempt = [api_key] if api_key else list(self.api_keys) or [self.api_key]
+        keys_to_attempt = [k for k in keys_to_attempt if k and len(k.strip()) >= 10]
+        if not keys_to_attempt:
             self.last_error = "Gemini Chưa cấu hình API Key"
             return None
-
-        # Lấy danh sách model Gemini khả dụng theo API Key, thử tối đa 2 model để tránh quá tải
-        models_to_try = self._get_available_models(key_to_use)[:2]
 
         payload = self._build_prompt_payload(
             patient_message=patient_message,
@@ -267,23 +297,26 @@ class GeminiMedicalReasoningService:
             clinical_stage=clinical_stage
         )
 
-        for model in models_to_try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key_to_use}"
-            result = self._call_gemini_with_backoff(url, payload, max_retries=1, timeout=3.5)
-            if result is self.RATE_LIMITED:
-                return None
-            if result and isinstance(result, dict):
-                candidates = result.get("candidates", [])
-                if candidates:
-                    parts = candidates[0].get("content", {}).get("parts", [])
-                    if parts:
-                        text = parts[0].get("text", "").strip()
-                        if text:
-                            self.last_error = None
-                            logger.info(f"Gemini response generated successfully using model '{model}'.")
-                            return text
-            if self.last_error and any(code in self.last_error for code in ["429", "401", "403", "400"]):
-                break
+        for attempt_idx, key_to_use in enumerate(keys_to_attempt[:3]):
+            models_to_try = self._get_available_models(key_to_use)[:2]
+            for model in models_to_try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key_to_use}"
+                result = self._call_gemini_with_backoff(url, payload, max_retries=1, timeout=3.5)
+                if result is self.RATE_LIMITED:
+                    self.mark_key_rate_limited(key_to_use, cooldown_seconds=60.0)
+                    break
+                if result and isinstance(result, dict):
+                    candidates = result.get("candidates", [])
+                    if candidates:
+                        parts = candidates[0].get("content", {}).get("parts", [])
+                        if parts:
+                            text = parts[0].get("text", "").strip()
+                            if text:
+                                self.last_error = None
+                                logger.info(f"Gemini response generated successfully using model '{model}'.")
+                                return text
+                if self.last_error and any(code in self.last_error for code in ["401", "403", "400"]):
+                    break
         return None
 
     async def stream_medical_reasoning(

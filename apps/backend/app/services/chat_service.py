@@ -19,6 +19,7 @@ from .triage_service import triage_service
 from .rag_service import rag_service
 from .gemini_service import gemini_service
 from .clinical_reasoning_service import clinical_reasoning_service
+from .dialogue_state_service import dialogue_state_service
 
 logger = logging.getLogger(__name__)
 clarification_engine = ClarificationEngine()
@@ -419,8 +420,10 @@ class ChatService:
         # Trích xuất toàn bộ các vấn đề bệnh lý đã phát hiện trong cả phiên khám
         session_problems = self._extract_all_session_problems(chat_history, user_message)
 
-        # 2. TÍCH LŨY TOÀN BỘ NGỮ CẢNH ĐA LƯỢT TỪ ĐẦU PHIÊN ĐẾN GIỜ
+        # 2. TÍCH LŨY TOÀN BỘ NGỮ CẢNH ĐA LƯỢT VÀ BỆNH ÁN ĐỘNG (DST)
         t_ner_start = time.time()
+        dst_state = await dialogue_state_service.get_state(session_id)
+        
         session_context = await self._extract_cumulative_session_context(chat_history, user_message)
         cumulative_symptoms = session_context["cumulative_symptoms"]
         cumulative_negated = session_context["cumulative_negated"]
@@ -440,10 +443,22 @@ class ChatService:
 
         # Hợp nhất danh sách triệu chứng khẳng định
         current_extracted = triage_data.get("extracted_entities", {}).get("symptoms", [])
+        
+        # Cập nhật slot filling vào DST
+        dst_state = dialogue_state_service.fill_slots_from_utterance(
+            state=dst_state,
+            user_message=user_message,
+            extracted_symptoms=current_extracted,
+            negated_symptoms=cumulative_negated
+        )
+
         seen_terms = {s.get("standard_term"): s for s in cumulative_symptoms if s.get("standard_term")}
         for s in current_extracted:
             st = s.get("standard_term")
             if st and st not in seen_terms:
+                seen_terms[st] = s
+        for st, s in dst_state.confirmed_symptoms.items():
+            if st not in seen_terms:
                 seen_terms[st] = s
         symptoms = list(seen_terms.values())
 
@@ -494,6 +509,12 @@ class ChatService:
                 top_disease_codes=top_codes,
                 already_asked_texts=already_asked_texts
             )
+
+        if clarification.get("questions"):
+            dst_state.pending_question = clarification.get("questions")[0]
+        dst_state.is_emergency = is_emergency
+        dst_state.active_hypotheses = top_preds
+        await dialogue_state_service.save_state(dst_state)
 
         # 4. RAG Knowledge Retrieval (Redis Cached)
         t_rag_start = time.time()
