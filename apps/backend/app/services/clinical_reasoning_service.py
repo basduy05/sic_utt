@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import asyncio
 import logging
@@ -285,8 +286,41 @@ class UnifiedClinicalReasoningService:
 
         valid_diseases = [d for d in (predicted_diseases or []) if d.get("probability", 0) >= 0.15]
 
+        is_asking_medication = bool(re.search(r'(?:uống thuốc gì|dùng thuốc gì|thuốc gì|uống gì.*hạ sốt|hạ sốt.*như thế nào|hạ sốt.*thế nào|cách hạ sốt|ăn uống thế nào|ăn gì|chế độ ăn|uống thuốc)', patient_message, re.IGNORECASE))
+        is_asking_emergency = bool(re.search(r'(?:cấp cứu|nhập viện|vào viện|khi nào.*(?:viện|cấp cứu)|dấu hiệu nào.*(?:viện|cấp cứu)|bắt buộc phải.*(?:viện|cấp cứu)|nguy hiểm|dấu hiệu nguy hiểm)', patient_message, re.IGNORECASE))
+        is_asking_symptom_meaning = bool(re.search(r'(?:thế là.*(?:gì|dấu hiệu gì)|dấu hiệu gì|là bị gì|nghĩa là gì|có phải.*(?:cúm|sốt xuất huyết|bị gì))', patient_message, re.IGNORECASE))
+
+        # 0. Giải đáp trực tiếp các thắc mắc lâm sàng cụ thể của người bệnh
+        if is_asking_symptom_meaning:
+            msg_lower = patient_message.lower()
+            if any(k in msg_lower for k in ["chấm đỏ", "không mất", "chấm li ti", "nốt đỏ"]):
+                lines.append("\n👉 **Giải thích dấu hiệu lâm sàng:**")
+                lines.append("Các chấm đỏ li ti trên da ấn vào không mất màu chính là **chấm xuất huyết dưới da (Petechiae)**. Khi nhiễm virus (đặc biệt là virus Dengue), thành mao mạch bị tổn thương tăng tính thấm kết hợp số lượng tiểu cầu trong máu suy giảm khiến hồng cầu thoát mạch. Khác với ban dị ứng (ấn vào sẽ mờ hoặc biến mất tạm thời), chấm xuất huyết ấn vào sẽ không đổi màu. Đây là dấu hiệu then chốt cảnh báo bệnh đang ở **giai đoạn nguy hiểm (ngày thứ 3 - 7 của sốt xuất huyết)**.")
+            elif any(k in msg_lower for k in ["hốc mắt", "khớp", "cúm", "sốt xuất huyết"]):
+                lines.append("\n👉 **Giải thích dấu hiệu lâm sàng:**")
+                lines.append("Đau nhức sâu hai hốc mắt kèm đau mỏi khắp các cơ khớp là hai triệu chứng kinh điển giúp phân biệt sốt virus thông thường với **Sốt xuất huyết Dengue** hoặc **Cúm**. Khi cơn sốt cao liên tục không đáp ứng với thuốc hạ sốt thông thường, đây là dấu hiệu định hướng rất mạnh đến Sốt xuất huyết Dengue.")
+
+        if is_asking_medication:
+            lines.append("\n💊 **HƯỚNG DẪN DÙNG THUỐC HẠ SỐT & DINH DƯỠNG THEO BỘ Y TẾ:**")
+            lines.append("- **Thuốc hạ sốt an toàn:** Chỉ dùng **Paracetamol** đơn chất với liều 10 - 15 mg/kg thể trọng cho một lần uống (người lớn uống viên 500mg, 1-2 viên/lần tuỳ cân nặng), khoảng cách giữa 2 lần uống tối thiểu từ 4 đến 6 giờ nếu sốt ≥ 38.5°C. Tổng liều không vượt quá 3-4g/ngày.")
+            lines.append("- 🚨 **CHỐNG CHỈ ĐỊNH TUYỆT ĐỐI:** CẤM tuyệt đối dùng **Aspirin, Ibuprofen, Diclofenac, Naproxen** hoặc các thuốc chống viêm không steroid (NSAID) khác. Khi đang nghi ngờ sốt xuất huyết, các thuốc này sẽ ức chế kết tập tiểu cầu, có thể gây **xuất huyết tiêu hóa ồ ạt, nôn ra máu, xuất huyết nội tạng đe dọa trực tiếp tính mạng**!")
+            lines.append("- 🥗 **Chế độ bù dịch & dinh dưỡng:**")
+            lines.append("  • Bù nước tích cực bằng dung dịch **Oresol** pha chuẩn theo hướng dẫn trên bao bì (uống 2 - 3 lít/ngày), nước dừa tươi, nước cam/chanh bổ sung vitamin C và khoáng chất.")
+            lines.append("  • Ăn thức ăn lỏng, mềm, nguội, dễ tiêu hóa như cháo thịt nạc, súp gà. Tránh các thực phẩm có màu đỏ, đen, nâu sẫm để không gây nhầm lẫn nếu có xuất huyết tiêu hóa.")
+
+        if is_asking_emergency:
+            lines.append("\n🚨 **CÁC DẤU HIỆU CẢNH BÁO NGUY HIỂM BẮT BUỘC PHẢI VÀO VIỆN CẤP CỨU NGAY (BỘ Y TẾ):**")
+            lines.append("Nếu bạn hoặc người bệnh xuất hiện **BẤT KỲ MỘT TRONG CÁC DẤU HIỆU** dưới đây, cần đến ngay cơ sở y tế / phòng cấp cứu gần nhất:")
+            lines.append("1. **Đau bụng nhiều và liên tục**, đặc biệt đau tức dội vùng hạ sườn phải (vùng gan).")
+            lines.append("2. **Nôn mửa nhiều**, nôn liên tục (≥ 3 lần trong 1 giờ hoặc ≥ 4 lần trong 6 giờ).")
+            lines.append("3. **Xuất huyết niêm mạc:** Chảy máu chân răng tự nhiên, chảy máu mũi (chảy máu cam), nôn ra máu, đi ngoài phân đen như bã cà phê, tiểu ra máu.")
+            lines.append("4. **Dấu hiệu tri giác:** Người lừ đừ, mệt lả, bứt rứt, li bì, vật vã hoặc hôn mê.")
+            lines.append("5. **Dấu hiệu sốc & trụy mạch:** Chân tay lạnh ẩm, da nổi vân tím, mạch nhanh nhỏ, huyết áp tụt hoặc huyết áp kẹt.")
+            lines.append("6. **Tiểu ít:** Không đi tiểu trong suốt 6 giờ liên tục.")
+            lines.append("👉 *Tuyệt đối không tự ý truyền dịch tại nhà vì có thể gây phù phổi cấp và quá tải dịch nguy hiểm.*")
+
         # TẦNG 1: Chưa đủ căn cứ lâm sàng
-        if clinical_stage == "initial_screening" or not valid_diseases:
+        if (clinical_stage == "initial_screening" or not valid_diseases) and not (is_asking_medication or is_asking_emergency):
             lines.append("\n🩺 **Nhận định lâm sàng:**")
             lines.append("Dựa trên các dấu hiệu bạn vừa chia sẻ, hiện tại chưa đủ căn cứ lâm sàng đặc hiệu để định danh bệnh lý.")
             if clarifying_questions:

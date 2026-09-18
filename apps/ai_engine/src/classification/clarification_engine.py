@@ -94,12 +94,13 @@ class ClarificationEngine:
         if is_emergency:
             return "emergency"
 
-        if top_probability < self.CONFIDENCE_THRESHOLD_PROVISIONAL or symptom_count <= 1:
-            return "initial_screening"
-
         # Nếu đạt ngưỡng cao >= 0.75 và đã có đủ triệu chứng hoặc đã hỏi qua làm rõ
         if top_probability >= self.CONFIDENCE_THRESHOLD_DEFINITIVE and (symptom_count >= self.MIN_SYMPTOMS_FOR_DEFINITIVE or clarification_turns_count >= 1):
             return "definitive_conclusion"
+
+        # Tầng 1: Chỉ sàng lọc ban đầu khi dữ liệu còn quá ít (<= 2 triệu chứng) VÀ xác suất thấp
+        if top_probability < self.CONFIDENCE_THRESHOLD_PROVISIONAL and symptom_count <= 2:
+            return "initial_screening"
 
         # Mặc định nằm ở tầng Giả định lâm sàng (Provisional Assumption)
         return "provisional_assumption"

@@ -464,15 +464,29 @@ class ChatService:
             is_emergency=is_emergency
         )
 
+        # Kiểm tra nếu người dùng đang hỏi trực tiếp về điều trị / cấp cứu / giải thích triệu chứng
+        is_asking_followup = bool(re.search(
+            r'(?:uống thuốc gì|dùng thuốc gì|thuốc gì|hạ sốt.*thế nào|uống gì|ăn uống thế nào|ăn gì|chế độ ăn|cách hạ sốt|cấp cứu|nhập viện|vào viện|khi nào.*(?:viện|cấp cứu)|dấu hiệu nào.*(?:viện|cấp cứu)|bắt buộc phải.*(?:viện|cấp cứu)|nguy hiểm|thế là.*(?:gì|dấu hiệu gì)|dấu hiệu gì|nghĩa là gì)',
+            user_message,
+            re.IGNORECASE
+        ))
+
+        # Đảm bảo tiến trình lâm sàng tăng tiến, không tụt lùi khi bệnh nhân đã chia sẻ nhiều triệu chứng
+        if len(symptoms) >= 3 and top_prob >= 0.65:
+            clinical_stage = "definitive_conclusion"
+        elif len(symptoms) >= 2 or clarification_turns_count >= 1 or is_asking_followup:
+            if clinical_stage == "initial_screening":
+                clinical_stage = "provisional_assumption"
+
         clarification = {
-            "needs_clarification": (clinical_stage != "definitive_conclusion"),
+            "needs_clarification": (clinical_stage != "definitive_conclusion" and not is_asking_followup),
             "clinical_stage": clinical_stage,
             "confidence_score": round(top_prob, 3),
             "questions": []
         }
 
-        # Sinh câu hỏi làm rõ phân biệt nếu chưa đạt kết luận sơ bộ xác định
-        if clinical_stage != "definitive_conclusion":
+        # Sinh câu hỏi làm rõ phân biệt nếu chưa đạt kết luận sơ bộ xác định và không phải đang hỏi xử trí
+        if clinical_stage != "definitive_conclusion" and not is_asking_followup:
             top_codes = [p.get("icd_code") for p in top_preds if p.get("icd_code")]
             clarification["questions"] = clarification_engine.generate_context_aware_questions(
                 user_text=active_text,

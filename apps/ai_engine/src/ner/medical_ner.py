@@ -116,6 +116,16 @@ class MedicalNER:
             except Exception as e:
                 logger.error(f"Error during PhoBERT NER inference: {e}")
 
+        # 1.5. Bổ trợ quét các cụm từ lâm sàng đặc hiệu (Clinical Lexicon Scanner)
+        # Giúp bắt trọn các triệu chứng quan trọng như "chấm đỏ li ti", "ấn vào không mất", "ê buốt hai hốc mắt", "đau nhức khắp các khớp"
+        for phrase, concept in self.normalizer.exact_lookup.items():
+            if len(phrase) >= 5 and phrase in lower_text:
+                p_idx = lower_text.find(phrase)
+                if self._is_negated(lower_text, p_idx):
+                    raw_negated.append(phrase)
+                else:
+                    raw_symptoms.append(phrase)
+
         # 2. Bổ trợ đo lường sinh hiệu nếu PhoBERT chưa bắt được số đo cụ thể
         if not temperature:
             temp_match = re.search(r"(\d{2}[.,]?\d*)\s*(?:độ|°c|do)", lower_text)

@@ -104,7 +104,9 @@ class EntityNormalizer:
             ("co_giat", "Co giật", "Thần kinh"),
             ("phat_ban", "Phát ban mẩn đỏ", "Da liễu"),
             ("di_ung_da", "Viêm da dị ứng / Dị ứng da mặt", "Da liễu"),
-            ("dau_khop", "Đau nhức khớp", "Cơ xương khớp")
+            ("dau_khop", "Đau nhức khớp", "Cơ xương khớp"),
+            ("sym_cham_xuat_huyet", "Chấm xuất huyết dưới da", "Truyền nhiễm"),
+            ("sym_dau_nhuc_hoc_mat", "Đau nhức hốc mắt", "Truyền nhiễm"),
         ]
         for cid, cterm, cat in default_clinical_concepts:
             if cterm.lower() not in seen_terms:
@@ -112,6 +114,31 @@ class EntityNormalizer:
                 seen_terms.add(cterm.lower())
             if cterm.lower() not in self.exact_lookup:
                 self.exact_lookup[cterm.lower()] = {"id": cid, "standard_term": cterm, "category": cat}
+
+        # Bổ sung các cụm từ đặc hiệu lâm sàng sốt xuất huyết & truyền nhiễm vào exact lookup
+        specific_synonyms = {
+            "chấm đỏ li ti": {"id": "sym_cham_xuat_huyet", "standard_term": "Chấm xuất huyết dưới da", "category": "Truyền nhiễm"},
+            "chấm đỏ": {"id": "sym_cham_xuat_huyet", "standard_term": "Chấm xuất huyết dưới da", "category": "Truyền nhiễm"},
+            "chấm đỏ li ti ở tay": {"id": "sym_cham_xuat_huyet", "standard_term": "Chấm xuất huyết dưới da", "category": "Truyền nhiễm"},
+            "ấn vào không mất": {"id": "sym_cham_xuat_huyet", "standard_term": "Chấm xuất huyết dưới da", "category": "Truyền nhiễm"},
+            "nổi mấy chấm đỏ": {"id": "sym_cham_xuat_huyet", "standard_term": "Chấm xuất huyết dưới da", "category": "Truyền nhiễm"},
+            "chấm xuất huyết": {"id": "sym_cham_xuat_huyet", "standard_term": "Chấm xuất huyết dưới da", "category": "Truyền nhiễm"},
+            "ban xuất huyết": {"id": "sym_cham_xuat_huyet", "standard_term": "Chấm xuất huyết dưới da", "category": "Truyền nhiễm"},
+            "xuất huyết dưới da": {"id": "sym_cham_xuat_huyet", "standard_term": "Chấm xuất huyết dưới da", "category": "Truyền nhiễm"},
+            "ê buốt hai hốc mắt": {"id": "sym_dau_nhuc_hoc_mat", "standard_term": "Đau nhức hốc mắt", "category": "Truyền nhiễm"},
+            "buốt hai hốc mắt": {"id": "sym_dau_nhuc_hoc_mat", "standard_term": "Đau nhức hốc mắt", "category": "Truyền nhiễm"},
+            "đau hốc mắt": {"id": "sym_dau_nhuc_hoc_mat", "standard_term": "Đau nhức hốc mắt", "category": "Truyền nhiễm"},
+            "nhức hốc mắt": {"id": "sym_dau_nhuc_hoc_mat", "standard_term": "Đau nhức hốc mắt", "category": "Truyền nhiễm"},
+            "đau nhức hốc mắt": {"id": "sym_dau_nhuc_hoc_mat", "standard_term": "Đau nhức hốc mắt", "category": "Truyền nhiễm"},
+            "đau nhức khắp các khớp": {"id": "dau_khop", "standard_term": "Đau nhức khớp", "category": "Cơ xương khớp"},
+            "đau nhức các khớp": {"id": "dau_khop", "standard_term": "Đau nhức khớp", "category": "Cơ xương khớp"},
+            "đau khắp các khớp": {"id": "dau_khop", "standard_term": "Đau nhức khớp", "category": "Cơ xương khớp"},
+        }
+        for phr, entry in specific_synonyms.items():
+            self.exact_lookup[phr] = entry
+            if phr not in seen_terms:
+                self.concepts.append(entry)
+                seen_terms.add(phr)
 
         # Backward compatibility view
         for c in self.concepts:
@@ -198,6 +225,18 @@ class EntityNormalizer:
 
                 # 3. Tim mạch (Đau ngực): Không map nếu không có ngực/tim
                 if "dau_nguc" in target_id and not any(k in cleaned_lower for k in ["ngực", "tim", "sườn", "vành"]):
+                    best_score = 0.0
+
+                # 4. Tiết niệu (Tiểu buốt, Tiểu rắt): Cấm map nếu không có từ liên quan đến tiểu tiện
+                if ("tieu_" in target_id or "tiểu" in target_term or "tieu_buot" in target_id) and not any(k in cleaned_lower for k in ["tiểu", "đái", "niệu", "bàng quang"]):
+                    best_score = 0.0
+
+                # 5. Răng hàm mặt: Cấm map sang răng nếu không chứa răng, nướu, lợi
+                if ("rang" in target_id or "răng" in target_term) and not any(k in cleaned_lower for k in ["răng", "nướu", "lợi", "nhai"]):
+                    best_score = 0.0
+
+                # 6. Nhi khoa / Khuyết tật: Cấm map sang chậm phát triển ngôn ngữ
+                if "cham_phat_trien" in target_id or "ngôn ngữ" in target_term:
                     best_score = 0.0
 
                 # Ngưỡng cosine similarity lâm sàng nghiêm ngặt: nâng lên >= 0.65

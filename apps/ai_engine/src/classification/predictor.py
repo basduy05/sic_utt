@@ -194,6 +194,35 @@ class HybridClinicalPredictor:
             if np.sum(p_final) > 0:
                 p_final = p_final / np.sum(p_final)
 
+        # 3.5. PATHOGNOMONIC CLINICAL SYNDROMES BOOSTING (TĂNG TỶ TRỌNG HỘI CHỨNG KINH ĐIỂN)
+        user_text_lower = user_text.lower()
+        all_syms_str = " ".join(symptom_names + symptom_ids).lower() + " " + user_text_lower
+        has_fever = any(kw in all_syms_str for kw in ["sốt", "sot", "39 độ", "38 độ", "40 độ", "nhiệt độ"])
+        has_petechiae = any(kw in all_syms_str for kw in ["chấm đỏ", "chấm xuất huyết", "xuat_huyet", "không mất", "ban xuất huyết", "nốt xuất huyết"])
+        has_retro_orbital = any(kw in all_syms_str for kw in ["hốc mắt", "hoc_mat", "mắt"])
+        has_arthralgia = any(kw in all_syms_str for kw in ["khớp", "khop", "đau nhức khắp", "đau mỏi"])
+
+        for idx, d in enumerate(self.disease_classes):
+            code = d.get("code")
+            # 1. Hội chứng Sốt Dengue (A90): Sốt cao + (Chấm xuất huyết / Đau hốc mắt / Đau khớp)
+            if code == "A90":
+                if has_fever and has_petechiae:
+                    p_final[idx] *= 8.0  # Chấm xuất huyết khi sốt là dấu hiệu chỉ điểm kinh điển
+                elif has_fever and (has_retro_orbital or has_arthralgia):
+                    p_final[idx] *= 4.5
+                elif has_fever:
+                    p_final[idx] *= 1.8
+
+            # 2. Hội chứng Cúm (J10): Sốt cao + Đau mỏi người nhưng KHÔNG xuất huyết
+            if code in ["J10", "J11"]:
+                if has_fever and not has_petechiae and (has_arthralgia or "ho" in all_syms_str):
+                    p_final[idx] *= 3.0
+                elif has_petechiae:
+                    p_final[idx] *= 0.1  # Cúm rất hiếm khi nổi chấm xuất huyết ấn không mất
+
+        if np.sum(p_final) > 0:
+            p_final = p_final / np.sum(p_final)
+
         # 4. CLINICAL GATEKEEPER & SYMPTOM OVERLAP GUARD (CHỐNG ĐOÁN MÒ)
         # Xây dựng tập từ khóa bệnh nhân: symptom names, symptom IDs, n-gram từ user_text
         user_text_lower = user_text.lower()
