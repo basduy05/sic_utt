@@ -69,9 +69,17 @@ export function useChat() {
         if (Array.isArray(parsed) && parsed.length > 0) {
           // BẢO VỆ CHỐNG NHIỄM DỮ LIỆU CŨ:
           // Bất kỳ phiên nào chưa có tin nhắn của người dùng thì telemetry BẮT BUỘC là null
+          // Loại bỏ tin nhắn lỗi timeout cũ [ERR_TIMEOUT_WS_45S]
           parsed = parsed.map((s) => {
             const hasUserMsg = s.messages && s.messages.some((m) => m.sender === 'user');
-            return hasUserMsg ? s : { ...s, telemetry: null };
+            const cleanMsgs = (s.messages || [])
+              .map((m) => ({ ...m, isStreaming: false }))
+              .filter((m) => !m.content?.includes('[ERR_TIMEOUT_WS_45S]'));
+            return {
+              ...s,
+              messages: cleanMsgs.length > 0 ? cleanMsgs : [{ ...DEFAULT_WELCOME_MESSAGE, id: `welcome_${Date.now()}`, sessionId: s.id }],
+              telemetry: hasUserMsg ? s.telemetry || null : null,
+            };
           });
 
           setSessions(parsed);
@@ -444,25 +452,68 @@ export function useChat() {
         content: m.content,
       }));
 
-      // Thiết lập timeout tự động khi quá lâu không nhận được phản hồi
+      // Fallback function tự động chuyển sang REST HTTP khi WebSocket bị chậm hoặc mất gói tin
+      const executeRestFallback = async (reason?: string) => {
+        console.warn('[useChat] Triggering automatic REST fallback:', reason);
+        try {
+          const res = await chatService.sendMessage(sessionId, text, historyPayload);
+          if (processingTimeoutRef.current) {
+            clearTimeout(processingTimeoutRef.current);
+            processingTimeoutRef.current = null;
+          }
+          setIsProcessing(false);
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === tempAssistantId
+                ? {
+                    ...msg,
+                    id: res.message_id || tempAssistantId,
+                    content: res.text_content,
+                    isStreaming: false,
+                    telemetry: res.telemetry,
+                    latency_ms: res.latency_ms,
+                    pipeline_breakdown: res.pipeline_breakdown,
+                  }
+                : msg
+            )
+          );
+          if (res.telemetry) {
+            handleTelemetryUpdate({
+              ...res.telemetry,
+              latency_ms: res.latency_ms,
+              pipeline_breakdown: res.pipeline_breakdown,
+            });
+          }
+        } catch (restErr: any) {
+          if (processingTimeoutRef.current) {
+            clearTimeout(processingTimeoutRef.current);
+            processingTimeoutRef.current = null;
+          }
+          setIsProcessing(false);
+          const errCode = restErr?.response?.status ? `HTTP_${restErr.response.status}` : (restErr?.code || 'ERR_NETWORK');
+          const errDetail = restErr?.message || 'Không thể kết nối đến máy chủ';
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === tempAssistantId && msg.isStreaming
+                ? {
+                    ...msg,
+                    content:
+                      `Hiện hệ thống đang có vấn đề và chúng tôi sẽ nỗ lực để sửa chữa, câu trả lời của bạn đã được ghi lại.\n\n🚨 **Mã lỗi:** \`[${errCode}]\`: ${errDetail}`,
+                    isStreaming: false,
+                  }
+                : msg
+            )
+          );
+        }
+      };
+
+      // Thiết lập timeout tự động: Nếu WS không hoàn thành trong 12s, tự động lấy kết quả qua REST
       if (processingTimeoutRef.current) {
         clearTimeout(processingTimeoutRef.current);
       }
       processingTimeoutRef.current = setTimeout(() => {
-        setIsProcessing(false);
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === tempAssistantId && msg.isStreaming
-              ? {
-                  ...msg,
-                  content:
-                    'Hiện hệ thống đang có vấn đề và chúng tôi sẽ nỗ lực để sửa chữa, câu trả lời của bạn đã được ghi lại, chúng tôi sẽ liên hệ với bạn để trả lời.\n\n🚨 **Mã lỗi:** `[ERR_TIMEOUT_WS_45S]`: Quá thời gian phản hồi từ máy chủ.',
-                  isStreaming: false,
-                }
-              : msg
-          )
-        );
-      }, 45000);
+        executeRestFallback('WS_TIMEOUT_12S');
+      }, 12000);
 
       // If WebSocket is active, use WS streaming
       if (isConnected) {
