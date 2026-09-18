@@ -309,15 +309,29 @@ class UnifiedClinicalReasoningService:
             lines.append("  • Ăn thức ăn lỏng, mềm, nguội, dễ tiêu hóa như cháo thịt nạc, súp gà. Tránh các thực phẩm có màu đỏ, đen, nâu sẫm để không gây nhầm lẫn nếu có xuất huyết tiêu hóa.")
 
         if is_asking_emergency:
-            lines.append("\n🚨 **CÁC DẤU HIỆU CẢNH BÁO NGUY HIỂM BẮT BUỘC PHẢI VÀO VIỆN CẤP CỨU NGAY (BỘ Y TẾ):**")
-            lines.append("Nếu bạn hoặc người bệnh xuất hiện **BẤT KỲ MỘT TRONG CÁC DẤU HIỆU** dưới đây, cần đến ngay cơ sở y tế / phòng cấp cứu gần nhất:")
-            lines.append("1. **Đau bụng nhiều và liên tục**, đặc biệt đau tức dội vùng hạ sườn phải (vùng gan).")
-            lines.append("2. **Nôn mửa nhiều**, nôn liên tục (≥ 3 lần trong 1 giờ hoặc ≥ 4 lần trong 6 giờ).")
-            lines.append("3. **Xuất huyết niêm mạc:** Chảy máu chân răng tự nhiên, chảy máu mũi (chảy máu cam), nôn ra máu, đi ngoài phân đen như bã cà phê, tiểu ra máu.")
-            lines.append("4. **Dấu hiệu tri giác:** Người lừ đừ, mệt lả, bứt rứt, li bì, vật vã hoặc hôn mê.")
-            lines.append("5. **Dấu hiệu sốc & trụy mạch:** Chân tay lạnh ẩm, da nổi vân tím, mạch nhanh nhỏ, huyết áp tụt hoặc huyết áp kẹt.")
-            lines.append("6. **Tiểu ít:** Không đi tiểu trong suốt 6 giờ liên tục.")
-            lines.append("👉 *Tuyệt đối không tự ý truyền dịch tại nhà vì có thể gây phù phổi cấp và quá tải dịch nguy hiểm.*")
+            msg_lower = patient_message.lower()
+            lines.append("\n👉 **TRẢ LỜI CÂU HỎI CỦA BẠN: CÓ CẦN ĐI CẤP CỨU KHÔNG?**")
+            
+            # Kiểm tra nếu đang có dấu hiệu phản vệ / co thắt thanh quản (thở rít, phù môi sau dị ứng)
+            if any(k in msg_lower for k in ["thở rít", "tê phù", "phù môi", "sưng môi", "khó thở", "nghẹn"]) or any("thở rít" in s.get("standard_term", "").lower() or "phù môi" in s.get("standard_term", "").lower() for s in symptoms):
+                lines.append("🔴 **CÓ, BẠN BẮT BUỘC PHẢI ĐẾN PHÒNG CẤP CỨU HOẶC GỌI 115 NGAY LẬP TỨC!**")
+                lines.append("Hiện tượng **nổi mảng đỏ/mề đay sau khi ăn hải sản** kết hợp với **môi tê phù** và **thở rít** là dấu hiệu điển hình của **HỘI CHỨNG PHẢN VỆ CẤP (ANAPHYLAXIS) CÓ PHÙ NỀ ĐƯỜNG THỞ (PHÙ QUINCKE)**.")
+                lines.append("- Đây là tình trạng **nguy hiểm tính mạng** có thể gây bít tắc khí quản dẫn đến ngạt thở trong vài phút.")
+                lines.append("- **Xử trí khẩn cấp:**")
+                lines.append("  1. Gọi ngay cấp cứu **115** hoặc nhờ người nhà đưa thẳng vào khoa Cấp cứu gần nhất.")
+                lines.append("  2. Ngồi thẳng lưng, thả lỏng cổ áo để dễ thở, tuyệt đối không nằm ngửa.")
+                lines.append("  3. Không tự ý uống nước hoặc uống thuốc viên nếu đang nuốt vướng hoặc thở rít.")
+                lines.append("  4. Báo ngay cho nhân viên y tế: *'Nghi phản vệ sau ăn hải sản đang bị sưng môi và thở rít'*, bác sĩ sẽ tiêm bắp Adrenaline cấp cứu ngay lập tức!")
+            else:
+                lines.append("🚨 **CÁC DẤU HIỆU CẢNH BÁO NGUY HIỂM BẮT BUỘC PHẢI VÀO VIỆN CẤP CỨU NGAY (BỘ Y TẾ):**")
+                lines.append("Nếu bạn hoặc người bệnh xuất hiện **BẤT KỲ MỘT TRONG CÁC DẤU HIỆU** dưới đây, cần đến ngay cơ sở y tế / phòng cấp cứu gần nhất:")
+                lines.append("1. **Khó thở, thở rít, thở ngáp cá hoặc môi sưng phù nhanh chóng.**")
+                lines.append("2. **Đau bụng nhiều và liên tục**, đặc biệt đau tức dội vùng hạ sườn phải (vùng gan).")
+                lines.append("3. **Nôn mửa nhiều**, nôn liên tục (≥ 3 lần trong 1 giờ hoặc ≥ 4 lần trong 6 giờ).")
+                lines.append("4. **Xuất huyết niêm mạc:** Chảy máu chân răng tự nhiên, chảy máu mũi (chảy máu cam), nôn ra máu, đi ngoài phân đen như bã cà phê, tiểu ra máu.")
+                lines.append("5. **Dấu hiệu tri giác:** Người lừ đừ, mệt lả, bứt rứt, li bì, vật vã hoặc hôn mê.")
+                lines.append("6. **Dấu hiệu sốc & trụy mạch:** Chân tay lạnh ẩm, da nổi vân tím, mạch nhanh nhỏ, huyết áp tụt hoặc huyết áp kẹt.")
+                lines.append("👉 *Tuyệt đối không tự ý trì hoãn khi có các dấu hiệu nguy kịch trên.*")
 
         # TẦNG 1: Chưa đủ căn cứ lâm sàng
         if (clinical_stage == "initial_screening" or not valid_diseases) and not (is_asking_medication or is_asking_emergency):

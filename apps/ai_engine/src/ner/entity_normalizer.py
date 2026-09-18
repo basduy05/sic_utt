@@ -72,14 +72,18 @@ class EntityNormalizer:
             try:
                 with open(icd_path, "r", encoding="utf-8") as f:
                     icd_data = json.load(f)
+                admin_blacklist = ("chua_xac_dinh", "kham_chua_ra", "chua_phan_loai", "khong_dac_hieu", "benh_chua_ro")
                 for code, details in icd_data.items():
                     name_vi = details.get("name_vi", "")
                     if name_vi and name_vi.lower() not in seen_terms:
-                        self.concepts.append({"id": code, "standard_term": name_vi, "category": details.get("department", "Chuyên khoa")})
-                        seen_terms.add(name_vi.lower())
+                        if not any(b in name_vi.lower() or b in code.lower() for b in admin_blacklist):
+                            self.concepts.append({"id": code, "standard_term": name_vi, "category": details.get("department", "Chuyên khoa")})
+                            seen_terms.add(name_vi.lower())
                     for sym in details.get("cardinal_symptoms", []) + details.get("all_symptoms", []):
                         s_clean = sym.strip().lower()
                         if s_clean and s_clean not in seen_terms:
+                            if any(b in s_clean for b in admin_blacklist):
+                                continue
                             clean_id = f"sym_{re.sub(r'[^a-zA-Z0-9_]', '_', s_clean)}"
                             self.concepts.append({"id": clean_id, "standard_term": sym.capitalize(), "category": details.get("department", "Chuyên khoa")})
                             seen_terms.add(s_clean)
@@ -133,6 +137,20 @@ class EntityNormalizer:
             "đau nhức khắp các khớp": {"id": "dau_khop", "standard_term": "Đau nhức khớp", "category": "Cơ xương khớp"},
             "đau nhức các khớp": {"id": "dau_khop", "standard_term": "Đau nhức khớp", "category": "Cơ xương khớp"},
             "đau khắp các khớp": {"id": "dau_khop", "standard_term": "Đau nhức khớp", "category": "Cơ xương khớp"},
+            "tê phù môi": {"id": "sym_phu_moi", "standard_term": "Phù môi / Phù mạch Angioedema", "category": "Dị ứng - Miễn dịch"},
+            "hơi tê phù": {"id": "sym_phu_moi", "standard_term": "Phù môi / Phù mạch Angioedema", "category": "Dị ứng - Miễn dịch"},
+            "phù môi": {"id": "sym_phu_moi", "standard_term": "Phù môi / Phù mạch Angioedema", "category": "Dị ứng - Miễn dịch"},
+            "sưng môi": {"id": "sym_phu_moi", "standard_term": "Phù môi / Phù mạch Angioedema", "category": "Dị ứng - Miễn dịch"},
+            "thở rít": {"id": "sym_tho_rit", "standard_term": "Thở rít / Co thắt thanh quản", "category": "Hô hấp"},
+            "thở rít nhẹ": {"id": "sym_tho_rit", "standard_term": "Thở rít / Co thắt thanh quản", "category": "Hô hấp"},
+            "cảm giác thở rít": {"id": "sym_tho_rit", "standard_term": "Thở rít / Co thắt thanh quản", "category": "Hô hấp"},
+            "cảm giác thở rít nhẹ": {"id": "sym_tho_rit", "standard_term": "Thở rít / Co thắt thanh quản", "category": "Hô hấp"},
+            "ăn hải sản": {"id": "sym_tiep_xuc_di_nguyen", "standard_term": "Tiếp xúc dị nguyên thức ăn", "category": "Dị ứng"},
+            "uống chút bia": {"id": "sym_tiep_xuc_di_nguyen", "standard_term": "Tiếp xúc dị nguyên thức ăn", "category": "Dị ứng"},
+            "nổi từng mảng": {"id": "sym_may_day", "standard_term": "Mày đay sẩn ngứa cấp tính", "category": "Dị ứng - Da liễu"},
+            "mảng sưng đỏ": {"id": "sym_may_day", "standard_term": "Mày đay sẩn ngứa cấp tính", "category": "Dị ứng - Da liễu"},
+            "sưng đỏ như muỗi đốt": {"id": "sym_may_day", "standard_term": "Mày đay sẩn ngứa cấp tính", "category": "Dị ứng - Da liễu"},
+            "ngứa dữ dội": {"id": "sym_ngua_du_doi", "standard_term": "Ngứa dữ dội da niêm mạc", "category": "Dị ứng - Da liễu"},
         }
         for phr, entry in specific_synonyms.items():
             self.exact_lookup[phr] = entry

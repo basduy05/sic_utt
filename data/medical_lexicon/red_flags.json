@@ -75,14 +75,25 @@
       "response_time_limit_sec": 0.5,
       "triggers_all": [],
       "triggers_any": [
+        "thở rít",
+        "thở rít nhẹ",
+        "tiếng thở rít",
+        "rít thanh quản",
+        "tê phù môi",
+        "phù môi",
+        "sưng môi",
+        "sưng phù môi",
+        "phù mạch",
+        "phù quincke",
+        "nghẹn cổ họng",
+        "nghẹn họng",
+        "nghẹn thở",
         "sưng phù môi mắt sau tiêm/uống thuốc/ăn hải sản",
-        "phù mạch quinke",
-        "nghẹn cổ họng khó thở dữ dội",
         "tụt huyết áp sau đốt côn trùng",
         "mẩn ngứa toàn thân kèm khó thở"
       ],
-      "action_vi": "BÁO ĐỘNG ĐỎ: Phản ứng phản vệ nguy kịch. Cần tiêm bắp Adrenaline ngay tại cơ sở y tế gần nhất.",
-      "action_en": "RED FLAG: Severe Anaphylaxis. Immediate Adrenaline required."
+      "action_vi": "🚨 BÁO ĐỘNG ĐỎ: Dấu hiệu Phản vệ / Phù mạch thanh quản (Anaphylaxis / Quincke). Tình trạng co thắt đường thở hoặc phù nề niêm mạc sau tiếp xúc dị nguyên có thể đe dọa tính mạng. BẠN CẦN GỌI CẤP CỨU 115 HOẶC VÀO NGAY KHOA CẤP CỨU GẦN NHẤT ĐỂ TIÊM ADRENALINE!",
+      "action_en": "RED FLAG: Severe Anaphylaxis / Airway Angioedema. Immediate Adrenaline and Emergency 115 required."
     },
     {
       "id": "RF_DENGUE_SHOCK_WARNING",
