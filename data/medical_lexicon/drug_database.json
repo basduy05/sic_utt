@@ -1,0 +1,503 @@
+{
+  "drugs": [
+    {
+      "id": "paracetamol",
+      "name": "Paracetamol (Acetaminophen)",
+      "brand_names": [
+        "Panadol",
+        "Efferalgan",
+        "Hapacol",
+        "Tylenol"
+      ],
+      "class": "Giảm đau - Hạ sốt",
+      "group_id": "analgesic",
+      "forms": [
+        "Viên nén 500mg",
+        "Viên sủi 500mg, 1000mg",
+        "Gói bột 150mg, 250mg",
+        "Chai tiêm truyền 1g/100ml"
+      ],
+      "indications": "Hạ sốt do mọi nguyên nhân (cảm cúm, sốt siêu vi, sốt xuất huyết, sau tiêm vắc xin); Giảm đau mức độ nhẹ đến vừa (đau đầu, đau răng, đau cơ, đau nhức khớp).",
+      "contraindications": "Quá mẫn với paracetamol; Người bệnh thiếu hụt men G6PD; Người suy giảm chức năng gan nặng hoặc viêm gan tiến triển.",
+      "adult_dose": "500mg - 1000mg / lần, cách mỗi 4 - 6 giờ khi cần. Tối đa không quá 4g (4000mg)/24 giờ.",
+      "pediatric_dose": "10 - 15 mg/kg thể trọng / lần, cách mỗi 4 - 6 giờ. Tối đa 60 mg/kg/ngày.",
+      "side_effects": "Hiếm gặp: Ban da dị ứng, mề đay. Quá liều gây hoại tử tế bào gan cấp tính đe dọa sinh mạng.",
+      "precautions": "Không uống rượu bia trong thời gian dùng thuốc vì làm tăng độc tính trên gan. Kiểm tra thành phần các thuốc cảm cúm kết hợp để tránh uống trùng lặp paracetamol quá liều.",
+      "pregnancy_safety": "An toàn (Nhóm B). Có thể sử dụng liều thấp nhất có hiệu quả trong thời gian ngắn nhất.",
+      "interactions": [
+        {
+          "with_drug": "alcohol",
+          "severity": "MAJOR",
+          "warning": "Rượu làm tăng chuyển hóa paracetamol thành chất độc NAPQI gây tổn thương và suy gan cấp."
+        },
+        {
+          "with_drug": "warfarin",
+          "severity": "MODERATE",
+          "warning": "Dùng liều cao kéo dài (>2g/ngày trong 4 ngày) có thể làm tăng nhẹ tác dụng chống đông của Warfarin."
+        }
+      ]
+    },
+    {
+      "id": "ibuprofen",
+      "name": "Ibuprofen",
+      "brand_names": [
+        "Brufen",
+        "Advil",
+        "Gofen",
+        "Alaxan (kết hợp)"
+      ],
+      "class": "Thuốc chống viêm không steroid (NSAID)",
+      "group_id": "analgesic",
+      "forms": [
+        "Viên nang mềm 200mg, 400mg",
+        "Hỗn dịch uống 100mg/5ml"
+      ],
+      "indications": "Giảm đau chống viêm trong đau nửa đầu, đau răng, viêm khớp, đau bụng kinh, chấn thương phần mềm; Hạ sốt khi paracetamol kém đáp ứng.",
+      "contraindications": "Loét dạ dày tá tràng tiến triển hoặc tiền sử xuất huyết tiêu hóa; Suy tim nặng, suy gan nặng, suy thận nặng; Sốt xuất huyết nghi ngờ; Phụ nữ mang thai 3 tháng cuối.",
+      "adult_dose": "200mg - 400mg / lần, 3 - 4 lần/ngày sau khi ăn no. Tối đa 1200mg/ngày (không kê đơn) hoặc 2400mg/ngày (dưới chỉ định bác sĩ).",
+      "pediatric_dose": "5 - 10 mg/kg / lần, cách mỗi 6 - 8 giờ sau ăn. Không dùng cho trẻ < 3 tháng tuổi hoặc < 5kg.",
+      "side_effects": "Khó tiêu, buồn nôn, cồn cào rát dạ dày, xuất huyết dạ dày tá tràng, tăng huyết áp, phù ngoại vi.",
+      "precautions": "Uống sau ăn no hoặc cùng thức ăn/sữa. Tuyệt đối không dùng khi nghi ngờ sốt xuất huyết vì làm tăng nguy cơ chảy máu ồ ạt.",
+      "pregnancy_safety": "Chống chỉ định trong 3 tháng cuối thai kỳ (nguy cơ đóng sớm ống động mạch của thai nhi).",
+      "interactions": [
+        {
+          "with_drug": "aspirin",
+          "severity": "MAJOR",
+          "warning": "Phối hợp làm tăng gấp bội nguy cơ loét và xuất huyết tiêu hóa nặng, đồng thời giảm tác dụng bảo vệ tim mạch của Aspirin."
+        },
+        {
+          "with_drug": "corticosteroid",
+          "severity": "MAJOR",
+          "warning": "Tăng đáng kể nguy cơ thủng và loét dạ dày tá tràng cấp tính."
+        },
+        {
+          "with_drug": "losartan",
+          "severity": "MODERATE",
+          "warning": "NSAID có thể làm giảm tác dụng hạ huyết áp và làm tăng độc tính trên thận của thuốc ức chế thụ thể/men chuyển."
+        }
+      ]
+    },
+    {
+      "id": "aspirin",
+      "name": "Aspirin (Acid Acetylsalicylic)",
+      "brand_names": [
+        "Aspirin 81",
+        "Aspilets",
+        "Cardiprin"
+      ],
+      "class": "Thuốc chống kết tập tiểu cầu & Giảm đau chống viêm",
+      "group_id": "cardiovascular",
+      "forms": [
+        "Viên bao tan trong ruột 81mg, 100mg",
+        "Viên nén 500mg"
+      ],
+      "indications": "Dự phòng thứ phát nhồi máu cơ tim, đột quỵ thiếu máu cục bộ; Hội chứng vành cấp; Dự phòng huyết khối sau phẫu thuật bắc cầu mạch vành.",
+      "contraindications": "Mẫn cảm với dẫn xuất salicylate; Tiền sử hen do aspirin; Loét dạ dày tiến triển; Rối loạn đông máu; Sốt xuất huyết Dengue; Trẻ dưới 16 tuổi sốt siêu vi (nguy cơ hội chứng Reye).",
+      "adult_dose": "Dự phòng tim mạch: 75mg - 100mg / ngày uống sau ăn sáng. Xử trí cấp cứu nhồi máu cơ tim: Nhai nuốt ngay 162mg - 325mg viên không bao.",
+      "pediatric_dose": "Chống chỉ định hạ sốt cho trẻ em do hội chứng Reye. Chỉ dùng trong bệnh Kawasaki dưới giám sát bệnh viện.",
+      "side_effects": "Kích ứng dạ dày, ợ chua, xuất huyết dưới da, chảy máu cam, kéo dài thời gian đông máu.",
+      "precautions": "Cần thông báo cho bác sĩ/nha sĩ trước khi phẫu thuật hoặc nhổ răng ít nhất 5 - 7 ngày.",
+      "pregnancy_safety": "Chống chỉ định liều cao ở 3 tháng cuối thai kỳ. Liều thấp 81mg có thể dùng dự phòng tiền sản giật theo chỉ định sản khoa.",
+      "interactions": [
+        {
+          "with_drug": "ibuprofen",
+          "severity": "MAJOR",
+          "warning": "Nguy cơ xuất huyết tiêu hóa ồ ạt và cản trở tác dụng bảo vệ tim mạch của Aspirin."
+        },
+        {
+          "with_drug": "warfarin",
+          "severity": "MAJOR",
+          "warning": "Tương tác hiệp đồng chống đông máu dẫn đến nguy cơ xuất huyết nội tạng nghiêm trọng."
+        }
+      ]
+    },
+    {
+      "id": "amoxicillin",
+      "name": "Amoxicillin / Amoxicillin + Acid Clavulanic",
+      "brand_names": [
+        "Augmentin",
+        "Clamoxyl",
+        "Amoksiklav",
+        "Ospamox"
+      ],
+      "class": "Kháng sinh nhóm Penicillin (Beta-lactam)",
+      "group_id": "antibiotic",
+      "forms": [
+        "Viên nén 500mg, 875/125mg",
+        "Gói bột 250mg, 500mg",
+        "Hỗn dịch 125mg/5ml, 250mg/5ml"
+      ],
+      "indications": "Nhiễm khuẩn đường hô hấp trên (viêm tai giữa, viêm amidan, viêm xoang); Nhiễm khuẩn đường hô hấp dưới (viêm phế quản, viêm phổi cộng đồng); Nhiễm khuẩn tiết niệu, da mô mềm.",
+      "contraindications": "Tiền sử sốc phản vệ hoặc dị ứng nghiêm trọng với kháng sinh nhóm Penicillin/Cephalosporin; Tiền sử vàng da ứ mật do Amoxicillin-Clavulanic.",
+      "adult_dose": "Amoxicillin đơn độc: 500mg - 1000mg mỗi 8 giờ. Dạng phối hợp Augmentin: 1 viên 875/125mg mỗi 12 giờ hoặc 625mg mỗi 8 giờ trong 5 - 10 ngày.",
+      "pediatric_dose": "40 - 80 mg/kg/ngày chia làm 2 - 3 lần uống sau bữa ăn.",
+      "side_effects": "Tiêu chảy, phân sống, buồn nôn, phát ban dát sần ngoài da. Báo động đỏ: Sốc phản vệ, khó thở, phù thanh môn.",
+      "precautions": "Cần uống đủ số ngày kháng sinh được kê (tối thiểu 5 - 7 ngày), không dừng thuốc giữa chừng để tránh kháng kháng sinh. Uống vào đầu bữa ăn để giảm khó chịu dạ dày.",
+      "pregnancy_safety": "An toàn tương đối (Nhóm B). Có thể sử dụng cho phụ nữ mang thai khi có chỉ định bác sĩ.",
+      "interactions": [
+        {
+          "with_drug": "allopurinol",
+          "severity": "MODERATE",
+          "warning": "Tăng tỷ lệ nổi ban dị ứng da khi phối hợp Amoxicillin với thuốc hạ acid uric Allopurinol."
+        },
+        {
+          "with_drug": "methotrexate",
+          "severity": "MAJOR",
+          "warning": "Amoxicillin làm giảm bài tiết Methotrexate qua thận, gây tăng độc tính tủy xương."
+        }
+      ]
+    },
+    {
+      "id": "ciprofloxacin",
+      "name": "Ciprofloxacin",
+      "brand_names": [
+        "Ciprobay",
+        "Cifran",
+        "Serviflox"
+      ],
+      "class": "Kháng sinh nhóm Fluoroquinolone",
+      "group_id": "antibiotic",
+      "forms": [
+        "Viên nén 500mg",
+        "Chai tiêm truyền 200mg/100ml"
+      ],
+      "indications": "Nhiễm khuẩn đường tiết niệu có biến chứng, viêm bể thận; Tiêu chảy nhiễm khuẩn do Salmonella, Shigella; Nhiễm khuẩn xương khớp, viêm tuyến tiền liệt.",
+      "contraindications": "Mẫn cảm với nhóm Quinolone; Tiền sử viêm gân hoặc đứt gân do Quinolone; Phụ nữ có thai và cho con bú; Trẻ em đang phát triển (trừ trường hợp đặc biệt).",
+      "adult_dose": "500mg mỗi 12 giờ (uống cách bữa ăn 1-2 giờ) trong 7 - 14 ngày tùy mức độ nhiễm trùng.",
+      "pediatric_dose": "Không khuyến cáo thường quy do nguy cơ tổn thương sụn khớp ở tuổi phát triển.",
+      "side_effects": "Buồn nôn, tiêu chảy, đau đầu, chóng mặt, nhạy cảm ánh sáng. Nguy cơ viêm/đứt gân gót Achilles, kéo dài khoảng QT tim.",
+      "precautions": "Uống nhiều nước trong ngày để tránh tạo sỏi tinh thể niệu. Tránh tiếp xúc nhiều với ánh nắng mặt trời gắt.",
+      "pregnancy_safety": "Chống chỉ định (Nhóm C).",
+      "interactions": [
+        {
+          "with_drug": "antacid_calcium",
+          "severity": "MAJOR",
+          "warning": "Các ion kim loại (Nhôm, Magie trong thuốc dạ dày; Canxi, Sắt) tạo phức chelate làm mất hoàn toàn khả năng hấp thu Ciprofloxacin. Phải uống cách nhau ít nhất 2 - 4 giờ."
+        },
+        {
+          "with_drug": "theophylline",
+          "severity": "MAJOR",
+          "warning": "Ciprofloxacin ức chế chuyển hóa làm tăng nồng độ Theophylline trong máu gây co giật, loạn nhịp tim."
+        }
+      ]
+    },
+    {
+      "id": "amlodipine",
+      "name": "Amlodipine",
+      "brand_names": [
+        "Amlor",
+        "Amlovas",
+        "Norvasc"
+      ],
+      "class": "Thuốc chẹn kênh Canxi (Dihydropyridine)",
+      "group_id": "cardiovascular",
+      "forms": [
+        "Viên nén 5mg, 10mg"
+      ],
+      "indications": "Điều trị tăng huyết áp nguyên phát; Điều trị dự phòng đau thắt ngực ổn định mạn tính hoặc co thắt mạch vành (Prinzmetal).",
+      "contraindications": "Hạ huyết áp nặng (huyết áp tâm thu < 90 mmHg); Sốc tim; Hẹp van động mạch chủ nặng.",
+      "adult_dose": "Khởi đầu 5mg x 1 lần/ngày. Có thể tăng lên tối đa 10mg/ngày sau 2 - 4 tuần nếu chưa đạt huyết áp mục tiêu.",
+      "pediatric_dose": "Chỉ dùng cho trẻ từ 6 tuổi trở lên bị tăng huyết áp: 2.5mg - 5mg / lần / ngày.",
+      "side_effects": "Phù mắt cá chân (phù ngoại vi do giãn mạch), đỏ bừng mặt, hồi hộp đánh trống ngực, nhức đầu nhẹ, mệt mỏi.",
+      "precautions": "Không tự ý ngừng thuốc đột ngột vì có thể gây tăng vọt huyết áp dội ngược. Kê cao chân khi nằm nghỉ nếu bị phù nhẹ mắt cá chân.",
+      "pregnancy_safety": "Thận trọng (Nhóm C). Chỉ dùng khi thật sự cần thiết và không có thuốc thay thế an toàn hơn.",
+      "interactions": [
+        {
+          "with_drug": "simvastatin",
+          "severity": "MODERATE",
+          "warning": "Amlodipine làm tăng nồng độ Simvastatin trong máu. Khuyến cáo giới hạn liều Simvastatin không quá 20mg/ngày khi dùng chung."
+        }
+      ]
+    },
+    {
+      "id": "losartan",
+      "name": "Losartan",
+      "brand_names": [
+        "Cozaar",
+        "Losacar",
+        "Lifezar"
+      ],
+      "class": "Thuốc ức chế thụ thể Angiotensin II (ARB)",
+      "group_id": "cardiovascular",
+      "forms": [
+        "Viên nén bao phim 25mg, 50mg, 100mg"
+      ],
+      "indications": "Tăng huyết áp; Bảo vệ thận ở bệnh nhân đái tháo đường týp 2 có kèm protein niệu; Giảm nguy cơ đột quỵ ở bệnh nhân phì đại thất trái.",
+      "contraindications": "Quá mẫn với Losartan; Phụ nữ mang thai (quý 2 và quý 3); Suy gan nặng; Dùng chung với Aliskiren ở bệnh nhân đái tháo đường.",
+      "adult_dose": "Khởi đầu thông thường 50mg x 1 lần/ngày. Tối đa 100mg x 1 lần/ngày uống cùng hoặc không cùng thức ăn.",
+      "pediatric_dose": "Trẻ em > 6 tuổi: 0.7 mg/kg x 1 lần/ngày (tối đa 50mg/ngày).",
+      "side_effects": "Chóng mặt khi thay đổi tư thế, tăng kali máu, suy giảm chức năng thận ở bệnh nhân mất nước hoặc hẹp động mạch thận hai bên.",
+      "precautions": "Theo dõi định kỳ chỉ số Kali máu và Creatinine huyết thanh. Không tự ý dùng thêm các viên bổ sung Kali khi chưa có chỉ định.",
+      "pregnancy_safety": "Chống chỉ định tuyệt đối trong thai kỳ (Nhóm D, gây dị tật xương sọ, suy thận và tử vong thai nhi).",
+      "interactions": [
+        {
+          "with_drug": "ibuprofen",
+          "severity": "MODERATE",
+          "warning": "NSAID đối kháng tác dụng hạ áp của Losartan và làm tăng nguy cơ tổn thương thận cấp."
+        },
+        {
+          "with_drug": "potassium_supplements",
+          "severity": "MAJOR",
+          "warning": "Dùng chung với chế phẩm bổ sung Kali hoặc thuốc lợi tiểu giữ Kali (Spironolactone) gây tăng Kali máu nguy hiểm dẫn đến ngừng tim."
+        }
+      ]
+    },
+    {
+      "id": "metformin",
+      "name": "Metformin",
+      "brand_names": [
+        "Glucophage",
+        "Glucophage XR",
+        "Panfor SR",
+        "Diamet"
+      ],
+      "class": "Thuốc điều trị đái tháo đường nhóm Biguanide",
+      "group_id": "endocrine",
+      "forms": [
+        "Viên nén 500mg, 850mg, 1000mg",
+        "Viên phóng thích kéo dài XR 500mg, 750mg, 1000mg"
+      ],
+      "indications": "Điều trị bước đầu cho đái tháo đường týp 2 (kèm chế độ ăn và luyện tập), đặc biệt ở bệnh nhân thừa cân béo phì.",
+      "contraindications": "Nhiễm toan chuyển hóa cấp hoặc mạn tính; Suy thận vừa đến nặng (eGFR < 30 mL/min/1.73m2); Suy tim mất bù, suy hô hấp cấp, nghiện rượu; Chụp X-quang/CT có tiêm thuốc cản quang chứa iod (cần ngưng 48h).",
+      "adult_dose": "Dạng thường: 500mg - 850mg uống trong hoặc sau bữa ăn, 2 - 3 lần/ngày. Dạng phóng thích kéo dài XR: 500mg - 2000mg uống 1 lần vào bữa ăn tối. Tối đa 2550mg/ngày.",
+      "pediatric_dose": "Trẻ em từ 10 tuổi trở lên: Khởi đầu 500mg x 1 lần/ngày sau bữa ăn.",
+      "side_effects": "Rối loạn tiêu hóa (đầy hơi, buồn nôn, tiêu chảy phân lỏng, vị kim loại ở miệng). Hiếm gặp nhưng tối nguy hiểm: Nhiễm toan acid lactic.",
+      "precautions": "Uống trong hoặc ngay sau bữa ăn để giảm tác dụng phụ trên đường tiêu hóa. Viên XR phải nuốt nguyên vẹn, không bẻ, nhai hoặc nghiền nát.",
+      "pregnancy_safety": "Nhóm B. Thường ưu tiên dùng Insulin cho đái tháo đường thai kỳ, Metformin chỉ dùng khi có chỉ định chuyên khoa nội tiết.",
+      "interactions": [
+        {
+          "with_drug": "contrast_media",
+          "severity": "MAJOR",
+          "warning": "Thuốc cản quang iod làm tăng nguy cơ suy thận cấp và nhiễm toan acid lactic. Phải tạm ngừng Metformin trước 48h và chỉ dùng lại sau khi chức năng thận ổn định."
+        },
+        {
+          "with_drug": "alcohol",
+          "severity": "MAJOR",
+          "warning": "Rượu làm tăng chuyển hóa yếm khí dẫn đến nguy cơ nhiễm toan acid lactic nguy kịch."
+        }
+      ]
+    },
+    {
+      "id": "omeprazole",
+      "name": "Omeprazole",
+      "brand_names": [
+        "Losec",
+        "Omez",
+        "Lomex",
+        "Prilosec"
+      ],
+      "class": "Thuốc ức chế bơm Proton (PPI)",
+      "group_id": "gastrointestinal",
+      "forms": [
+        "Viên nang tan trong ruột 20mg, 40mg",
+        "Lọ bột pha tiêm 40mg"
+      ],
+      "indications": "Trào ngược dạ dày thực quản (GERD); Loét dạ dày - tá tràng; Phối hợp kháng sinh tiệt trừ vi khuẩn Helicobacter pylori (HP); Dự phòng loét dạ dày do dùng thuốc NSAID.",
+      "contraindications": "Quá mẫn với Omeprazole hoặc các dẫn xuất Benzimidazole khác.",
+      "adult_dose": "Trào ngược GERD / Loét dạ dày: 20mg - 40mg x 1 lần/ngày vào buổi sáng trước bữa ăn 30 - 60 phút trong 4 - 8 tuần. Phác đồ tiệt trừ HP: 20mg x 2 lần/ngày kết hợp 2 kháng sinh.",
+      "pediatric_dose": "Trẻ em > 1 tuổi (hoặc > 10kg): 10mg - 20mg x 1 lần/ngày trước bữa ăn sáng.",
+      "side_effects": "Nhức đầu, tiêu chảy nhẹ, táo bón, buồn nôn, đầy hơi. Dùng kéo dài (>1 năm) làm tăng nguy cơ loãng xương, giảm hấp thu Magie và Vitamin B12.",
+      "precautions": "Phải uống trước bữa ăn sáng 30 - 60 phút. Nuốt nguyên viên thuốc với nước lọc, không được nhai hoặc nghiền nát các hạt vi bao bên trong.",
+      "pregnancy_safety": "Nhóm C. Được xem là tương đối an toàn khi sử dụng trong thai kỳ khi có chỉ định bác sĩ.",
+      "interactions": [
+        {
+          "with_drug": "clopidogrel",
+          "severity": "MAJOR",
+          "warning": "Omeprazole ức chế men CYP2C19 làm giảm chuyển hóa Clopidogrel thành dạng có hoạt tính, giảm tác dụng chống đông và tăng nguy cơ tắc mạch tim mạch."
+        },
+        {
+          "with_drug": "iron_supplements",
+          "severity": "MODERATE",
+          "warning": "Giảm độ acid dạ dày làm giảm hấp thu muối sắt và thuốc chống nấm Ketoconazole."
+        }
+      ]
+    },
+    {
+      "id": "salbutamol",
+      "name": "Salbutamol (Albuterol)",
+      "brand_names": [
+        "Ventolin",
+        "Asmasol",
+        "Ventolin Inhaler"
+      ],
+      "class": "Thuốc chủ vận beta-2 chọn lọc tác dụng ngắn (SABA)",
+      "group_id": "respiratory",
+      "forms": [
+        "Bình xịt định liều MDI 100mcg/nhát",
+        "Nang khí dung Nebules 2.5mg, 5.0mg",
+        "Siro uống 2mg/5ml"
+      ],
+      "indications": "Cắt cơn co thắt phế quản cấp tính trong hen phế quản và bệnh phổi tắc nghẽn mạn tính (COPD); Dự phòng cơn hen do gắng sức thể lực.",
+      "contraindications": "Quá mẫn với Salbutamol; Không dùng dạng tiêm/uống trong đe dọa sẩy thai trong 6 tháng đầu.",
+      "adult_dose": "Dạng xịt hít: Cắt cơn hen: Xịt 1 - 2 nhát (100 - 200mcg) hít sâu nín thở 10 giây. Tối đa không quá 8 nhát/24 giờ. Dự phòng gắng sức: Xịt 2 nhát trước khi vận động 15 phút.",
+      "pediatric_dose": "Trẻ em: Xịt 1 nhát (100mcg) qua buồng đệm (Babyhaler / Spacer), có thể tăng lên 2 nhát nếu cần.",
+      "side_effects": "Run nhẹ đầu ngón tay (run cơ vân), nhịp tim nhanh hồi hộp, đánh trống ngực, hạ kali máu thoáng qua.",
+      "precautions": "Nếu cần xịt cắt cơn hơn 2 lần/tuần, chứng tỏ bệnh hen chưa được kiểm soát tốt và cần liên hệ bác sĩ để bổ sung thuốc kiểm soát dạng corticoid hít (ICS).",
+      "pregnancy_safety": "Nhóm C. Dạng hít hấp thu toàn thân rất thấp, an toàn để cắt cơn hen cấp cho sản phụ.",
+      "interactions": [
+        {
+          "with_drug": "beta_blockers",
+          "severity": "MAJOR",
+          "warning": "Thuốc chẹn beta không chọn lọc (Propranolol, Timolol) đối kháng hoàn toàn tác dụng của Salbutamol và có thể kích phát cơn co thắt phế quản tử vong ở người bệnh hen."
+        }
+      ]
+    },
+    {
+      "id": "cetirizine",
+      "name": "Cetirizine",
+      "brand_names": [
+        "Zyrtec",
+        "Cetirizin Stada",
+        "Cetzine"
+      ],
+      "class": "Thuốc kháng Histamin H1 thế hệ 2",
+      "group_id": "allergy",
+      "forms": [
+        "Viên nén bao phim 10mg",
+        "Dung dịch uống 1mg/ml"
+      ],
+      "indications": "Điều trị triệu chứng viêm mũi dị ứng theo mùa và quanh năm (hắt hơi, ngứa mũi, chảy nước mũi); Mề đay mạn tính vô căn, ngứa da dị ứng.",
+      "contraindications": "Quá mẫn với Cetirizine hoặc Hydroxyzine; Bệnh nhân suy thận giai đoạn cuối (ClCr < 10 mL/phút).",
+      "adult_dose": "10mg x 1 lần/ngày vào buổi tối hoặc 5mg x 2 lần/ngày.",
+      "pediatric_dose": "Trẻ từ 6 - 12 tuổi: 5mg x 2 lần/ngày hoặc 10mg x 1 lần/ngày. Trẻ từ 2 - 6 tuổi: 2.5mg x 2 lần/ngày.",
+      "side_effects": "Buồn ngủ nhẹ (ít hơn thế hệ 1), khô miệng, mệt mỏi, nhức đầu.",
+      "precautions": "Thận trọng khi lái xe hoặc vận hành máy móc phức tạp nếu cảm thấy buồn ngủ. Tránh uống rượu bia trong thời gian dùng thuốc.",
+      "pregnancy_safety": "Nhóm B. Tương đối an toàn cho phụ nữ mang thai.",
+      "interactions": [
+        {
+          "with_drug": "sedatives_alcohol",
+          "severity": "MODERATE",
+          "warning": "Rượu bia và thuốc an thần làm tăng tác dụng ức chế thần kinh trung ương và gây buồn ngủ sâu."
+        }
+      ]
+    },
+    {
+      "id": "oresol",
+      "name": "Oresol (Oral Rehydration Salts - ORS)",
+      "brand_names": [
+        "Oresol 245",
+        "Oresol vị cam",
+        "Hydrite"
+      ],
+      "class": "Dung dịch bù nước và điện giải đường uống",
+      "group_id": "gastrointestinal",
+      "forms": [
+        "Gói bột pha 200ml, 250ml, 1000ml dung dịch"
+      ],
+      "indications": "Bù nước và các chất điện giải bị mất do tiêu chảy cấp, nôn ói nhiều, sốt cao kéo dài, say nắng, vận động thể lực nặng mất nhiều mồ hôi.",
+      "contraindications": "Vô niệu hoặc giảm niệu nặng do suy thận; Nôn ói liên tục không uống được; Mất nước nặng có sốc (cần truyền tĩnh mạch cấp cứu); Tắc ruột, thủng ruột.",
+      "adult_dose": "Uống từng ngụm nhỏ theo nhu cầu khát sau mỗi lần đi ngoài phân lỏng. Thông thường 200ml - 400ml sau mỗi lần tiêu chảy. Tối đa 2000 - 3000ml/ngày.",
+      "pediatric_dose": "Trẻ < 2 tuổi: 50 - 100ml sau mỗi lần tiêu chảy; Trẻ 2 - 10 tuổi: 100 - 200ml sau mỗi lần tiêu chảy. Uống từng thìa nhỏ, không uống ừng ực.",
+      "side_effects": "Rất hiếm nếu pha đúng tỷ lệ nước. Pha quá đặc có thể gây tăng Natri máu co giật và phù não.",
+      "precautions": "ĐẶC BIỆT QUAN TRỌNG: Phải pha chính xác thể tích nước theo hướng dẫn trên gói (ví dụ gói pha 200ml thì phải đong đúng 200ml nước đun sôi để nguội). Tuyệt đối không chia nhỏ gói bột và không pha thêm đường hay nước ngọt. Dung dịch đã pha chỉ dùng trong vòng 24 giờ.",
+      "pregnancy_safety": "Hoàn toàn an toàn.",
+      "interactions": []
+    },
+    {
+      "id": "atorvastatin",
+      "name": "Atorvastatin",
+      "brand_names": [
+        "Lipitor",
+        "Atorlip",
+        "Torvast"
+      ],
+      "class": "Thuốc hạ Lipid máu nhóm Statin (HMG-CoA Reductase Inhibitor)",
+      "group_id": "cardiovascular",
+      "forms": [
+        "Viên bao phim 10mg, 20mg, 40mg"
+      ],
+      "indications": "Tăng cholesterol máu nguyên phát; Dự phòng biến cố tim mạch ở bệnh nhân có nguy cơ cao (nhồi máu cơ tim, đột quỵ, đái tháo đường).",
+      "contraindications": "Bệnh gan tiến triển hoặc tăng men gan AST/ALT không rõ nguyên nhân kéo dài; Phụ nữ mang thai và cho con bú.",
+      "adult_dose": "Khởi đầu 10mg - 20mg x 1 lần/ngày vào buổi tối trước khi đi ngủ. Có thể điều chỉnh liều đến tối đa 80mg/ngày.",
+      "pediatric_dose": "Chỉ dùng cho trẻ từ 10 tuổi trở lên bị tăng cholesterol gia đình dị hợp tử: 10mg/ngày.",
+      "side_effects": "Đau nhức cơ bắp, mệt mỏi, rối loạn tiêu hóa nhẹ, tăng men gan. Hiếm gặp nhưng nguy hiểm: Tiêu cơ vân cấp tính.",
+      "precautions": "Báo ngay cho bác sĩ nếu xuất hiện đau cơ, yếu cơ không rõ nguyên nhân kèm nước tiểu màu sẫm. Tránh uống lượng lớn nước bưởi chùm.",
+      "pregnancy_safety": "Chống chỉ định tuyệt đối (Nhóm X). Gây hại nghiêm trọng cho thai nhi.",
+      "interactions": [
+        {
+          "with_drug": "clarithromycin",
+          "severity": "MAJOR",
+          "warning": "Kháng sinh nhóm Macrolide ức chế men CYP3A4 làm tăng nồng độ Atorvastatin gấp nhiều lần, gây nguy cơ tiêu cơ vân cấp dẫn đến suy thận."
+        },
+        {
+          "with_drug": "gemfibrozil",
+          "severity": "MAJOR",
+          "warning": "Phối hợp với thuốc hạ mỡ máu Gemfibrozil làm tăng gấp bội nguy cơ viêm cơ và tiêu cơ vân."
+        }
+      ]
+    },
+    {
+      "id": "cefpodoxime",
+      "name": "Cefpodoxime",
+      "brand_names": [
+        "Cefpo",
+        "Bacticef",
+        "Orelox"
+      ],
+      "class": "Kháng sinh Cephalosporin thế hệ 3 đường uống",
+      "group_id": "antibiotic",
+      "forms": [
+        "Viên bao phim 100mg, 200mg",
+        "Bột pha hỗn dịch 50mg/5ml, 100mg/5ml"
+      ],
+      "indications": "Viêm tai giữa cấp, viêm xoang cấp, viêm họng amidan; Viêm phế quản cấp bội nhiễm, viêm phổi mắc phải tại cộng đồng.",
+      "contraindications": "Mẫn cảm với kháng sinh nhóm Cephalosporin hoặc tiền sử sốc phản vệ với Penicillin.",
+      "adult_dose": "Viêm đường hô hấp trên: 100mg - 200mg mỗi 12 giờ sau bữa ăn trong 5 - 10 ngày.",
+      "pediatric_dose": "Trẻ em từ 2 tháng đến 12 tuổi: 10 mg/kg/ngày chia làm 2 lần uống sau ăn (tối đa 400mg/ngày).",
+      "side_effects": "Tiêu chảy phân lỏng, buồn nôn, đau bụng, nổi ban ngứa dị ứng.",
+      "precautions": "Uống cùng bữa ăn để tăng tối đa sinh khả dụng và khả năng hấp thu của thuốc.",
+      "pregnancy_safety": "Nhóm B. Tương đối an toàn cho phụ nữ mang thai khi có chỉ định.",
+      "interactions": [
+        {
+          "with_drug": "antacid_h2",
+          "severity": "MODERATE",
+          "warning": "Thuốc kháng acid dạ dày và kháng H2 làm giảm hấp thu Cefpodoxime, nên uống cách nhau 2 - 3 giờ."
+        }
+      ]
+    }
+  ],
+  "drug_groups": [
+    {
+      "id": "analgesic",
+      "name": "Giảm đau - Hạ sốt - Kháng viêm",
+      "count": 2,
+      "icon": "Flame"
+    },
+    {
+      "id": "cardiovascular",
+      "name": "Tim mạch - Huyết áp - Chống đông",
+      "count": 3,
+      "icon": "Heart"
+    },
+    {
+      "id": "antibiotic",
+      "name": "Kháng sinh & Chống nhiễm khuẩn",
+      "count": 2,
+      "icon": "ShieldCheck"
+    },
+    {
+      "id": "endocrine",
+      "name": "Nội tiết & Chuyển hóa",
+      "count": 1,
+      "icon": "Activity"
+    },
+    {
+      "id": "gastrointestinal",
+      "name": "Tiêu hóa & Gan mật",
+      "count": 2,
+      "icon": "Utensils"
+    },
+    {
+      "id": "respiratory",
+      "name": "Hô hấp & Hen phế quản",
+      "count": 1,
+      "icon": "Wind"
+    },
+    {
+      "id": "allergy",
+      "name": "Chống dị ứng & Kháng Histamin",
+      "count": 1,
+      "icon": "Sparkles"
+    }
+  ]
+}

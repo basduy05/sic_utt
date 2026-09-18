@@ -1,0 +1,70 @@
+{
+  "G43.9_code": "G43.9",
+  "G43.9_name": "Đau nửa đầu Migraine",
+  "G43.9_prob_nlp": 0.8570287860474615,
+  "G43.9_icd_info": {
+    "code": "G43.9",
+    "name_vi": "Đau nửa đầu Migraine",
+    "name_en": "Migraine",
+    "department": "Thần kinh",
+    "severity": "Medium",
+    "cardinal_symptoms": [
+      "đau giật nhói nửa bên đầu theo nhịp mạch",
+      "sợ ánh sáng",
+      "sợ tiếng ồn",
+      "buồn nôn"
+    ],
+    "all_symptoms": [
+      "đau nhức một bên đầu từng cơn",
+      "cơn đau giật theo nhịp mạch đập",
+      "sợ ánh sáng chói",
+      "sợ tiếng động lớn",
+      "buồn nôn nôn mửa",
+      "hoa mắt tiền triệu"
+    ],
+    "description": "Hội chứng đau đầu nguyên phát do rối loạn thần kinh - mạch máu não, thường gặp ở phụ nữ.",
+    "precautions": [
+      "Nghỉ ngơi trong phòng tối yên tĩnh",
+      "Uống đủ nước",
+      "Tránh mất ngủ và căng thẳng",
+      "Hạn chế chocolate, phô mai lên men"
+    ],
+    "emergency_warning": "Khám ngay nếu cơn đau đầu xuất hiện dữ dội đột ngột như sét đánh hoặc kèm co giật, yếu chi."
+  },
+  "predict_result": {
+    "top_predictions": [],
+    "fusion_metadata": {
+      "alpha_tabular_weight": 0.0,
+      "has_lab_indicators": false,
+      "total_indicators_used": 0
+    },
+    "clarification": {
+      "needs_clarification": true,
+      "confidence_score": 0.003,
+      "entropy": 10.356,
+      "reason": "Độ tin cậy sơ bộ chưa đủ cao để khẳng định. Cần thêm thông tin làm rõ.",
+      "questions": [
+        {
+          "id": "q_migraine_side",
+          "question": "Tính chất cơn đau đầu của bạn diễn ra như thế nào?",
+          "options": [
+            "Đau giật nhói theo nhịp mạch ở nửa bên đầu",
+            "Đau căng tức cả hai bên thái dương",
+            "Đau cứng ê ẩm sau gáy lan lên đầu",
+            "Cảm giác choáng váng hoa mắt bồng bềnh"
+          ]
+        },
+        {
+          "id": "q_migraine_trigger",
+          "question": "Bạn có các dấu hiệu thần kinh giác quan nào đi kèm không?",
+          "options": [
+            "Sợ ánh sáng chói và tiếng ồn lớn",
+            "Kèm buồn nôn hoặc nôn mửa",
+            "Thấy chớp sáng / đốm mờ trước mắt",
+            "Không có dấu hiệu kèm theo"
+          ]
+        }
+      ]
+    }
+  }
+}

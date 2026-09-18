@@ -1,0 +1,107 @@
+[
+  {
+    "case_id": "CASE_001",
+    "title": "Sốt xuất huyết Dengue thể giảm tiểu cầu",
+    "user_input_text": "Tôi bị sốt cao 39.5 độ liên tục 3 ngày nay, đau nhức 2 bên hốc mắt, người mệt lử, sáng nay đánh răng thấy có chảy máu chân răng.",
+    "lab_data": {
+      "WBC": 3.1,
+      "PLT": 68.0,
+      "HCT": 44.2,
+      "RBC": 4.5
+    },
+    "expected_entities": ["sốt cao", "đau hốc mắt", "mệt mỏi", "chảy máu chân răng"],
+    "expected_icd": "A90",
+    "expected_disease": "Sốt xuất huyết Dengue",
+    "is_red_flag": false,
+    "confidence_threshold": 0.85
+  },
+  {
+    "case_id": "CASE_002",
+    "title": "Cơn đau thắt ngực nghi Nhồi máu cơ tim cấp",
+    "user_input_text": "Cứu tôi với, tôi đang bị đau tức ngực dữ dội như có đá đè, đau lan lên hàm và lan xuống cánh tay trái, vã mồ hôi ướt áo và thấy rất khó thở.",
+    "lab_data": {},
+    "expected_entities": ["đau ngực dữ dội", "đau lan lên hàm", "đau lan xuống cánh tay trái", "vã mồ hôi", "khó thở"],
+    "expected_icd": "I21.9",
+    "expected_disease": "Nhồi máu cơ tim cấp",
+    "is_red_flag": true,
+    "confidence_threshold": 0.95
+  },
+  {
+    "case_id": "CASE_003",
+    "title": "Nghi ngờ Đột quỵ cấp (FAST)",
+    "user_input_text": "Bố tôi 68 tuổi vừa ăn cơm xong tự nhiên bị méo một bên miệng, rớt đũa, tay chân bên phải yếu không cử động được và nói ngọng líu nhíu.",
+    "lab_data": {},
+    "expected_entities": ["méo miệng", "yếu tay chân bên phải", "nói ngọng đột ngột"],
+    "expected_icd": "I64",
+    "expected_disease": "Đột quỵ não",
+    "is_red_flag": true,
+    "confidence_threshold": 0.95
+  },
+  {
+    "case_id": "CASE_004",
+    "title": "Viêm phổi thùy cấp",
+    "user_input_text": "Tôi bị sốt rét run 38.8 độ, ho nhiều khạc ra đờm đặc màu vàng xanh, mỗi lần hít sâu hay ho thì đau nhói một bên lồng ngực và thở dốc.",
+    "lab_data": {
+      "WBC": 14.8,
+      "NEU%": 82.0,
+      "PLT": 280.0
+    },
+    "expected_entities": ["sốt rét run", "ho có đờm", "đau ngực khi thở", "thở dốc"],
+    "expected_icd": "J18.9",
+    "expected_disease": "Viêm phổi",
+    "is_red_flag": false,
+    "confidence_threshold": 0.88
+  },
+  {
+    "case_id": "CASE_005",
+    "title": "Cảm lạnh thông thường - Cần Clarification Loop",
+    "user_input_text": "Hôm nay tôi thấy hơi đau đầu và người hơi mỏi.",
+    "lab_data": {},
+    "expected_entities": ["đau đầu", "mỏi người"],
+    "expected_icd": "J00",
+    "expected_disease": "Viêm mũi họng cấp / Cảm thông thường",
+    "is_red_flag": false,
+    "confidence_threshold": 0.55,
+    "requires_clarification": true
+  },
+  {
+    "case_id": "CASE_006",
+    "title": "Viêm loét dạ dày tá tràng",
+    "user_input_text": "Tôi thường xuyên bị đau quặn rát vùng trên rốn (thượng vị) lúc đói hoặc sau khi ăn no, hay ợ chua, ợ hơi và có cảm giác buồn nôn sau khi ăn đồ chua cay.",
+    "lab_data": {},
+    "expected_entities": ["đau thượng vị", "ợ chua", "ợ hơi", "buồn nôn"],
+    "expected_icd": "K29.7",
+    "expected_disease": "Viêm dạ dày",
+    "is_red_flag": false,
+    "confidence_threshold": 0.82
+  },
+  {
+    "case_id": "CASE_007",
+    "title": "Đái tháo đường Týp 2 kèm tăng đường huyết",
+    "user_input_text": "Dạo gần đây tôi rất nhanh khát nước, uống nhiều mà miệng vẫn khô, đêm phải đi tiểu 4-5 lần, người mệt sút 3kg trong 1 tháng.",
+    "lab_data": {
+      "GLUCOSE": 11.2,
+      "HBA1C": 8.4
+    },
+    "expected_entities": ["khát nhiều", "uống nhiều", "tiểu nhiều ban đêm", "sụt cân", "mệt mỏi"],
+    "expected_icd": "E11.9",
+    "expected_disease": "Đái tháo đường týp 2",
+    "is_red_flag": false,
+    "confidence_threshold": 0.90
+  },
+  {
+    "case_id": "CASE_008",
+    "title": "Tổn thương gan do Men gan tăng cao",
+    "user_input_text": "Đi khám sức khỏe định kỳ thấy kết quả men gan tăng, người thi thoảng thấy mệt mỏi và tức nhẹ vùng bụng bên phải.",
+    "lab_data": {
+      "AST": 142.0,
+      "ALT": 188.0,
+      "GLUCOSE": 5.2
+    },
+    "expected_entities": ["tức hạ sườn phải", "mệt mỏi"],
+    "expected_icd": "K76.0",
+    "expected_disease": "Bệnh gan / Tăng men gan",
+    "is_red_flag": false,
+    "confidence_threshold": 0.85
+  }
+]

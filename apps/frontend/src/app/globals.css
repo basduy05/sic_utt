@@ -1,0 +1,150 @@
+@import url('https://fonts.cdnfonts.com/css/google-sans');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  height: 100%;
+  max-height: 100vh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  font-family: 'Google Sans', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* Global Font Size Scaling across all components */
+html[data-font-size="sm"] {
+  font-size: 13.5px;
+}
+
+html[data-font-size="md"], html:not([data-font-size]) {
+  font-size: 16px;
+}
+
+html[data-font-size="lg"] {
+  font-size: 20px;
+}
+
+/* Explicit scaling for Chat AI responses and Right Extracted Dashboard */
+html[data-font-size="lg"] .chat-message-bubble,
+html[data-font-size="lg"] .chat-message-content {
+  font-size: 1.15rem !important;
+  line-height: 1.8 !important;
+}
+
+html[data-font-size="lg"] .chat-message-content p,
+html[data-font-size="lg"] .chat-message-content li {
+  font-size: 1.125rem !important;
+  line-height: 1.8 !important;
+}
+
+html[data-font-size="lg"] .medical-side-dashboard {
+  font-size: 1.1rem;
+}
+
+html[data-font-size="lg"] .medical-side-dashboard h4 {
+  font-size: 1.05rem !important;
+}
+
+html[data-font-size="lg"] .medical-side-dashboard p,
+html[data-font-size="lg"] .medical-side-dashboard span,
+html[data-font-size="lg"] .medical-side-dashboard div {
+  font-size: 0.95rem;
+}
+
+html[data-font-size="sm"] .chat-message-bubble,
+html[data-font-size="sm"] .chat-message-content {
+  font-size: 0.88rem !important;
+  line-height: 1.5 !important;
+}
+
+html[data-font-size="sm"] .chat-message-content p,
+html[data-font-size="sm"] .chat-message-content li {
+  font-size: 0.88rem !important;
+  line-height: 1.5 !important;
+}
+
+html[data-font-size="sm"] .medical-side-dashboard {
+  font-size: 0.85rem;
+}
+
+html[data-font-size="sm"] .medical-side-dashboard h4 {
+  font-size: 0.8rem !important;
+}
+
+html[data-font-size="sm"] .medical-side-dashboard p,
+html[data-font-size="sm"] .medical-side-dashboard span,
+html[data-font-size="sm"] .medical-side-dashboard div {
+  font-size: 0.78rem;
+}
+
+
+/* Animated Glass Background Blobs */
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.08); }
+  66% { transform: translate(-20px, 20px) scale(0.92); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+.animate-blob {
+  animation: blob 8s infinite ease-in-out;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Light Glassmorphism Panels */
+.glass-panel-light {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.06);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
+}
+
+/* Custom Sleek Scrollbar for Light Mode */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.6);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+  transition: background 0.2s;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(37, 99, 235, 0.6);
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}

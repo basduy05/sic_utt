@@ -1,0 +1,50 @@
+[
+  {
+    "patient_query": "Tôi bị sốt cao và chóng mặt hoa mắt, người nóng ran và đau nhức mình mẩy",
+    "primary_icd": "J10",
+    "disease_name": "Cúm mùa / Nhiễm siêu vi cấp (Cảm cúm)",
+    "differential_icd": ["A90", "A01.0"],
+    "extracted_symptoms": ["sốt cao", "chóng mặt", "đau nhức mình mẩy"],
+    "doctor_reasoning": "Sốt cao kèm theo chóng mặt và đau nhức cơ bắp toàn thân là hội chứng nhiễm siêu vi cấp tính điển hình (như Cúm mùa hoặc khởi phát Sốt xuất huyết). Cần theo dõi nhiệt độ, bù nước Oresol và kiểm tra dấu hiệu xuất huyết."
+  },
+  {
+    "patient_query": "Dương vật chảy mủ, đi tiểu buốt, dịch mùi tanh màu vàng trắng đục",
+    "primary_icd": "A54.0",
+    "disease_name": "Viêm niệu đạo do lậu cầu (Lậu / STDs)",
+    "differential_icd": ["A56.0", "N34.1"],
+    "extracted_symptoms": ["dương vật chảy mủ", "tiểu buốt", "dịch mùi tanh màu vàng trắng đục"],
+    "doctor_reasoning": "Triệu chứng chảy mủ niệu đạo đặc màu vàng trắng kèm tiểu buốt rát dữ dội là dấu hiệu kinh điển của Viêm niệu đạo cấp tính do Lậu cầu. Cần đi khám chuyên khoa Nam khoa/Da liễu để làm xét nghiệm soi tươi nhuộm Gram/PCR và dùng kháng sinh đặc hiệu."
+  },
+  {
+    "patient_query": "Da mặt tôi bị rát và đỏ ửng sau khi đi nắng về, cảm giác căng cứng da rất khó chịu",
+    "primary_icd": "L20.9",
+    "disease_name": "Viêm da dị ứng / Dị ứng da mặt / Cháy nắng",
+    "differential_icd": ["L50.9", "L70.0"],
+    "extracted_symptoms": ["da mặt bị rát", "da mặt đỏ ửng", "căng rát da"],
+    "doctor_reasoning": "Biểu hiện da mặt đỏ ửng, rát bỏng và căng cứng xuất hiện sau khi tiếp xúc ánh nắng gắt hoặc dị nguyên là phản ứng viêm da tiếp xúc / cháy nắng cấp. Cần chườm mát, rửa nước muối sinh lý, ngưng mỹ phẩm và cấp ẩm dịu nhẹ."
+  },
+  {
+    "patient_query": "Tôi bị đau thắt ngực trái dữ dội lan lên cổ và cánh tay trái, vã mồ hôi lạnh và khó thở",
+    "primary_icd": "I21.9",
+    "disease_name": "Nhồi máu cơ tim cấp",
+    "differential_icd": ["I20.0", "I26"],
+    "extracted_symptoms": ["đau thắt ngực", "đau lan lên cổ", "đau lan xuống cánh tay trái", "vã mồ hôi lạnh", "khó thở"],
+    "doctor_reasoning": "Đây là dấu hiệu BÁO ĐỘNG ĐỎ cấp cứu của Nhồi máu cơ tim cấp. Bệnh nhân cần nằm yên tại chỗ và gọi xe cấp cứu 115 ngay lập tức để được đưa tới bệnh viện can thiệp mạch vành trong giờ vàng."
+  },
+  {
+    "patient_query": "Người nhà tôi đột nhiên bị méo miệng một bên, nói ngọng và yếu tay chân một bên",
+    "primary_icd": "I64",
+    "disease_name": "Đột quỵ não cấp",
+    "differential_icd": ["G51.0"],
+    "extracted_symptoms": ["méo miệng", "nói ngọng", "yếu tay chân"],
+    "doctor_reasoning": "Dấu hiệu FAST điển hình của Đột quỵ não cấp. Cần chuyển ngay đến trung tâm đột quỵ gần nhất trong khung giờ vàng dưới 3 - 4.5 giờ để cứu sống mô não."
+  },
+  {
+    "patient_query": "Tôi bị đau quặn bụng cồn cào trên rốn sau khi ăn kèm buồn nôn và ợ chua",
+    "primary_icd": "K29.7",
+    "disease_name": "Viêm loét dạ dày tá tràng",
+    "differential_icd": ["K21.9", "K30"],
+    "extracted_symptoms": ["đau quặn bụng thượng vị", "buồn nôn", "ợ chua"],
+    "doctor_reasoning": "Đau cồn cào thượng vị liên quan đến bữa ăn kèm ợ chua là hội chứng viêm dạ dày tá tràng điển hình. Cần điều chỉnh chế độ ăn uống và thăm khám chuyên khoa Tiêu hóa để nội soi."
+  }
+]

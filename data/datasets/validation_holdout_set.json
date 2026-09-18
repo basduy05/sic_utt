@@ -1,0 +1,1202 @@
+[
+  {
+    "text": "Tôi cảm thấy tiểu rắt rất khó chịu",
+    "true_icd": "A54.0",
+    "true_disease": "Viêm niệu đạo do lậu cầu (Lậu / STDs)",
+    "pred_icd": "A54.0",
+    "pred_disease": "Viêm niệu đạo do lậu cầu (Lậu / STDs)",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy cơn sốt có 3 giai đoạn: rét run - sốt nóng vã mồ hôi khó chịu",
+    "true_icd": "B54",
+    "true_disease": "Sốt rét",
+    "pred_icd": "B54",
+    "pred_disease": "Sốt rét",
+    "is_correct": true
+  },
+  {
+    "text": "chứng méo miệng, lệch mặt, yếu một bên tay chân, liệt nửa người, rớt đũa ăn, nói khó nói đớ, mờ mắt đột ngột kéo dài",
+    "true_icd": "I64",
+    "true_disease": "Đột quỵ não cấp (Tai biến mạch máu não)",
+    "pred_icd": "I64",
+    "pred_disease": "Đột quỵ não cấp (Tai biến mạch máu não)",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi bị bọng nước vỡ đóng vảy tiết màu mật ong, vết loét nông rỉ dịch, sưng đỏ miệng mũi",
+    "true_icd": "L01.0",
+    "true_disease": "Chốc lở (Impetigo)",
+    "pred_icd": "L01.0",
+    "pred_disease": "Chốc lở (Impetigo)",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy mệt dài rất khó chịu",
+    "true_icd": "B18.2",
+    "true_disease": "Viêm gan virus B / C mạn tính",
+    "pred_icd": "E03.9",
+    "pred_disease": "Suy giáp",
+    "is_correct": false
+  },
+  {
+    "text": "Bệnh nhân có biểu đau nhức một bên đầu từng cơn, cơn đau giật theo nhịp mạch đập, sợ ánh sáng chói",
+    "true_icd": "G43.9",
+    "true_disease": "Đau nửa đầu Migraine",
+    "pred_icd": "G43.9",
+    "pred_disease": "Đau nửa đầu Migraine",
+    "is_correct": true
+  },
+  {
+    "text": "Bị vàng",
+    "true_icd": "B18.2",
+    "true_disease": "Viêm gan virus B / C mạn tính",
+    "pred_icd": "B18.2",
+    "pred_disease": "Viêm gan virus B / C mạn tính",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy liệt nửa người rất khó chịu",
+    "true_icd": "I64",
+    "true_disease": "Đột quỵ não cấp (Tai biến mạch máu não)",
+    "pred_icd": "I64",
+    "pred_disease": "Đột quỵ não cấp (Tai biến mạch máu não)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị vướng nghẹn cổ họng",
+    "true_icd": "K21.9",
+    "true_disease": "Trào ngược dạ dày thực quản (GERD)",
+    "pred_icd": "K21.9",
+    "pred_disease": "Trào ngược dạ dày thực quản (GERD)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị sụt cân",
+    "true_icd": "B18.2",
+    "true_disease": "Viêm gan virus B / C mạn tính",
+    "pred_icd": "B18.2",
+    "pred_disease": "Viêm gan virus B / C mạn tính",
+    "is_correct": true
+  },
+  {
+    "text": "Bị đè sau xương ức",
+    "true_icd": "I21.9",
+    "true_disease": "Nhồi máu cơ tim cấp (Hội chứng vành cấp)",
+    "pred_icd": "I21.9",
+    "pred_disease": "Nhồi máu cơ tim cấp (Hội chứng vành cấp)",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy tiểu đau rất khó chịu",
+    "true_icd": "A54.0",
+    "true_disease": "Viêm niệu đạo do lậu cầu (Lậu / STDs)",
+    "pred_icd": "A54.0",
+    "pred_disease": "Viêm niệu đạo do lậu cầu (Lậu / STDs)",
+    "is_correct": true
+  },
+  {
+    "text": "Bệnh nhân có biểu hiện cảm giác nhà cửa quay cuồng khi nằm xuống hoặc trở mất thăng bằng lảo đảo, buồn nôn nôn ói",
+    "true_icd": "H81.1",
+    "true_disease": "Chóng mặt kịch phát lành tính (Rối loạn tiền đình)",
+    "pred_icd": "H81.1",
+    "pred_disease": "Chóng mặt kịch phát lành tính (Rối loạn tiền đình)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị mụn đầu đen đầu trắng",
+    "true_icd": "L70.0",
+    "true_disease": "Mụn trứng cá / Viêm da bã nhờn",
+    "pred_icd": "L70.0",
+    "pred_disease": "Mụn trứng cá / Viêm da bã nhờn",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi sợ nóng, vã mồ hôi nhiều, sụt cân nhanh dù nhiều, tim đập nhanh hồi hộp, run đầu ngón tay",
+    "true_icd": "E05.9",
+    "true_disease": "Cường giáp (Bệnh Basedow)",
+    "pred_icd": "E05.9",
+    "pred_disease": "Cường giáp (Bệnh Basedow)",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi thấy mụn nước bọng nước dễ vỡ rất khó",
+    "true_icd": "L01.0",
+    "true_disease": "Chốc lở (Impetigo)",
+    "pred_icd": "L01.0",
+    "pred_disease": "Chốc lở (Impetigo)",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy chảy máu tươi sau khi đi cầu rất khó chịu",
+    "true_icd": "K64.9",
+    "true_disease": "Bệnh trĩ (Trĩ nội / Trĩ ngoại)",
+    "pred_icd": "K64.9",
+    "pred_disease": "Bệnh trĩ (Trĩ nội / Trĩ ngoại)",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy búi tĩnh mạch tím ngoằn ngoèo dưới rất khó chịu",
+    "true_icd": "I83.9",
+    "true_disease": "Suy giãn tĩnh mạch chi dưới",
+    "pred_icd": "I83.9",
+    "pred_disease": "Suy giãn tĩnh mạch chi dưới",
+    "is_correct": true
+  },
+  {
+    "text": "Triệu chứng tiêu liên tục, phân lỏng toàn nước, đau quặn thắt từng cơn quanh rốn, nôn mửa nhiều lần, sốt hoặc sốt vừa, khát nước mệt lả kéo dài",
+    "true_icd": "A09",
+    "true_disease": "Viêm dạ dày ruột cấp / Nhiễm trùng nhiễm độc thức ăn",
+    "pred_icd": "A09",
+    "pred_disease": "Viêm dạ dày ruột cấp / Nhiễm trùng nhiễm độc thức ăn",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy khó thở từng cơn rất khó chịu",
+    "true_icd": "J45.9",
+    "true_disease": "Hen phế quản (Hen suyễn)",
+    "pred_icd": "J45.9",
+    "pred_disease": "Hen phế quản (Hen suyễn)",
+    "is_correct": true
+  },
+  {
+    "text": "Bệnh nhân có biểu hiện sưng nóng đau các khớp ngón tay cổ tay đối xứng, cứng khớp buổi sáng kéo dài trên 1 tiếng, mệt mỏi sốt nhẹ",
+    "true_icd": "M06.9",
+    "true_disease": "Viêm khớp dạng thấp",
+    "pred_icd": "M06.9",
+    "pred_disease": "Viêm khớp dạng thấp",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy chán rất khó chịu",
+    "true_icd": "B01.9",
+    "true_disease": "Thủy đậu (Trái rạ)",
+    "pred_icd": "K76.0",
+    "pred_disease": "Gan nhiễm mỡ / Men gan cao",
+    "is_correct": false
+  },
+  {
+    "text": "Tôi cảm thấy mỏi rất khó chịu",
+    "true_icd": "M47.9",
+    "true_disease": "Thoái hóa cột sống cổ / Hội chứng đau mỏi vai gáy",
+    "pred_icd": "M47.9",
+    "pred_disease": "Thoái hóa cột sống cổ / Hội chứng đau mỏi vai gáy",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy nóng bừng toàn thân rất khó chịu",
+    "true_icd": "L50.9",
+    "true_disease": "Mày đay / Dị ứng thức ăn & thuốc",
+    "pred_icd": "L50.9",
+    "pred_disease": "Mày đay / Dị ứng thức ăn & thuốc",
+    "is_correct": true
+  },
+  {
+    "text": "Nghi ngờ mắc Trào ngược dạ dày thực quản (GERD) do có ợ trớ thức ăn",
+    "true_icd": "K21.9",
+    "true_disease": "Trào ngược dạ dày thực quản (GERD)",
+    "pred_icd": "K21.9",
+    "pred_disease": "Trào ngược dạ dày thực quản (GERD)",
+    "is_correct": true
+  },
+  {
+    "text": "Nghi ngờ mắc nửa đầu Migraine do có đau giật nhói nửa bên đầu mạch, sợ ánh sáng",
+    "true_icd": "G43.9",
+    "true_disease": "Đau nửa đầu Migraine",
+    "pred_icd": "G43.9",
+    "pred_disease": "Đau nửa đầu Migraine",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi bị sốt cao, sốt rét run, chảy máu chân răng, chấm xuất huyết dưới da, đau nhức hốc",
+    "true_icd": "A90",
+    "true_disease": "Sốt xuất huyết Dengue",
+    "pred_icd": "A90",
+    "pred_disease": "Sốt xuất huyết Dengue",
+    "is_correct": true
+  },
+  {
+    "text": "Bị đau mỏi vùng cổ vai gáy lan xuống bả vai",
+    "true_icd": "M47.9",
+    "true_disease": "Thoái hóa cột sống cổ / Hội chứng đau mỏi vai gáy",
+    "pred_icd": "M47.9",
+    "pred_disease": "Thoái hóa cột sống cổ / Hội chứng đau mỏi vai gáy",
+    "is_correct": true
+  },
+  {
+    "text": "Bị chảy máu cam",
+    "true_icd": "A90",
+    "true_disease": "Sốt xuất huyết Dengue",
+    "pred_icd": "A90",
+    "pred_disease": "Sốt xuất huyết Dengue",
+    "is_correct": true
+  },
+  {
+    "text": "Triệu chứng ho kéo dài trên 2 tuần, ho ra máu, sốt âm ỉ về chiều, mồ hôi trộm ban đêm, sút cân suy kiệt, đau ngực kéo",
+    "true_icd": "A15.0",
+    "true_disease": "Lao phổi",
+    "pred_icd": "A15.0",
+    "pred_disease": "Lao phổi",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy tiểu rất khó chịu",
+    "true_icd": "A54.0",
+    "true_disease": "Viêm niệu đạo do lậu cầu (Lậu / STDs)",
+    "pred_icd": "A54.0",
+    "pred_disease": "Viêm niệu đạo do lậu cầu (Lậu / STDs)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị đắng miệng chua miệng",
+    "true_icd": "K21.9",
+    "true_disease": "Trào ngược dạ dày thực quản (GERD)",
+    "pred_icd": "K21.9",
+    "pred_disease": "Trào ngược dạ dày thực quản (GERD)",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy cứng khớp khi vừa ngủ dậy kéo dài dưới 30 rất khó chịu",
+    "true_icd": "M19.9",
+    "true_disease": "Thoái hóa khớp gối / Khớp háng",
+    "pred_icd": "M19.9",
+    "pred_disease": "Thoái hóa khớp gối / Khớp háng",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy chuột rút vọp bẻ khi ngủ rất khó chịu",
+    "true_icd": "I83.9",
+    "true_disease": "Suy giãn tĩnh mạch chi dưới",
+    "pred_icd": "I83.9",
+    "pred_disease": "Suy giãn tĩnh mạch chi dưới",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi thấy rất khó chịu",
+    "true_icd": "J10",
+    "true_disease": "Cúm mùa / Nhiễm siêu vi cấp (Cảm cúm)",
+    "pred_icd": "B01.9",
+    "pred_disease": "Thủy đậu (Trái rạ)",
+    "is_correct": false
+  },
+  {
+    "text": "Bị cơn đau theo nhịp mạch đập",
+    "true_icd": "G43.9",
+    "true_disease": "Đau nửa đầu Migraine",
+    "pred_icd": "G43.9",
+    "pred_disease": "Đau nửa đầu Migraine",
+    "is_correct": true
+  },
+  {
+    "text": "Bị đau khớp tăng khi đi lại hoặc leo cầu thang",
+    "true_icd": "M19.9",
+    "true_disease": "Thoái hóa khớp gối / Khớp háng",
+    "pred_icd": "M19.9",
+    "pred_disease": "Thoái hóa khớp gối / Khớp háng",
+    "is_correct": true
+  },
+  {
+    "text": "Bị nghe tiếng rít khò khè khi thở",
+    "true_icd": "J45.9",
+    "true_disease": "Hen phế quản (Hen suyễn)",
+    "pred_icd": "J45.9",
+    "pred_disease": "Hen phế quản (Hen suyễn)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị tróc vảy",
+    "true_icd": "B35.9",
+    "true_disease": "Nấm da / Nhiễm trùng vi nấm (Hắc lào / Lang ben)",
+    "pred_icd": "B35.9",
+    "pred_disease": "Nấm da / Nhiễm trùng vi nấm (Hắc lào / Lang ben)",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy tiểu rất khó chịu",
+    "true_icd": "N20.0",
+    "true_disease": "Sỏi thận / Cơn đau quặn thận",
+    "pred_icd": "A54.0",
+    "pred_disease": "Viêm niệu đạo do lậu cầu (Lậu / STDs)",
+    "is_correct": false
+  },
+  {
+    "text": "Bị rụng tóc",
+    "true_icd": "E03.9",
+    "true_disease": "Suy giáp",
+    "pred_icd": "E03.9",
+    "pred_disease": "Suy giáp",
+    "is_correct": true
+  },
+  {
+    "text": "Bị khát nước mệt lả",
+    "true_icd": "A09",
+    "true_disease": "Viêm dạ dày ruột cấp / Nhiễm trùng nhiễm độc thức ăn",
+    "pred_icd": "A09",
+    "pred_disease": "Viêm dạ dày ruột cấp / Nhiễm trùng nhiễm độc thức ăn",
+    "is_correct": true
+  },
+  {
+    "text": "Bị oải",
+    "true_icd": "K76.0",
+    "true_disease": "Gan nhiễm mỡ / Men gan cao",
+    "pred_icd": "J10",
+    "pred_disease": "Cúm mùa / Nhiễm siêu vi cấp (Cảm cúm)",
+    "is_correct": false
+  },
+  {
+    "text": "Bị cảm giác nóng rát sau xương ức",
+    "true_icd": "K21.9",
+    "true_disease": "Trào ngược dạ dày thực quản (GERD)",
+    "pred_icd": "K21.9",
+    "pred_disease": "Trào ngược dạ dày thực quản (GERD)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị mắt tiền triệu",
+    "true_icd": "G43.9",
+    "true_disease": "Đau nửa đầu Migraine",
+    "pred_icd": "G43.9",
+    "pred_disease": "Đau nửa đầu Migraine",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi thấy chán ăn rất khó chịu",
+    "true_icd": "B18.2",
+    "true_disease": "Viêm gan virus B / C mạn tính",
+    "pred_icd": "B01.9",
+    "pred_disease": "Thủy đậu (Trái rạ)",
+    "is_correct": false
+  },
+  {
+    "text": "Tôi cảm thấy đắng miệng chua miệng rất khó chịu",
+    "true_icd": "K21.9",
+    "true_disease": "Trào ngược dạ dày thực quản (GERD)",
+    "pred_icd": "K21.9",
+    "pred_disease": "Trào ngược dạ dày thực quản (GERD)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị khó thở cơn",
+    "true_icd": "J45.9",
+    "true_disease": "Hen phế quản (Hen suyễn)",
+    "pred_icd": "J45.9",
+    "pred_disease": "Hen phế quản (Hen suyễn)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị nổi búi mạch xanh tím ngoằn ngoèo dưới da",
+    "true_icd": "I83.9",
+    "true_disease": "Suy giãn tĩnh mạch chi dưới",
+    "pred_icd": "I83.9",
+    "pred_disease": "Suy giãn tĩnh mạch chi dưới",
+    "is_correct": true
+  },
+  {
+    "text": "Bị mệt mỏi uể oải",
+    "true_icd": "E11.9",
+    "true_disease": "Đái tháo đường týp 2",
+    "pred_icd": "E11.9",
+    "pred_disease": "Đái tháo đường týp 2",
+    "is_correct": true
+  },
+  {
+    "text": "Bị buồn nôn nôn mửa",
+    "true_icd": "G43.9",
+    "true_disease": "Đau nửa đầu Migraine",
+    "pred_icd": "G43.9",
+    "pred_disease": "Đau nửa đầu Migraine",
+    "is_correct": true
+  },
+  {
+    "text": "Bệnh nhân có biểu hiện sốt đột ngột, sốt rét run, lạnh",
+    "true_icd": "J10",
+    "true_disease": "Cúm mùa / Nhiễm siêu vi cấp (Cảm cúm)",
+    "pred_icd": "J10",
+    "pred_disease": "Cúm mùa / Nhiễm siêu vi cấp (Cảm cúm)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị đau như bóp nghẹt tim",
+    "true_icd": "I21.9",
+    "true_disease": "Nhồi máu cơ tim cấp (Hội chứng vành cấp)",
+    "pred_icd": "I21.9",
+    "pred_disease": "Nhồi máu cơ tim cấp (Hội chứng vành cấp)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị tróc vảy da",
+    "true_icd": "B35.9",
+    "true_disease": "Nấm da / Nhiễm trùng vi nấm (Hắc lào / Lang ben)",
+    "pred_icd": "B35.9",
+    "pred_disease": "Nấm da / Nhiễm trùng vi nấm (Hắc lào / Lang ben)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị vã mồ hôi lạnh",
+    "true_icd": "I21.9",
+    "true_disease": "Nhồi máu cơ tim cấp (Hội chứng vành cấp)",
+    "pred_icd": "I21.9",
+    "pred_disease": "Nhồi máu cơ tim cấp (Hội chứng vành cấp)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị buồn nôn nôn mửa",
+    "true_icd": "G43.9",
+    "true_disease": "Đau nửa đầu Migraine",
+    "pred_icd": "G43.9",
+    "pred_disease": "Đau nửa đầu Migraine",
+    "is_correct": true
+  },
+  {
+    "text": "bị khát nhiều, uống nhiều, tiểu nhiều lần đặc biệt ban đêm, sút cân không rõ nguyên nhân",
+    "true_icd": "E11.9",
+    "true_disease": "Đái tháo đường týp 2",
+    "pred_icd": "E11.9",
+    "pred_disease": "Đái tháo đường týp 2",
+    "is_correct": true
+  },
+  {
+    "text": "Bị nhức mỏi người nhẹ",
+    "true_icd": "J00",
+    "true_disease": "Cảm lạnh / Viêm mũi họng cấp",
+    "pred_icd": "J00",
+    "pred_disease": "Cảm lạnh / Viêm mũi họng cấp",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy đau tức nhẹ vùng bẹn bìu rất khó chịu",
+    "true_icd": "A56.0",
+    "true_disease": "Nhiễm Chlamydia đường sinh dục - tiết niệu (Viêm niệu đạo NGU)",
+    "pred_icd": "A56.0",
+    "pred_disease": "Nhiễm Chlamydia đường sinh dục - tiết niệu (Viêm niệu đạo NGU)",
+    "is_correct": true
+  },
+  {
+    "text": "chứng sốt tăng dần, mạch đập chậm so với sốt, chướng bụng, đào ban ở da bụng, tiêu chảy hoặc táo bón, li bì kéo",
+    "true_icd": "A01.0",
+    "true_disease": "Thương hàn",
+    "pred_icd": "A01.0",
+    "pred_disease": "Thương hàn",
+    "is_correct": true
+  },
+  {
+    "text": "Bị thiếu máu",
+    "true_icd": "B54",
+    "true_disease": "Sốt rét",
+    "pred_icd": "B54",
+    "pred_disease": "Sốt rét",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy châm chích ngứa ngáy khó",
+    "true_icd": "L20.9",
+    "true_disease": "Viêm da dị ứng / Dị ứng da mặt / Viêm da tiếp xúc",
+    "pred_icd": "L20.9",
+    "pred_disease": "Viêm da dị ứng / Dị ứng da mặt / Viêm da tiếp xúc",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy căng rát da rất khó chịu",
+    "true_icd": "L20.9",
+    "true_disease": "Viêm da dị ứng / Dị ứng da mặt / Viêm da tiếp xúc",
+    "pred_icd": "L20.9",
+    "pred_disease": "Viêm da dị ứng / Dị ứng da mặt / Viêm da tiếp xúc",
+    "is_correct": true
+  },
+  {
+    "text": "Bị đau thắt từng cơn quanh rốn",
+    "true_icd": "A09",
+    "true_disease": "Viêm dạ dày ruột cấp / Nhiễm trùng nhiễm độc thức ăn",
+    "pred_icd": "A09",
+    "pred_disease": "Viêm dạ dày ruột cấp / Nhiễm trùng nhiễm độc thức ăn",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi thấy sốt cao liên tục rất khó chịu",
+    "true_icd": "A90",
+    "true_disease": "Sốt xuất huyết Dengue",
+    "pred_icd": "A90",
+    "pred_disease": "Sốt xuất huyết Dengue",
+    "is_correct": true
+  },
+  {
+    "text": "Triệu chứng khát nước tục, uống nhiều nước mà vẫn miệng, tiểu nhiều lần cả ngày lẫn đêm, ăn nhiều nhưng vẫn sút cân, mệt mỏi mắt nhìn mờ kéo dài",
+    "true_icd": "E11.9",
+    "true_disease": "Đái tháo đường týp 2",
+    "pred_icd": "E11.9",
+    "pred_disease": "Đái tháo đường týp 2",
+    "is_correct": true
+  },
+  {
+    "text": "Bệnh nhân có biểu hiện đau khớp tăng khi đi lại hoặc leo cầu thang, nghe tiếng lục cục lạo xạo trong khớp khi vừa ngủ dậy kéo dài dưới 30 phút",
+    "true_icd": "M19.9",
+    "true_disease": "Thoái hóa khớp gối / Khớp háng",
+    "pred_icd": "M19.9",
+    "pred_disease": "Thoái hóa khớp gối / Khớp háng",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi thấy mờ mắt đột ngột rất khó chịu",
+    "true_icd": "I64",
+    "true_disease": "Đột quỵ não cấp (Tai biến mạch máu não)",
+    "pred_icd": "I64",
+    "pred_disease": "Đột quỵ não cấp (Tai biến mạch máu não)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị đau mỏi cơ bắp",
+    "true_icd": "J10",
+    "true_disease": "Cúm mùa / Nhiễm siêu vi cấp (Cảm cúm)",
+    "pred_icd": "J10",
+    "pred_disease": "Cúm mùa / Nhiễm siêu vi cấp (Cảm cúm)",
+    "is_correct": true
+  },
+  {
+    "text": "tiểu buốt",
+    "true_icd": "N20.0",
+    "true_disease": "Sỏi thận / Cơn đau quặn thận",
+    "pred_icd": "N39.0",
+    "pred_disease": "Nhiễm trùng đường tiết niệu (Viêm bàng quang cấp)",
+    "is_correct": false
+  },
+  {
+    "text": "Tôi cảm thấy ngứa ngáy khó chịu đường tiểu rất khó chịu",
+    "true_icd": "A56.0",
+    "true_disease": "Nhiễm Chlamydia đường sinh dục - tiết niệu (Viêm niệu đạo NGU)",
+    "pred_icd": "A56.0",
+    "pred_disease": "Nhiễm Chlamydia đường sinh dục - tiết niệu (Viêm niệu đạo NGU)",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy sốt nhẹ hoặc không sốt rất khó chịu",
+    "true_icd": "J00",
+    "true_disease": "Cảm lạnh / Viêm mũi họng cấp",
+    "pred_icd": "J00",
+    "pred_disease": "Cảm lạnh / Viêm mũi họng cấp",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi bị dương vật chảy mủ, chảy mủ đường sinh dục, tiết dịch niệu đạo màu vàng trắng đục, buốt rát",
+    "true_icd": "A54.0",
+    "true_disease": "Viêm niệu đạo do lậu cầu (Lậu / STDs)",
+    "pred_icd": "A54.0",
+    "pred_disease": "Viêm niệu đạo do lậu cầu (Lậu / STDs)",
+    "is_correct": true
+  },
+  {
+    "text": "Nghi ngờ mắc Viêm da dị ứng / Dị ứng da mặt / da tiếp xúc do có mặt bị da mặt đỏ",
+    "true_icd": "L20.9",
+    "true_disease": "Viêm da dị ứng / Dị ứng da mặt / Viêm da tiếp xúc",
+    "pred_icd": "L20.9",
+    "pred_disease": "Viêm da dị ứng / Dị ứng da mặt / Viêm da tiếp xúc",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy đau đầu vùng chẩm gáy vào buổi sáng rất khó chịu",
+    "true_icd": "I10",
+    "true_disease": "Tăng huyết áp vô căn",
+    "pred_icd": "I10",
+    "pred_disease": "Tăng huyết áp vô căn",
+    "is_correct": true
+  },
+  {
+    "text": "Bị sưng đỏ lỗ sáo",
+    "true_icd": "A54.0",
+    "true_disease": "Viêm niệu đạo do lậu cầu (Lậu / STDs)",
+    "pred_icd": "A54.0",
+    "pred_disease": "Viêm niệu đạo do lậu cầu (Lậu / STDs)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị sốt rét run",
+    "true_icd": "J10",
+    "true_disease": "Cúm mùa / Nhiễm siêu vi cấp (Cảm cúm)",
+    "pred_icd": "A90",
+    "pred_disease": "Sốt xuất huyết Dengue",
+    "is_correct": false
+  },
+  {
+    "text": "Bị ngáy đặc biệt khi nóng ẩm",
+    "true_icd": "B35.9",
+    "true_disease": "Nấm da / Nhiễm trùng vi nấm (Hắc lào / Lang ben)",
+    "pred_icd": "B35.9",
+    "pred_disease": "Nấm da / Nhiễm trùng vi nấm (Hắc lào / Lang ben)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị ngạt tắc mũi",
+    "true_icd": "J00",
+    "true_disease": "Cảm lạnh / Viêm mũi họng cấp",
+    "pred_icd": "J00",
+    "pred_disease": "Cảm lạnh / Viêm mũi họng cấp",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy trên rốn sau khi ăn hoặc lúc đói rất khó chịu",
+    "true_icd": "K29.7",
+    "true_disease": "Viêm loét dạ dày tá tràng",
+    "pred_icd": "K29.7",
+    "pred_disease": "Viêm loét dạ dày tá tràng",
+    "is_correct": true
+  },
+  {
+    "text": "Nghi ngờ mắc Sốt xuất huyết do có sốt cao, sốt rét run",
+    "true_icd": "A90",
+    "true_disease": "Sốt xuất huyết Dengue",
+    "pred_icd": "A90",
+    "pred_disease": "Sốt xuất huyết Dengue",
+    "is_correct": true
+  },
+  {
+    "text": "Bị rát",
+    "true_icd": "J10",
+    "true_disease": "Cúm mùa / Nhiễm siêu vi cấp (Cảm cúm)",
+    "pred_icd": "L20.9",
+    "pred_disease": "Viêm da dị ứng / Dị ứng da mặt / Viêm da tiếp xúc",
+    "is_correct": false
+  },
+  {
+    "text": "Bị đau mỏi cơ bắp",
+    "true_icd": "J10",
+    "true_disease": "Cúm mùa / Nhiễm siêu vi cấp (Cảm cúm)",
+    "pred_icd": "J10",
+    "pred_disease": "Cúm mùa / Nhiễm siêu vi cấp (Cảm cúm)",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy vướng nghẹn cổ họng chịu",
+    "true_icd": "K21.9",
+    "true_disease": "Trào ngược dạ dày thực quản (GERD)",
+    "pred_icd": "K21.9",
+    "pred_disease": "Trào ngược dạ dày thực quản (GERD)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị tiểu nhiều lần cả ngày lẫn đêm",
+    "true_icd": "E11.9",
+    "true_disease": "Đái tháo đường týp 2",
+    "pred_icd": "E11.9",
+    "pred_disease": "Đái tháo đường týp 2",
+    "is_correct": true
+  },
+  {
+    "text": "Bệnh nhân có hiện đau nhức một bên đầu từng cơn, cơn đau giật theo nhịp mạch đập, sợ ánh sáng chói",
+    "true_icd": "G43.9",
+    "true_disease": "Đau nửa đầu Migraine",
+    "pred_icd": "G43.9",
+    "pred_disease": "Đau nửa đầu Migraine",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm khó thở rất khó chịu",
+    "true_icd": "I21.9",
+    "true_disease": "Nhồi máu cơ tim cấp (Hội chứng vành cấp)",
+    "pred_icd": "I21.9",
+    "pred_disease": "Nhồi máu cơ tim cấp (Hội chứng vành cấp)",
+    "is_correct": true
+  },
+  {
+    "text": "Triệu chứng sưng nóng các khớp ngón tay cổ tay đối xứng, cứng khớp buổi sáng kéo dài 1 tiếng, mệt sốt nhẹ, teo cơ biến dạng bàn tay kéo dài",
+    "true_icd": "M06.9",
+    "true_disease": "Viêm khớp dạng thấp",
+    "pred_icd": "M06.9",
+    "pred_disease": "Viêm khớp dạng thấp",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy buồn sau ăn đồ chua cay rất khó chịu",
+    "true_icd": "K29.7",
+    "true_disease": "Viêm loét dạ dày tá tràng",
+    "pred_icd": "K29.7",
+    "pred_disease": "Viêm loét dạ dày tá tràng",
+    "is_correct": true
+  },
+  {
+    "text": "Bị sợ ánh sáng chói",
+    "true_icd": "G43.9",
+    "true_disease": "Đau nửa đầu Migraine",
+    "pred_icd": "G43.9",
+    "pred_disease": "Đau nửa đầu Migraine",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy sốt nhẹ hoặc sốt vừa rất khó chịu",
+    "true_icd": "A09",
+    "true_disease": "Viêm dạ dày ruột cấp / Nhiễm trùng nhiễm độc thức ăn",
+    "pred_icd": "A09",
+    "pred_disease": "Viêm dạ dày ruột cấp / Nhiễm trùng nhiễm độc thức ăn",
+    "is_correct": true
+  },
+  {
+    "text": "Nghi ngờ mắc Viêm niệu đạo do lậu cầu (Lậu / STDs) do có dương vật chảy mủ, chảy mủ đường sinh dục",
+    "true_icd": "A54.0",
+    "true_disease": "Viêm niệu đạo do lậu cầu (Lậu / STDs)",
+    "pred_icd": "A54.0",
+    "pred_disease": "Viêm niệu đạo do lậu cầu (Lậu / STDs)",
+    "is_correct": true
+  },
+  {
+    "text": "Bệnh nhân biểu hiện mụn nước bọng nước dễ vỡ, đóng vảy tiết dày màu vàng mật ong, ngứa ngáy",
+    "true_icd": "L01.0",
+    "true_disease": "Chốc lở (Impetigo)",
+    "pred_icd": "L01.0",
+    "pred_disease": "Chốc lở (Impetigo)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị đau quặn thắt từng cơn quanh rốn",
+    "true_icd": "A09",
+    "true_disease": "Viêm dạ dày ruột cấp / Nhiễm trùng nhiễm độc thức ăn",
+    "pred_icd": "A09",
+    "pred_disease": "Viêm dạ dày ruột cấp / Nhiễm trùng nhiễm độc thức ăn",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi bị ngoài ra máu tươi nhỏ giọt, sa búi trĩ khi rặn đại ngứa rát đau hậu môn",
+    "true_icd": "K64.9",
+    "true_disease": "Bệnh trĩ (Trĩ nội / Trĩ ngoại)",
+    "pred_icd": "K64.9",
+    "pred_disease": "Bệnh trĩ (Trĩ nội / Trĩ ngoại)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị nghe tiếng rít khò khi thở",
+    "true_icd": "J45.9",
+    "true_disease": "Hen phế quản (Hen suyễn)",
+    "pred_icd": "J45.9",
+    "pred_disease": "Hen phế quản (Hen suyễn)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị da khô ráp",
+    "true_icd": "E03.9",
+    "true_disease": "Suy giáp",
+    "pred_icd": "E03.9",
+    "pred_disease": "Suy giáp",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy đau quặn dữ dội từng cơn vùng thắt lưng rất khó chịu",
+    "true_icd": "N20.0",
+    "true_disease": "Sỏi thận / Cơn đau quặn thận",
+    "pred_icd": "N20.0",
+    "pred_disease": "Sỏi thận / Cơn đau quặn thận",
+    "is_correct": true
+  },
+  {
+    "text": "Nghi ngờ mắc Tăng áp vô căn do có nhức đầu vùng gáy, nóng bừng",
+    "true_icd": "I10",
+    "true_disease": "Tăng huyết áp vô căn",
+    "pred_icd": "I10",
+    "pred_disease": "Tăng huyết áp vô căn",
+    "is_correct": true
+  },
+  {
+    "text": "Bị da mặt đỏ ửng",
+    "true_icd": "L20.9",
+    "true_disease": "Viêm da dị ứng / Dị ứng da mặt / Viêm da tiếp xúc",
+    "pred_icd": "L20.9",
+    "pred_disease": "Viêm da dị ứng / Dị ứng da mặt / Viêm da tiếp xúc",
+    "is_correct": true
+  },
+  {
+    "text": "Triệu chứng đầu vùng chẩm gáy vào sáng, hoa mắt chóng mặt, nóng mặt, hồi hộp đánh trống ngực, mệt mỏi kéo dài",
+    "true_icd": "I10",
+    "true_disease": "Tăng huyết áp vô căn",
+    "pred_icd": "I10",
+    "pred_disease": "Tăng huyết áp vô căn",
+    "is_correct": true
+  },
+  {
+    "text": "Bệnh nhân có biểu hiện đau nhức một bên từng cơn, cơn đau giật theo nhịp mạch đập, sợ ánh sáng chói",
+    "true_icd": "G43.9",
+    "true_disease": "Đau nửa đầu Migraine",
+    "pred_icd": "G43.9",
+    "pred_disease": "Đau nửa đầu Migraine",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy đau rát cổ họng rất khó chịu",
+    "true_icd": "J00",
+    "true_disease": "Cảm lạnh / Viêm mũi họng cấp",
+    "pred_icd": "J00",
+    "pred_disease": "Cảm lạnh / Viêm mũi họng cấp",
+    "is_correct": true
+  },
+  {
+    "text": "Bệnh nhân có biểu hiện kéo dài trên 2 ho ra máu, sốt âm ỉ về chiều",
+    "true_icd": "A15.0",
+    "true_disease": "Lao phổi",
+    "pred_icd": "A15.0",
+    "pred_disease": "Lao phổi",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi bị mụn mủ, mụn đầu đen, mụn sưng da nhiều dầu nhờn",
+    "true_icd": "L70.0",
+    "true_disease": "Mụn trứng cá / Viêm da bã nhờn",
+    "pred_icd": "L70.0",
+    "pred_disease": "Mụn trứng cá / Viêm da bã nhờn",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy sốt nhẹ rất khó chịu",
+    "true_icd": "B01.9",
+    "true_disease": "Thủy đậu (Trái rạ)",
+    "pred_icd": "B01.9",
+    "pred_disease": "Thủy đậu (Trái rạ)",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy đau đầu vùng gáy vào buổi sáng rất khó",
+    "true_icd": "I10",
+    "true_disease": "Tăng huyết áp vô căn",
+    "pred_icd": "I10",
+    "pred_disease": "Tăng huyết áp vô căn",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy nhức một bên đầu từng cơn rất khó chịu",
+    "true_icd": "G43.9",
+    "true_disease": "Đau nửa đầu Migraine",
+    "pred_icd": "G43.9",
+    "pred_disease": "Đau nửa đầu Migraine",
+    "is_correct": true
+  },
+  {
+    "text": "Bị chấm xuất huyết",
+    "true_icd": "A90",
+    "true_disease": "Sốt xuất huyết Dengue",
+    "pred_icd": "A90",
+    "pred_disease": "Sốt xuất huyết Dengue",
+    "is_correct": true
+  },
+  {
+    "text": "cảm thấy vàng rất khó chịu",
+    "true_icd": "B18.2",
+    "true_disease": "Viêm gan virus B / C mạn tính",
+    "pred_icd": "B18.2",
+    "pred_disease": "Viêm gan virus B / C mạn tính",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy chua rất khó chịu",
+    "true_icd": "K29.7",
+    "true_disease": "Viêm loét dạ dày tá tràng",
+    "pred_icd": "K29.7",
+    "pred_disease": "Viêm loét dạ dày tá tràng",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy mờ mắt đột ngột rất khó chịu",
+    "true_icd": "I64",
+    "true_disease": "Đột quỵ não cấp (Tai biến mạch máu não)",
+    "pred_icd": "I64",
+    "pred_disease": "Đột quỵ não cấp (Tai biến mạch máu não)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị chuột vọp khi ngủ",
+    "true_icd": "I83.9",
+    "true_disease": "Suy giãn tĩnh mạch chi dưới",
+    "pred_icd": "I83.9",
+    "pred_disease": "Suy giãn tĩnh mạch chi dưới",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy ăn nhiều nhưng vẫn sút cân rất khó chịu",
+    "true_icd": "E11.9",
+    "true_disease": "Đái tháo đường týp 2",
+    "pred_icd": "E11.9",
+    "pred_disease": "Đái tháo đường týp 2",
+    "is_correct": true
+  },
+  {
+    "text": "Bị nghe tiếng lục cục lạo xạo khớp",
+    "true_icd": "M19.9",
+    "true_disease": "Thoái hóa khớp gối / Khớp háng",
+    "pred_icd": "M19.9",
+    "pred_disease": "Thoái hóa khớp gối / Khớp háng",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy đau cơ khớp rất khó chịu",
+    "true_icd": "A90",
+    "true_disease": "Sốt xuất huyết Dengue",
+    "pred_icd": "A90",
+    "pred_disease": "Sốt xuất huyết Dengue",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy nặng ngực khó thở khi gắng sức hoặc gặp lạnh rất khó chịu",
+    "true_icd": "J45.9",
+    "true_disease": "Hen phế quản (Hen suyễn)",
+    "pred_icd": "J45.9",
+    "pred_disease": "Hen phế quản (Hen suyễn)",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi bị tiết dịch nhầy niệu đạo buổi sáng, tiểu buốt nhẹ, ngứa ngáy lỗ sáo",
+    "true_icd": "A56.0",
+    "true_disease": "Nhiễm Chlamydia đường sinh dục - tiết niệu (Viêm niệu đạo NGU)",
+    "pred_icd": "A56.0",
+    "pred_disease": "Nhiễm Chlamydia đường sinh dục - tiết niệu (Viêm niệu đạo NGU)",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy cứng khớp khi vừa ngủ dậy dài 30 phút rất khó chịu",
+    "true_icd": "M19.9",
+    "true_disease": "Thoái hóa khớp gối / Khớp háng",
+    "pred_icd": "M19.9",
+    "pred_disease": "Thoái hóa khớp gối / Khớp háng",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm ợ hơi nóng rát rất khó chịu",
+    "true_icd": "K29.7",
+    "true_disease": "Viêm loét dạ dày tá tràng",
+    "pred_icd": "K29.7",
+    "pred_disease": "Viêm loét dạ dày tá tràng",
+    "is_correct": true
+  },
+  {
+    "text": "Bị mệt mỏi uể oải",
+    "true_icd": "J10",
+    "true_disease": "Cúm mùa / Nhiễm siêu vi cấp (Cảm cúm)",
+    "pred_icd": "E11.9",
+    "pred_disease": "Đái tháo đường týp 2",
+    "is_correct": false
+  },
+  {
+    "text": "Tôi cảm thấy mệt rất khó chịu",
+    "true_icd": "B01.9",
+    "true_disease": "Thủy đậu (Trái rạ)",
+    "pred_icd": "I10",
+    "pred_disease": "Tăng huyết áp vô căn",
+    "is_correct": false
+  },
+  {
+    "text": "Tôi cảm thấy tiểu buốt rắt nhẹ rất khó chịu",
+    "true_icd": "A56.0",
+    "true_disease": "Nhiễm Chlamydia đường sinh dục - tiết niệu (Viêm niệu đạo NGU)",
+    "pred_icd": "A56.0",
+    "pred_disease": "Nhiễm Chlamydia đường sinh dục - tiết niệu (Viêm niệu đạo NGU)",
+    "is_correct": true
+  },
+  {
+    "text": "Nghi ngờ mắc phổi do có ho kéo dài 2 ho khạc đờm lẫn máu",
+    "true_icd": "A15.0",
+    "true_disease": "Lao phổi",
+    "pred_icd": "A15.0",
+    "pred_disease": "Lao phổi",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy sợ sáng chói khó chịu",
+    "true_icd": "G43.9",
+    "true_disease": "Đau nửa đầu Migraine",
+    "pred_icd": "G43.9",
+    "pred_disease": "Đau nửa đầu Migraine",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy nhức mỏi cơ rất khó chịu",
+    "true_icd": "B54",
+    "true_disease": "Sốt rét",
+    "pred_icd": "B54",
+    "pred_disease": "Sốt rét",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi bị cơn khó thở rít khè, thở ra kéo dài, nặng ngực, ho về đêm và gần sáng",
+    "true_icd": "J45.9",
+    "true_disease": "Hen phế quản (Hen suyễn)",
+    "pred_icd": "J45.9",
+    "pred_disease": "Hen phế quản (Hen suyễn)",
+    "is_correct": true
+  },
+  {
+    "text": "Bệnh nhân có biểu sốt 3 đoạn: rét run - sốt nóng - vã mồ hôi, máu, lách to",
+    "true_icd": "B54",
+    "true_disease": "Sốt rét",
+    "pred_icd": "B54",
+    "pred_disease": "Sốt rét",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy hoa mắt tiền rất khó chịu",
+    "true_icd": "G43.9",
+    "true_disease": "Đau nửa đầu Migraine",
+    "pred_icd": "G43.9",
+    "pred_disease": "Đau nửa đầu Migraine",
+    "is_correct": true
+  },
+  {
+    "text": "bị dương vật chảy mủ, mủ đường sinh tiết dịch đạo màu vàng trắng đục, tiểu buốt rát",
+    "true_icd": "A54.0",
+    "true_disease": "Viêm niệu đạo do lậu cầu (Lậu / STDs)",
+    "pred_icd": "A54.0",
+    "pred_disease": "Viêm niệu đạo do lậu cầu (Lậu / STDs)",
+    "is_correct": true
+  },
+  {
+    "text": "Triệu chứng sợ chịu rét kém, tăng cân dù ăn ít, mệt chậm chạp, táo bón kéo dài, da khô ráp, rụng tóc, nhịp tim chậm dài",
+    "true_icd": "E03.9",
+    "true_disease": "Suy giáp",
+    "pred_icd": "E03.9",
+    "pred_disease": "Suy giáp",
+    "is_correct": true
+  },
+  {
+    "text": "Bị ngứa rát buốt vùng hậu môn",
+    "true_icd": "K64.9",
+    "true_disease": "Bệnh trĩ (Trĩ nội / Trĩ ngoại)",
+    "pred_icd": "K64.9",
+    "pred_disease": "Bệnh trĩ (Trĩ nội / Trĩ ngoại)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị chán ăn",
+    "true_icd": "K76.0",
+    "true_disease": "Gan nhiễm mỡ / Men gan cao",
+    "pred_icd": "B18.2",
+    "pred_disease": "Viêm gan virus B / C mạn tính",
+    "is_correct": false
+  },
+  {
+    "text": "Bị mệt mỏi uể oải",
+    "true_icd": "K76.0",
+    "true_disease": "Gan nhiễm mỡ / Men gan cao",
+    "pred_icd": "E11.9",
+    "pred_disease": "Đái tháo đường týp 2",
+    "is_correct": false
+  },
+  {
+    "text": "Bị đau đầu",
+    "true_icd": "J10",
+    "true_disease": "Cúm mùa / Nhiễm siêu vi cấp (Cảm cúm)",
+    "pred_icd": "B54",
+    "pred_disease": "Sốt rét",
+    "is_correct": false
+  },
+  {
+    "text": "Bị sốt tăng dần",
+    "true_icd": "A01.0",
+    "true_disease": "Thương hàn",
+    "pred_icd": "A01.0",
+    "pred_disease": "Thương hàn",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi bị mụn mủ, mụn đầu đen, mụn bọc sưng đỏ, da nhiều dầu nhờn",
+    "true_icd": "L70.0",
+    "true_disease": "Mụn trứng cá / Viêm da bã nhờn",
+    "pred_icd": "L70.0",
+    "pred_disease": "Mụn trứng cá / Viêm da bã nhờn",
+    "is_correct": true
+  },
+  {
+    "text": "Bị mủ",
+    "true_icd": "L70.0",
+    "true_disease": "Mụn trứng cá / Viêm da bã nhờn",
+    "pred_icd": "L70.0",
+    "pred_disease": "Mụn trứng cá / Viêm da bã nhờn",
+    "is_correct": true
+  },
+  {
+    "text": "ho khan hoặc đờm dính",
+    "true_icd": "J45.9",
+    "true_disease": "Hen phế quản (Hen suyễn)",
+    "pred_icd": "J45.9",
+    "pred_disease": "Hen phế quản (Hen suyễn)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị đè nặng sau xương ức",
+    "true_icd": "I21.9",
+    "true_disease": "Nhồi máu cơ tim cấp (Hội chứng vành cấp)",
+    "pred_icd": "I21.9",
+    "pred_disease": "Nhồi máu cơ tim cấp (Hội chứng vành cấp)",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy tiết dịch nhầy trong hoặc đục nhẹ rất khó chịu",
+    "true_icd": "A56.0",
+    "true_disease": "Nhiễm Chlamydia đường sinh dục - tiết niệu (Viêm niệu đạo NGU)",
+    "pred_icd": "A56.0",
+    "pred_disease": "Nhiễm Chlamydia đường sinh dục - tiết niệu (Viêm niệu đạo NGU)",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy nhức mỏi cơ rất chịu",
+    "true_icd": "B54",
+    "true_disease": "Sốt rét",
+    "pred_icd": "B54",
+    "pred_disease": "Sốt rét",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm mụn nước bọng nước dễ vỡ rất khó chịu",
+    "true_icd": "L01.0",
+    "true_disease": "Chốc lở (Impetigo)",
+    "pred_icd": "L01.0",
+    "pred_disease": "Chốc lở (Impetigo)",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi bị bọng vỡ đóng vảy tiết màu mật ong, vết loét nông rỉ dịch, sưng đỏ quanh miệng mũi",
+    "true_icd": "L01.0",
+    "true_disease": "Chốc lở (Impetigo)",
+    "pred_icd": "L01.0",
+    "pred_disease": "Chốc lở (Impetigo)",
+    "is_correct": true
+  },
+  {
+    "text": "Nghi ngờ mắc Đái tháo đường týp do có khát nhiều, nhiều",
+    "true_icd": "E11.9",
+    "true_disease": "Đái tháo đường týp 2",
+    "pred_icd": "E11.9",
+    "pred_disease": "Đái tháo đường týp 2",
+    "is_correct": true
+  },
+  {
+    "text": "chứng tiết dịch nhầy trong hoặc đục nhẹ, tiểu buốt rắt nhẹ, ngứa ngáy khó chịu đường tiểu, đau nhẹ vùng bẹn bìu kéo dài",
+    "true_icd": "A56.0",
+    "true_disease": "Nhiễm Chlamydia đường sinh dục - tiết niệu (Viêm niệu đạo NGU)",
+    "pred_icd": "A56.0",
+    "pred_disease": "Nhiễm Chlamydia đường sinh dục - tiết niệu (Viêm niệu đạo NGU)",
+    "is_correct": true
+  },
+  {
+    "text": "Bị da mặt ửng",
+    "true_icd": "L20.9",
+    "true_disease": "Viêm da dị ứng / Dị ứng da mặt / Viêm da tiếp xúc",
+    "pred_icd": "L20.9",
+    "pred_disease": "Viêm da dị ứng / Dị ứng da mặt / Viêm da tiếp xúc",
+    "is_correct": true
+  },
+  {
+    "text": "Bệnh nhân có biểu hiện đau khớp tăng khi đi lại hoặc leo cầu thang, nghe tiếng lục cục lạo xạo trong khớp, cứng khớp khi vừa ngủ dậy kéo dài 30",
+    "true_icd": "M19.9",
+    "true_disease": "Thoái hóa khớp gối / Khớp háng",
+    "pred_icd": "M19.9",
+    "pred_disease": "Thoái hóa khớp gối / Khớp háng",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi cảm thấy da ửng rất khó chịu",
+    "true_icd": "L20.9",
+    "true_disease": "Viêm da dị ứng / Dị ứng da mặt / Viêm da tiếp xúc",
+    "pred_icd": "L20.9",
+    "pred_disease": "Viêm da dị ứng / Dị ứng da mặt / Viêm da tiếp xúc",
+    "is_correct": true
+  },
+  {
+    "text": "Tôi thấy mảng da đỏ giới hạn rõ rất chịu",
+    "true_icd": "L40.0",
+    "true_disease": "Vảy nến",
+    "pred_icd": "L40.0",
+    "pred_disease": "Vảy nến",
+    "is_correct": true
+  }
+]

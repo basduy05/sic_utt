@@ -1,0 +1,39 @@
+[
+  {
+    "timestamp": "2026-09-07 20:21:35",
+    "target_source": "all",
+    "total_new_items": 9,
+    "total_records": 660,
+    "status": "success",
+    "details": {
+      "protocols": {
+        "source": "kcb.vn / moh.gov.vn",
+        "new_items": 4,
+        "total_records": 427,
+        "status": "success",
+        "message": "Đã đồng bộ 4 phác đồ lâm sàng mới chuẩn Bộ Y Tế."
+      },
+      "drugs": {
+        "source": "dav.gov.vn",
+        "new_items": 2,
+        "total_records": 14,
+        "status": "success",
+        "message": "Đã đồng bộ 2 thuốc mới vào Dược thư Quốc gia."
+      },
+      "icd10": {
+        "source": "who.int / moh.gov.vn",
+        "new_items": 2,
+        "total_records": 213,
+        "status": "success",
+        "message": "Đã đồng bộ 2 mã bệnh ICD-10 mở rộng."
+      },
+      "red_flags": {
+        "source": "cpr.heart.org / 115.vn",
+        "new_items": 1,
+        "total_records": 6,
+        "status": "success",
+        "message": "Đã đồng bộ 1 quy tắc báo động đỏ tử vong mới."
+      }
+    }
+  }
+]

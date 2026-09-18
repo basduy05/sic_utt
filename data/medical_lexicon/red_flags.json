@@ -1,0 +1,124 @@
+{
+  "red_flag_rules": [
+    {
+      "id": "RF_CARDIAC_INFARCTION",
+      "disease_group": "Hội chứng vành cấp / Nhồi máu cơ tim",
+      "severity": "CRITICAL_EMERGENCY",
+      "response_time_limit_sec": 0.5,
+      "triggers_all": [
+        "dau_nguc"
+      ],
+      "triggers_any": [
+        "vã mồ hôi lạnh",
+        "vã mồ hôi",
+        "lan lên vai trái",
+        "lan ra cánh tay trái",
+        "lan lên hàm",
+        "đè nặng lồng ngực",
+        "bóp nghẹt",
+        "khó thở dữ dội",
+        "ngất"
+      ],
+      "action_vi": "BÁO ĐỘNG ĐỎ: Nghi ngờ Nhồi máu cơ tim cấp. Gọi 115 ngay lập tức. Để người bệnh ngồi hoặc nằm nửa nằm nửa ngồi, nới lỏng quần áo, không vận động mạnh.",
+      "action_en": "RED FLAG: Suspected Acute Myocardial Infarction. Call 115 immediately."
+    },
+    {
+      "id": "RF_STROKE_FAST",
+      "disease_group": "Tai biến mạch máu não / Đột quỵ cấp",
+      "severity": "CRITICAL_EMERGENCY",
+      "response_time_limit_sec": 0.5,
+      "triggers_all": [],
+      "triggers_any": [
+        "méo miệng",
+        "méo một bên miệng",
+        "lệch mặt",
+        "lệch một bên mặt",
+        "yếu nửa người",
+        "yếu tay chân",
+        "liệt tay chân",
+        "không cử động được",
+        "rớt đũa",
+        "nói ngọng",
+        "nói ngọng đột ngột",
+        "nói đớ",
+        "mất thăng bằng đột ngột",
+        "nhìn mờ một bên mắt đột ngột",
+        "hôn mê"
+      ],
+      "action_vi": "BÁO ĐỘNG ĐỎ: Nghi ngờ Đột quỵ não (Quy tắc FAST). Gọi 115 khẩn cấp và chuyển ngay đến bệnh viện có trung tâm Đột quỵ trong giờ vàng.",
+      "action_en": "RED FLAG: Suspected Acute Stroke. Call 115 emergency."
+    },
+    {
+      "id": "RF_RESPIRATORY_FAILURE",
+      "disease_group": "Suy hô hấp cấp / Hen ác tính / Dị vật đường thở",
+      "severity": "CRITICAL_EMERGENCY",
+      "response_time_limit_sec": 0.5,
+      "triggers_all": [
+        "kho_tho"
+      ],
+      "triggers_any": [
+        "tím tái môi đầu chi",
+        "thở ngáp cá",
+        "co kéo cơ hô hấp phụ",
+        "thở rít thanh quản",
+        "spo2 < 90%",
+        "không nói được câu dài",
+        "vật vã kích thích"
+      ],
+      "action_vi": "BÁO ĐỘNG ĐỎ: Suy hô hấp cấp. Cho người bệnh thở oxy nếu có, ngồi thẳng lưng và gọi cấp cứu 115 ngay.",
+      "action_en": "RED FLAG: Acute Respiratory Failure. Emergency oxygen and call 115."
+    },
+    {
+      "id": "RF_ANAPHYLAXIS",
+      "disease_group": "Sốc phản vệ cấp độ nặng",
+      "severity": "CRITICAL_EMERGENCY",
+      "response_time_limit_sec": 0.5,
+      "triggers_all": [],
+      "triggers_any": [
+        "sưng phù môi mắt sau tiêm/uống thuốc/ăn hải sản",
+        "phù mạch quinke",
+        "nghẹn cổ họng khó thở dữ dội",
+        "tụt huyết áp sau đốt côn trùng",
+        "mẩn ngứa toàn thân kèm khó thở"
+      ],
+      "action_vi": "BÁO ĐỘNG ĐỎ: Phản ứng phản vệ nguy kịch. Cần tiêm bắp Adrenaline ngay tại cơ sở y tế gần nhất.",
+      "action_en": "RED FLAG: Severe Anaphylaxis. Immediate Adrenaline required."
+    },
+    {
+      "id": "RF_DENGUE_SHOCK_WARNING",
+      "disease_group": "Sốt xuất huyết có dấu hiệu cảnh báo nặng",
+      "severity": "HIGH_URGENCY",
+      "response_time_limit_sec": 0.5,
+      "triggers_all": [
+        "sot_cao"
+      ],
+      "triggers_any": [
+        "chảy máu chân răng ồ ạt",
+        "nôn ra máu",
+        "đi ngoài phân đen",
+        "đau bụng vùng gan dữ dội",
+        "tiểu cầu < 50",
+        "li bì vật vã tay chân lạnh"
+      ],
+      "action_vi": "CẢNH BÁO NGUY HIỂM: Dấu hiệu cảnh báo Sốt xuất huyết nặng / Sốc Dengue. Đưa bệnh nhân vào phòng cấp cứu bệnh viện ngay.",
+      "action_en": "HIGH URGENCY: Severe Dengue warning signs. Immediate hospitalization."
+    },
+    {
+      "id": "RF_ACUTE_GI_BLEEDING",
+      "disease_group": "Xuất huyết tiêu hóa trên ồ ạt / Thủng tạng rỗng",
+      "severity": "CRITICAL_EMERGENCY",
+      "response_time_limit_sec": 0.5,
+      "triggers_all": [],
+      "triggers_any": [
+        "nôn ra máu tươi ồ ạt",
+        "nôn máu cục",
+        "đi ngoài phân đen như bã cà phê kèm mùi khắm",
+        "đau bụng dữ dội như dao đâm",
+        "bụng cứng như gỗ",
+        "vã mồ hôi choáng ngất"
+      ],
+      "action_vi": "BÁO ĐỘNG ĐỎ: Nghi ngờ Xuất huyết tiêu hóa cấp mất máu nặng hoặc Thủng dạ dày. Gọi 115 ngay lập tức. Đặt người bệnh nằm đầu thấp, ủ ấm, tuyệt đối không cho ăn uống bất cứ thứ gì.",
+      "action_en": "RED FLAG: Massive Upper Gastrointestinal Bleeding. Call 115 immediately."
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments & Secret configs
+.env
+.env.local
+.env.*.local
+apps/backend/.env
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Node & Next.js
+node_modules/
+.next/
+out/
+build/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.turbo/
+
+# Large Model Weights (>100MB exceeds GitHub limits)
+*.safetensors
+*.bin
+*.pt
+*.onnx
+apps/ai_engine/models_weights/phobert_ner/*.safetensors
+apps/ai_engine/models_weights/phobert_ner/*.bin
+
+# IDE & OS files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
