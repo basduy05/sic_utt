@@ -44,6 +44,7 @@ class ClarificationQuestion(BaseModel):
 
 class ClarificationPayload(BaseModel):
     needs_clarification: bool = False
+    clinical_stage: Optional[str] = "initial_screening"
     confidence_score: float = 0.0
     entropy: float = 0.0
     reason: Optional[str] = None
@@ -59,6 +60,7 @@ class TelemetryPayload(BaseModel):
     is_emergency: bool = False
     red_flag: RedFlagDetails
     symptoms: List[SymptomEntity] = []
+    negated_symptoms: Optional[List[SymptomEntity]] = []
     lab_indicators: Dict[str, LabIndicator] = {}
     top_predictions: List[DiseasePrediction] = []
     rag_citations: List[Dict[str, Any]] = []

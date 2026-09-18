@@ -32,6 +32,7 @@ export interface ClarificationQuestion {
 
 export interface ClarificationPayload {
   needs_clarification: boolean;
+  clinical_stage?: 'initial_screening' | 'provisional_assumption' | 'definitive_conclusion';
   confidence_score: number;
   entropy: number;
   reason?: string;
@@ -55,6 +56,7 @@ export interface TelemetryData {
     highest_severity: string;
   };
   symptoms: SymptomEntity[];
+  negated_symptoms?: SymptomEntity[];
   lab_indicators: Record<string, LabIndicator>;
   top_predictions: DiseasePrediction[];
   clarification: ClarificationPayload;

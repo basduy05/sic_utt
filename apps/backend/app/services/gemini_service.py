@@ -101,31 +101,63 @@ class GeminiMedicalReasoningService:
         lab_indicators: Dict[str, Any],
         rag_citations: List[Dict[str, Any]],
         chat_history: Optional[List[Dict[str, str]]] = None,
-        is_emergency: bool = False
+        is_emergency: bool = False,
+        negated_symptoms: Optional[List[Dict[str, Any]]] = None,
+        clarifying_questions: Optional[List[Dict[str, Any]]] = None,
+        clinical_stage: str = "provisional_assumption"
     ) -> Dict[str, Any]:
+        stage_instructions = ""
+        if clinical_stage == "initial_screening":
+            stage_instructions = (
+                "\n[GIAI ĐOẠN 1: SÀNG LỌC BAN ĐẦU - CHƯA ĐỦ CĂN CỨ KẾT LUẬN]\n"
+                "- Triệu chứng còn đơn lẻ hoặc mới chỉ bắt đầu, độ tin cậy < 40%.\n"
+                "- TUYỆT ĐỐI KHÔNG vội vàng khẳng định hay chẩn đoán bất kỳ bệnh lý cụ thể nào.\n"
+                "- Hãy ghi nhận các triệu chứng bệnh nhân vừa nêu một cách ân cần.\n"
+                "- BẮT BUỘC đặt 1-2 câu hỏi làm rõ lâm sàng (thời gian khởi phát, mức độ, tính chất đau) để thu thập thêm dữ liệu."
+            )
+        elif clinical_stage == "provisional_assumption":
+            stage_instructions = (
+                "\n[GIAI ĐOẠN 2: CHẨN ĐOÁN GIẢ ĐỊNH LÂM SÀNG (PROVISIONAL HYPOTHESIS) - BẮT BUỘC HỎI THÊM CÂU HỎI PHÂN BIỆT]\n"
+                "- Độ tin cậy lâm sàng ở mức trung bình (40% - 75%), CHƯA ĐỦ ĐIỀU KIỆN để đưa ra kết luận chẩn đoán cuối cùng.\n"
+                "- BẮT BUỘC tuyên bố rõ đây là '🩺 CHẨN ĐOÁN GIẢ ĐỊNH LÂM SÀNG' (Giả định ban đầu). Giải thích ngắn gọn cơ chế vì sao các triệu chứng gợi ý đến giả thuyết này.\n"
+                "- Cung cấp hướng dẫn chăm sóc tạm thời an toàn tại nhà (nghỉ ngơi, bù nước, giảm đau hạ sốt an toàn nếu cần).\n"
+                "- BẮT BUỘC kết thúc câu trả lời bằng việc hỏi người dùng các câu hỏi phân biệt để làm rõ bệnh án. Sử dụng hoặc phát triển từ danh sách câu hỏi làm rõ (cau_hoi_lam_ro_de_xuat) được cung cấp bên dưới."
+            )
+        else:  # definitive_conclusion
+            stage_instructions = (
+                "\n[GIAI ĐOẠN 3: KẾT LUẬN SƠ BỘ SÀNG LỌC (DEFINITIVE SCREENING DIAGNOSIS) - ĐÃ ĐỦ CĂN CỨ (>= 75% VÀ >= 3 TRIỆU CHỨNG)]\n"
+                "- Bệnh nhân đã cung cấp đầy đủ triệu chứng đặc hiệu qua nhiều lượt tương tác.\n"
+                "- Đưa ra '🏥 KẾT LUẬN SƠ BỘ SÀNG LỌC' cụ thể: Nêu bệnh lý nghĩ đến hàng đầu kèm mã ICD-10 và độ tin cậy; nêu các chẩn đoán phân biệt cần loại trừ.\n"
+                "- Trích dẫn hướng dẫn phác đồ điều trị và chăm sóc chuẩn của Bộ Y Tế (theo dõi, dùng thuốc an toàn không kê đơn, chế độ dinh dưỡng).\n"
+                "- Đưa ra các dấu hiệu cảnh báo khẩn cấp (Red Flags) cần đi viện ngay và khuyên người bệnh đặt lịch khám chuyên khoa."
+            )
+
         system_instruction = (
             "Bạn là Bác Sĩ Trợ Lý AI Chuyên Khoa chuẩn mực theo hướng dẫn của Bộ Y Tế Việt Nam.\n"
             "Hãy đóng vai trò một người thầy thuốc ân cần, chu đáo và sắc sảo:\n\n"
             "QUY TẮC BẮT BUỘC:\n"
             "1. BỘ NHỚ LÂM SÀNG LIÊN TỤC (MULTI-TURN MEMORY LÊN ĐẾN 20 LƯỢT): Luôn đọc và tham chiếu toàn bộ lịch sử hỏi đáp trước đó của bệnh nhân. Tuyệt đối không hỏi lại những thông tin người bệnh đã nói.\n"
-            "2. QUÁ TRÌNH HỎI THĂM BỆNH KỸ CÀNG: Nếu dữ liệu bệnh nhân cung cấp còn thiếu chi tiết, hãy hỏi thêm các câu hỏi lâm sàng cần thiết (thời gian khởi phát, mức độ đau 1-10, yếu tố tăng/giảm, triệu chứng toàn thân, tiền sử dị ứng, thuốc đang dùng).\n"
-            "3. PHÂN TÍCH BẢN CHẤT TRIỆU CHỨNG: Xâu chuỗi tất cả các lời kể của bệnh nhân từ đầu đến nay để nhận định đúng chuyên khoa (Da Liễu, Tim Mạch, Tiêu Hóa, Hô Hấp, v.v.).\n"
+            "2. QUY TRÌNH RA QUYẾT ĐỊNH THEO NGƯỠNG LÂM SÀNG: Tuân thủ nghiêm ngặt Giai đoạn Lâm Sàng được chỉ định dưới đây:"
+            f"{stage_instructions}\n"
+            "3. PHÂN TÍCH BẢN CHẤT TRIỆU CHỨNG: Xâu chuỗi tất cả các lời kể của bệnh nhân từ đầu đến nay để nhận định đúng chuyên khoa.\n"
             "4. ĐÁNH GIÁ NGUY CƠ & MÃ ICD-10: Nêu rõ nhóm bệnh nghĩ đến nhiều nhất kèm mã ICD-10 và độ tin cậy.\n"
             "5. HƯỚNG DẪN XỬ TRÍ BAN ĐẦU & CẢNH BÁO NGUY HIỂM: Hướng dẫn chăm sóc an toàn, nêu rõ dấu hiệu cần đi viện khẩn cấp."
         )
 
         formatted_history = []
         if chat_history:
-            # Phase 2: Tăng Context Window lên 20 turns (lượt trao đổi)
             for item in chat_history[-20:]:
                 role = "Bệnh nhân" if item.get("sender") == "user" else "Bác sĩ AI"
                 content = item.get("content") or item.get("text") or ""
                 formatted_history.append(f"- {role}: {content}")
 
         context_data = {
+            "giai_doan_lam_sang_clinical_stage": clinical_stage,
             "lich_su_hoi_benh_truoc_do_20_turns": formatted_history,
             "tin_nhan_moi_nhat_cua_benh_nhan": patient_message,
-            "trieu_chung_boc_tach": [s.get("standard_term") for s in symptoms],
+            "trieu_chung_boc_tach": [s.get("standard_term") for s in symptoms if s.get("standard_term")],
+            "trieu_chung_loai_tru_negated": [s.get("standard_term") for s in (negated_symptoms or []) if s.get("standard_term")],
+            "cau_hoi_lam_ro_de_xuat": clarifying_questions or [],
             "chi_so_xet_nghiem_mau": {k: f"{v.get('value')} {v.get('unit')} ({v.get('message')})" for k, v in lab_indicators.items()},
             "du_doan_nguy_co_icd10": predicted_diseases,
             "trich_dan_phac_do_rag": rag_citations,
@@ -135,7 +167,7 @@ class GeminiMedicalReasoningService:
         prompt = (
             f"{system_instruction}\n\n"
             f"=== TOÀN BỘ BỐI CẢNH LÂM SÀNG & RAG RETRIEVAL ===\n{json.dumps(context_data, ensure_ascii=False, indent=2)}\n\n"
-            "Hãy viết câu trả lời hoàn chỉnh, ân cần, giải đáp thấu đáo và hỏi thăm bệnh kỹ càng bằng Tiếng Việt chuẩn mực:"
+            "Hãy viết câu trả lời hoàn chỉnh, ân cần, giải đáp thấu đáo và tuân thủ đúng giai đoạn lâm sàng bằng Tiếng Việt chuẩn mực:"
         )
 
         return {
@@ -205,7 +237,10 @@ class GeminiMedicalReasoningService:
         rag_citations: List[Dict[str, Any]],
         chat_history: Optional[List[Dict[str, str]]] = None,
         is_emergency: bool = False,
-        api_key: Optional[str] = None
+        api_key: Optional[str] = None,
+        negated_symptoms: Optional[List[Dict[str, Any]]] = None,
+        clarifying_questions: Optional[List[Dict[str, Any]]] = None,
+        clinical_stage: str = "provisional_assumption"
     ) -> Optional[str]:
         """
         Gọi Google Gemini API với giới hạn thời gian phản hồi nhanh <= 3.5s.
@@ -226,7 +261,10 @@ class GeminiMedicalReasoningService:
             lab_indicators=lab_indicators,
             rag_citations=rag_citations,
             chat_history=chat_history,
-            is_emergency=is_emergency
+            is_emergency=is_emergency,
+            negated_symptoms=negated_symptoms,
+            clarifying_questions=clarifying_questions,
+            clinical_stage=clinical_stage
         )
 
         for model in models_to_try:

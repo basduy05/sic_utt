@@ -71,12 +71,23 @@ export const ClarificationWidget: React.FC<ClarificationWidgetProps> = ({
             <HelpCircle className="w-4 h-4 text-amber-700" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
-              <span>Hỏi Bổ Sung Lâm Sàng (Multi-Select)</span>
-              <Sparkles className="w-4 h-4 text-amber-600" />
-            </h4>
+            <div className="flex items-center gap-2">
+              <h4 className="text-sm font-bold text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
+                <span>Hỏi Bổ Sung Lâm Sàng (Multi-Select)</span>
+                <Sparkles className="w-4 h-4 text-amber-600" />
+              </h4>
+              {clarification.clinical_stage === 'provisional_assumption' ? (
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                  🩺 Giả định Lâm sàng (40% - 75%)
+                </span>
+              ) : (
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+                  🔍 Sàng lọc ban đầu (&lt; 40%)
+                </span>
+              )}
+            </div>
             <p className="text-xs text-amber-800 font-medium mt-0.5">
-              Có thể chọn <strong>nhiều đáp án</strong> trên nhiều câu hỏi để kết luận chính xác hơn:
+              Chưa đủ ngưỡng kết luận (yêu cầu &ge; 75% và &ge; 3 triệu chứng). Vui lòng chọn đáp án để làm rõ bệnh án:
             </p>
           </div>
         </div>

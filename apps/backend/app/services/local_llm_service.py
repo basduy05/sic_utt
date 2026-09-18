@@ -51,13 +51,27 @@ class LocalLLMService:
         except Exception:
             return False
 
-    def _build_system_prompt(self) -> str:
+    def _build_system_prompt(self, clinical_stage: str = "provisional_assumption") -> str:
+        stage_desc = ""
+        if clinical_stage == "initial_screening":
+            stage_desc = (
+                "\nQUY TẮC GIAI ĐOẠN 1: SÀNG LỌC BAN ĐẦU - Chưa đủ triệu chứng (< 40%). Tuyệt đối không kết luận bệnh, hãy hỏi làm rõ thêm."
+            )
+        elif clinical_stage == "provisional_assumption":
+            stage_desc = (
+                "\nQUY TẮC GIAI ĐOẠN 2: CHẨN ĐOÁN GIẢ ĐỊNH LÂM SÀNG (40% - 75%). Bắt buộc nêu rõ đây là giả định sơ bộ, hướng dẫn chăm sóc tạm thời và BẮT BUỘC hỏi thêm các câu hỏi phân biệt để làm rõ bệnh án."
+            )
+        else:
+            stage_desc = (
+                "\nQUY TẮC GIAI ĐOẠN 3: KẾT LUẬN SƠ BỘ SÀNG LỌC (>= 75% và >= 3 triệu chứng). Đã đủ dữ kiện chẩn đoán, cung cấp phác đồ Bộ Y Tế và cảnh báo cấp cứu."
+            )
+
         return (
             "Bạn là Bác Sĩ Trợ Lý AI Chuyên Khoa chuẩn mực theo hướng dẫn của Bộ Y Tế Việt Nam.\n"
             "Hãy đóng vai trò một người thầy thuốc ân cần, chu đáo, sắc sảo và tuân thủ các quy tắc y khoa:\n\n"
             "QUY TẮC BẮT BUỘC:\n"
             "1. BỘ NHỚ LÂM SÀNG LIÊN TỤC: Đọc và tham chiếu lịch sử hỏi đáp trước đó. Tuyệt đối không hỏi lại những gì bệnh nhân đã chia sẻ.\n"
-            "2. HỎI THĂM BỆNH KỸ CÀNG: Nếu còn thiếu chi tiết, hãy hỏi thêm thời gian khởi phát, mức độ đau (1-10), triệu chứng kèm theo, tiền sử bệnh.\n"
+            f"2. TUÂN THỦ GIAI ĐOẠN LÂM SÀNG: {stage_desc}\n"
             "3. ĐÁNH GIÁ NGUY CƠ & MÃ ICD-10: Nêu rõ nhóm bệnh nghĩ đến nhiều nhất kèm mã ICD-10 và giải thích ngắn gọn bằng ngôn ngữ dễ hiểu.\n"
             "4. CHỈ SỐ XÉT NGHIỆM: Nếu có kết quả cận lâm sàng (máu, nước tiểu, chẩn đoán hình ảnh), hãy phân tích ý nghĩa các chỉ số bất thường.\n"
             "5. HƯỚNG DẪN XỬ TRÍ BAN ĐẦU & CẢNH BÁO NGUY HIỂM: Hướng dẫn chăm sóc an toàn, nêu rõ dấu hiệu cần đi viện khẩn cấp ngay.\n"
@@ -72,7 +86,10 @@ class LocalLLMService:
         lab_indicators: Dict[str, Any],
         rag_citations: List[Dict[str, Any]],
         chat_history: Optional[List[Dict[str, str]]] = None,
-        is_emergency: bool = False
+        is_emergency: bool = False,
+        negated_symptoms: Optional[List[Dict[str, Any]]] = None,
+        clarifying_questions: Optional[List[Dict[str, Any]]] = None,
+        clinical_stage: str = "provisional_assumption"
     ) -> str:
         formatted_history = []
         if chat_history:
@@ -82,9 +99,12 @@ class LocalLLMService:
                 formatted_history.append(f"- {role}: {content}")
 
         context_data = {
+            "giai_doan_lam_sang": clinical_stage,
             "lich_su_hoi_benh_truoc_do": formatted_history,
             "tin_nhan_moi_nhat_cua_benh_nhan": patient_message,
             "trieu_chung_boc_tach": [s.get("standard_term") for s in symptoms if s.get("standard_term")],
+            "trieu_chung_loai_tru": [s.get("standard_term") for s in (negated_symptoms or []) if s.get("standard_term")],
+            "cau_hoi_lam_ro_de_xuat": clarifying_questions or [],
             "chi_so_xet_nghiem_mau": {k: f"{v.get('value')} {v.get('unit')} ({v.get('message')})" for k, v in lab_indicators.items()},
             "du_doan_nguy_co_icd10": predicted_diseases,
             "trich_dan_phac_do_rag": rag_citations,
@@ -94,7 +114,7 @@ class LocalLLMService:
         return (
             f"=== BỐI CẢNH LÂM SÀNG & RAG RETRIEVAL ===\n"
             f"{json.dumps(context_data, ensure_ascii=False, indent=2)}\n\n"
-            f"Hãy viết câu trả lời hoàn chỉnh, ân cần, giải đáp thấu đáo và hỏi thăm bệnh kỹ càng bằng Tiếng Việt chuẩn mực:"
+            f"Hãy viết câu trả lời hoàn chỉnh, ân cần, giải đáp thấu đáo và tuân thủ đúng giai đoạn lâm sàng bằng Tiếng Việt chuẩn mực:"
         )
 
     async def generate_response(
@@ -105,13 +125,16 @@ class LocalLLMService:
         lab_indicators: Dict[str, Any],
         rag_citations: List[Dict[str, Any]],
         chat_history: Optional[List[Dict[str, str]]] = None,
-        is_emergency: bool = False
+        is_emergency: bool = False,
+        negated_symptoms: Optional[List[Dict[str, Any]]] = None,
+        clarifying_questions: Optional[List[Dict[str, Any]]] = None,
+        clinical_stage: str = "provisional_assumption"
     ) -> Optional[str]:
         if not await self.is_available():
             logger.info("Local LLM (Ollama) is offline. Skipping to next clinical reasoning tier immediately.")
             return None
 
-        system_prompt = self._build_system_prompt()
+        system_prompt = self._build_system_prompt(clinical_stage=clinical_stage)
         user_prompt = self._build_context_prompt(
             patient_message=patient_message,
             predicted_diseases=predicted_diseases,
@@ -119,7 +142,10 @@ class LocalLLMService:
             lab_indicators=lab_indicators,
             rag_citations=rag_citations,
             chat_history=chat_history,
-            is_emergency=is_emergency
+            is_emergency=is_emergency,
+            negated_symptoms=negated_symptoms,
+            clarifying_questions=clarifying_questions,
+            clinical_stage=clinical_stage
         )
 
         try:

@@ -309,22 +309,21 @@ class HybridClinicalPredictor:
             if len(top_predictions) >= 3:
                 break
 
-        # Nếu bệnh đứng đầu vẫn có xác suất < 25% hoặc không có bệnh nào khớp, coi như chưa đủ căn cứ
-        top_confidence = top_predictions[0]["probability"] if top_predictions else 0.0
-        needs_clarification = (top_confidence < 0.35) or (len(top_predictions) == 0)
-
-        # 6. Clarification Assessment
+        # 6. Clarification Assessment với 3 tầng phân định lâm sàng
+        top_prob = float(top_predictions[0]["probability"]) if top_predictions else (float(p_final[sorted_indices[0]]) if len(sorted_indices) > 0 else 0.0)
         clarification_res = self.clarification_engine.generate_clarification_questions(
             p_final,
             self.disease_classes,
             symptom_names,
             user_text=user_text
         )
-        if needs_clarification:
-            clarification_res["needs_clarification"] = True
-            clarification_res["reason"] = "Độ tin cậy sơ bộ chưa đủ cao để khẳng định. Cần thêm thông tin làm rõ."
-        elif top_confidence >= 0.65:
-            clarification_res["needs_clarification"] = False
+        stage = self.clarification_engine.determine_clinical_stage(
+            top_probability=top_prob,
+            symptom_count=len(symptom_names),
+            clarification_turns_count=0
+        )
+        clarification_res["clinical_stage"] = stage
+        clarification_res["needs_clarification"] = (stage != "definitive_conclusion")
 
         return {
             "top_predictions": top_predictions,

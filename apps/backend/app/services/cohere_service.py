@@ -29,12 +29,24 @@ class CohereMedicalReasoningService:
         rag_citations: List[Dict[str, Any]],
         chat_history: Optional[List[Dict[str, str]]] = None,
         is_emergency: bool = False,
+        negated_symptoms: Optional[List[Dict[str, Any]]] = None,
+        clarifying_questions: Optional[List[Dict[str, Any]]] = None,
+        clinical_stage: str = "provisional_assumption"
     ) -> Dict[str, Any]:
         """Xây dựng payload cho Cohere Chat API."""
+        stage_desc = (
+            "GIAI ĐOẠN: SÀNG LỌC BAN ĐẦU - Chưa đủ dữ kiện kết luận, chỉ hỏi thăm làm rõ triệu chứng."
+            if clinical_stage == "initial_screening"
+            else "GIAI ĐOẠN: CHẨN ĐOÁN GIẢ ĐỊNH LÂM SÀNG - Bắt buộc tuyên bố là giả định, hướng dẫn an toàn và hỏi thêm câu hỏi phân biệt để làm rõ bệnh án."
+            if clinical_stage == "provisional_assumption"
+            else "GIAI ĐOẠN: KẾT LUẬN SƠ BỘ SÀNG LỌC - Đã đủ dữ kiện (độ tin cậy cao >= 75%), đưa ra kết luận chẩn đoán, phác đồ điều trị Bộ Y Tế, và cảnh báo cấp cứu."
+        )
+
         system_prompt = (
             "Bạn là Bác Sĩ Trợ Lý AI Chuyên Khoa chuẩn mực theo hướng dẫn của Bộ Y Tế Việt Nam. "
             "Hãy đóng vai trò một người thầy thuốc ân cần, chu đáo và sắc sảo. "
             "QUY TẮC: Luôn đọc lịch sử hỏi đáp, không hỏi lại thông tin đã có. "
+            f"{stage_desc} "
             "Phân tích triệu chứng, đưa ra nhận định ICD-10, hướng dẫn xử trí an toàn bằng Tiếng Việt chuẩn mực."
         )
 
@@ -49,8 +61,11 @@ class CohereMedicalReasoningService:
 
         # Build context as user message
         context_data = {
+            "giai_doan_lam_sang": clinical_stage,
             "tin_nhan": patient_message,
             "trieu_chung": [s.get("standard_term") for s in symptoms if s.get("standard_term")],
+            "trieu_chung_loai_tru": [s.get("standard_term") for s in (negated_symptoms or []) if s.get("standard_term")],
+            "cau_hoi_lam_ro_de_xuat": clarifying_questions or [],
             "xet_nghiem": {k: f"{v.get('value')} {v.get('unit')} ({v.get('message')})" for k, v in lab_indicators.items()},
             "du_doan_icd10": predicted_diseases[:3],
             "rag_phac_do": [{"title": c.get("title"), "content": str(c.get("content", ""))[:200]} for c in rag_citations[:2]],
@@ -59,7 +74,7 @@ class CohereMedicalReasoningService:
 
         user_message = (
             f"Dữ liệu lâm sàng:\n{json.dumps(context_data, ensure_ascii=False, indent=2)}\n\n"
-            "Hãy viết câu trả lời y tế đầy đủ, ân cần bằng Tiếng Việt:"
+            "Hãy viết câu trả lời y tế đầy đủ, ân cần và tuân thủ đúng giai đoạn lâm sàng bằng Tiếng Việt:"
         )
 
         return {
@@ -82,6 +97,9 @@ class CohereMedicalReasoningService:
         is_emergency: bool = False,
         api_key: Optional[str] = None,
         timeout: float = 3.5,
+        negated_symptoms: Optional[List[Dict[str, Any]]] = None,
+        clarifying_questions: Optional[List[Dict[str, Any]]] = None,
+        clinical_stage: str = "provisional_assumption"
     ) -> Optional[str]:
         """
         Gọi Cohere API đồng bộ với timeout 3.5s.
@@ -100,6 +118,9 @@ class CohereMedicalReasoningService:
             rag_citations=rag_citations,
             chat_history=chat_history,
             is_emergency=is_emergency,
+            negated_symptoms=negated_symptoms,
+            clarifying_questions=clarifying_questions,
+            clinical_stage=clinical_stage
         )
 
         try:

@@ -34,6 +34,9 @@ class UnifiedClinicalReasoningService:
         chat_history: Optional[List[Dict[str, str]]],
         is_emergency: bool,
         api_key: Optional[str],
+        negated_symptoms: Optional[List[Dict[str, Any]]] = None,
+        clarifying_questions: Optional[List[Dict[str, Any]]] = None,
+        clinical_stage: str = "provisional_assumption",
     ) -> Tuple[Optional[str], str]:
         """Gọi Gemini trong thread pool để không block event loop."""
         try:
@@ -49,6 +52,9 @@ class UnifiedClinicalReasoningService:
                     chat_history=chat_history,
                     is_emergency=is_emergency,
                     api_key=api_key,
+                    negated_symptoms=negated_symptoms,
+                    clarifying_questions=clarifying_questions,
+                    clinical_stage=clinical_stage,
                 )
             )
             return (result, "cloud_gemini") if result else (None, "cloud_gemini")
@@ -66,6 +72,9 @@ class UnifiedClinicalReasoningService:
         chat_history: Optional[List[Dict[str, str]]],
         is_emergency: bool,
         api_key: Optional[str],
+        negated_symptoms: Optional[List[Dict[str, Any]]] = None,
+        clarifying_questions: Optional[List[Dict[str, Any]]] = None,
+        clinical_stage: str = "provisional_assumption",
     ) -> Tuple[Optional[str], str]:
         """Gọi Cohere trong thread pool để không block event loop."""
         try:
@@ -81,6 +90,9 @@ class UnifiedClinicalReasoningService:
                     chat_history=chat_history,
                     is_emergency=is_emergency,
                     api_key=api_key,
+                    negated_symptoms=negated_symptoms,
+                    clarifying_questions=clarifying_questions,
+                    clinical_stage=clinical_stage,
                 )
             )
             return (result, "cloud_cohere") if result else (None, "cloud_cohere")
@@ -100,7 +112,8 @@ class UnifiedClinicalReasoningService:
         gemini_api_key: Optional[str] = None,
         cohere_api_key: Optional[str] = None,
         negated_symptoms: Optional[List[Dict[str, Any]]] = None,
-        clarifying_questions: Optional[List[Dict[str, Any]]] = None
+        clarifying_questions: Optional[List[Dict[str, Any]]] = None,
+        clinical_stage: str = "provisional_assumption"
     ) -> Dict[str, Any]:
         """
         Race condition giữa Gemini và Cohere:
@@ -124,7 +137,10 @@ class UnifiedClinicalReasoningService:
                     lab_indicators=lab_indicators,
                     rag_citations=rag_citations,
                     chat_history=chat_history,
-                    is_emergency=is_emergency
+                    is_emergency=is_emergency,
+                    negated_symptoms=negated_symptoms,
+                    clarifying_questions=clarifying_questions,
+                    clinical_stage=clinical_stage,
                 )
                 if response_text:
                     used_provider = f"local_llm ({settings.LOCAL_LLM_MODEL})"
@@ -141,15 +157,31 @@ class UnifiedClinicalReasoningService:
 
                 if has_gemini:
                     tasks.append(self._call_gemini_async(
-                        patient_message, predicted_diseases, symptoms,
-                        lab_indicators, rag_citations, chat_history,
-                        is_emergency, gemini_api_key
+                        patient_message=patient_message,
+                        predicted_diseases=predicted_diseases,
+                        symptoms=symptoms,
+                        lab_indicators=lab_indicators,
+                        rag_citations=rag_citations,
+                        chat_history=chat_history,
+                        is_emergency=is_emergency,
+                        api_key=gemini_api_key,
+                        negated_symptoms=negated_symptoms,
+                        clarifying_questions=clarifying_questions,
+                        clinical_stage=clinical_stage,
                     ))
                 if has_cohere:
                     tasks.append(self._call_cohere_async(
-                        patient_message, predicted_diseases, symptoms,
-                        lab_indicators, rag_citations, chat_history,
-                        is_emergency, cohere_api_key
+                        patient_message=patient_message,
+                        predicted_diseases=predicted_diseases,
+                        symptoms=symptoms,
+                        lab_indicators=lab_indicators,
+                        rag_citations=rag_citations,
+                        chat_history=chat_history,
+                        is_emergency=is_emergency,
+                        api_key=cohere_api_key,
+                        negated_symptoms=negated_symptoms,
+                        clarifying_questions=clarifying_questions,
+                        clinical_stage=clinical_stage,
                     ))
 
                 try:
@@ -197,7 +229,8 @@ class UnifiedClinicalReasoningService:
                 rag_citations=rag_citations,
                 is_emergency=is_emergency,
                 negated_symptoms=negated_symptoms,
-                clarifying_questions=clarifying_questions
+                clarifying_questions=clarifying_questions,
+                clinical_stage=clinical_stage
             )
             used_provider = "deterministic_clinical_protocol"
 
@@ -224,53 +257,40 @@ class UnifiedClinicalReasoningService:
         rag_citations: List[Dict[str, Any]],
         is_emergency: bool = False,
         negated_symptoms: Optional[List[Dict[str, Any]]] = None,
-        clarifying_questions: Optional[List[Dict[str, Any]]] = None
+        clarifying_questions: Optional[List[Dict[str, Any]]] = None,
+        clinical_stage: str = "provisional_assumption"
     ) -> str:
-        """Sinh câu trả lời y tế chuẩn xác khi không có LLM nào hoạt động."""
+        """Sinh câu trả lời y tế chuẩn xác theo 3 tầng phân định lâm sàng."""
         lines = []
         if is_emergency:
             lines.append("🚨 **CẢNH BÁO Y TẾ KHẨN CẤP (RED FLAG):**")
             lines.append("👉 **HÃY ĐẾN NGAY PHÒNG CẤP CỨU GẦN NHẤT HOẶC GỌI CẤP CỨU 115 NGAY LẬP TỨC!**\n")
+
         lines.append("Chào bạn, tôi là **Trợ Lý Y Tế AI (MediBot)** tham vấn theo chuẩn Bộ Y Tế Việt Nam.")
+        
         sym_names = [s.get("standard_term") for s in symptoms if s.get("standard_term")]
         if sym_names:
             lines.append(f"🔍 **Triệu chứng đã ghi nhận:** {', '.join(sym_names)}.")
+
         neg_names = [s.get("standard_term") for s in (negated_symptoms or []) if s.get("standard_term")]
         if neg_names:
             neg_display = [f"Không {n.lower()}" if not n.lower().startswith("không") else n for n in neg_names]
             lines.append(f"❌ **Dấu hiệu đã loại trừ:** {', '.join(neg_display)}.")
+
         if lab_indicators:
             lines.append("\n🧪 **Đánh giá chỉ số xét nghiệm:**")
             for k, v in lab_indicators.items():
                 status = "Bất thường" if v.get("status") in ["high", "low"] else "Bình thường"
                 lines.append(f"- **{k.upper()}:** {v.get('value')} {v.get('unit')} ({status} - {v.get('message', '')})")
+
         valid_diseases = [d for d in (predicted_diseases or []) if d.get("probability", 0) >= 0.15]
-        if valid_diseases:
+
+        # TẦNG 1: Chưa đủ căn cứ lâm sàng
+        if clinical_stage == "initial_screening" or not valid_diseases:
             lines.append("\n🩺 **Nhận định lâm sàng:**")
-            for idx, d in enumerate(valid_diseases[:3], 1):
-                d_name = d.get("disease_name_vi") or "Bệnh lý"
-                prob_str = d.get("probability_percentage", f"{int(d.get('probability', 0)*100)}%")
-                lines.append(f"{idx}. **{d_name}** (ICD-10: `{d.get('icd_code', 'N/A')}`) — **{prob_str}**")
-                if d.get("department"):
-                    lines.append(f"   *Chuyên khoa:* {d.get('department')}")
+            lines.append("Dựa trên các dấu hiệu bạn vừa chia sẻ, hiện tại chưa đủ căn cứ lâm sàng đặc hiệu để định danh bệnh lý.")
             if clarifying_questions:
-                lines.append("\n👉 *Để chẩn đoán chính xác hơn:*")
-                for q in clarifying_questions:
-                    lines.append(f"**- {q.get('question')}**")
-                    if q.get('options'):
-                        lines.append(f"  *(Gợi ý: {' / '.join(q.get('options'))})*")
-            if rag_citations:
-                lines.append("\n📚 **Hướng dẫn phác đồ:**")
-                for cit in rag_citations[:2]:
-                    title = cit.get("title", "")
-                    content = cit.get("content", "")
-                    if title:
-                        lines.append(f"• **{title}:** {content[:250]}...")
-        else:
-            lines.append("\n🩺 **Nhận định lâm sàng:**")
-            lines.append("Hiện chưa đủ căn cứ lâm sàng để chẩn đoán chính xác.")
-            if clarifying_questions:
-                lines.append("\n👉 *Vui lòng trả lời thêm:*")
+                lines.append("\n👉 *Vui lòng trả lời thêm các câu hỏi sau để bác sĩ làm rõ bệnh cảnh:*")
                 for q_idx, q in enumerate(clarifying_questions, 1):
                     lines.append(f"**{q_idx}. {q.get('question')}**")
                     if q.get('options'):
@@ -279,6 +299,52 @@ class UnifiedClinicalReasoningService:
                 lines.append("👉 *Vui lòng mô tả thêm vị trí, mức độ và thời gian bắt đầu triệu chứng.*")
             lines.append("\n⚠️ *Kết quả do AI hỗ trợ sàng lọc ban đầu, không thay thế chẩn đoán của Bác sĩ.*")
             return "\n".join(lines)
+
+        # TẦNG 2: Chẩn đoán Giả định Lâm sàng (Provisional Hypothesis) - BẮT BUỘC HỎI THÊM LÀM RÕ
+        if clinical_stage == "provisional_assumption":
+            lines.append("\n🩺 **Chẩn đoán Giả định Lâm sàng (Provisional Hypothesis):**")
+            lines.append("Dựa trên các dấu hiệu bạn vừa chia sẻ, hệ thống đang **tạm thời giả định nghi ngờ nhiều nhất** về:")
+            for idx, d in enumerate(valid_diseases[:2], 1):
+                d_name = d.get("disease_name_vi") or "Bệnh lý"
+                prob_str = d.get("probability_percentage", f"{int(d.get('probability', 0)*100)}%")
+                role_label = "Bệnh nghi ngờ chính (Tạm thời)" if idx == 1 else "Chẩn đoán phân biệt cần loại trừ"
+                lines.append(f"{idx}. **{d_name}** (ICD-10: `{d.get('icd_code', 'N/A')}`) — **{role_label}: {prob_str}**")
+                if d.get("department"):
+                    lines.append(f"   *Chuyên khoa:* {d.get('department')}")
+
+            if clarifying_questions:
+                lines.append("\n👉 *Để chuyển từ trường hợp giả định sang kết luận sơ bộ chính xác, xin vui lòng làm rõ thêm:*")
+                for q_idx, q in enumerate(clarifying_questions, 1):
+                    lines.append(f"**{q_idx}. {q.get('question')}**")
+                    if q.get('options'):
+                        lines.append(f"   *(Gợi ý: {' / '.join(q.get('options'))})*")
+
+            lines.append("\n📋 **Hướng dẫn xử trí tạm thời an toàn trong thời gian theo dõi:**")
+            lines.append("- Nghỉ ngơi điều độ, giữ tâm lý thoải mái và tránh làm việc gắng sức.")
+            lines.append("- Uống đủ nước ấm, theo dõi thân nhiệt và diễn biến các cơn đau.")
+            lines.append("- Chưa tự ý dùng các loại thuốc điều trị đặc hiệu khi chưa có kết luận dứt điểm.")
+            lines.append("\n⚠️ *Lưu ý: Đây là nhận định giả định ban đầu. Hãy trả lời các câu hỏi làm rõ trên để bác sĩ đưa ra kết luận bệnh án chính xác.*")
+            return "\n".join(lines)
+
+        # TẦNG 3: Kết luận Sơ bộ Xác định (Definitive Conclusion)
+        lines.append("\n🏥 **Kết luận Sơ bộ Sàng lọc (Definitive Screening Diagnosis):**")
+        for idx, d in enumerate(valid_diseases[:3], 1):
+            d_name = d.get("disease_name_vi") or "Bệnh lý"
+            prob_str = d.get("probability_percentage", f"{int(d.get('probability', 0)*100)}%")
+            if idx == 1:
+                lines.append(f"1. **Bệnh chính nghĩ nhiều nhất:** **{d_name}** (ICD-10: `{d.get('icd_code', 'N/A')}`) — **Độ tin cậy: {prob_str}**")
+            else:
+                lines.append(f"{idx}. **Chẩn đoán phân biệt đã xem xét:** **{d_name}** (ICD-10: `{d.get('icd_code', 'N/A')}`) — {prob_str}")
+            if d.get("department"):
+                lines.append(f"   *Chuyên khoa:* {d.get('department')}")
+
+        if rag_citations:
+            lines.append("\n📚 **Hướng dẫn phác đồ & Dược lâm sàng (Bộ Y Tế):**")
+            for cit in rag_citations[:2]:
+                title = cit.get("title", "")
+                content = cit.get("content", "")
+                if title:
+                    lines.append(f"• **{title}:** {content[:250]}...")
         primary_code = (valid_diseases[0].get("icd_code") if valid_diseases else "") or ""
         primary_dept = (valid_diseases[0].get("department") if valid_diseases else "") or ""
         lines.append(f"\n📋 **Hướng dẫn chăm sóc tại nhà:**")

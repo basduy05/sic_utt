@@ -272,6 +272,96 @@ class ChatService:
 
         return " . ".join(user_answers) if user_answers else clean
 
+    async def _extract_cumulative_session_context(
+        self,
+        chat_history: Optional[List[Dict[str, Any]]],
+        current_user_message: str
+    ) -> Dict[str, Any]:
+        """
+        Trích xuất và tích lũy toàn bộ bối cảnh lâm sàng qua TẤT CẢ các lượt hội thoại:
+        1. Duyệt tất cả các tin nhắn người dùng (chính thức & câu trả lời làm rõ).
+        2. Tích lũy danh sách triệu chứng khẳng định (cumulative_symptoms).
+        3. Tích lũy danh sách triệu chứng loại trừ (cumulative_negated).
+        4. Tự động loại bỏ mâu thuẫn (nếu lượt sau khẳng định 'không sốt' thì gạch bỏ 'sốt').
+        5. Trích xuất danh sách các câu hỏi trợ lý đã từng hỏi (already_asked_questions) để tránh trùng lặp.
+        6. Đếm số lượt trả lời làm rõ (clarification_turns_count).
+        """
+        cumulative_symptoms: Dict[str, Dict[str, Any]] = {}
+        cumulative_negated: Dict[str, Dict[str, Any]] = {}
+        clinical_utterances: List[str] = []
+        already_asked_texts: List[str] = []
+        clarification_turns_count = 0
+
+        # Quét các câu hỏi trợ lý đã từng hỏi trong lịch sử
+        if chat_history:
+            for item in chat_history:
+                if item.get("sender") == "assistant":
+                    content = item.get("content") or item.get("text") or ""
+                    for line in content.split("\n"):
+                        line_s = line.strip()
+                        if (line_s.startswith("**") or line_s.startswith("- **")) and "?" in line_s:
+                            clean_q = re.sub(r'^(?:[\-\*]+\s*)?(?:\d+\.|\-)?\s*', '', line_s).split("?")[0] + "?"
+                            clean_q = clean_q.strip("* \t-")
+                            if len(clean_q) > 8:
+                                already_asked_texts.append(clean_q)
+
+        # Gom tất cả các lượt người dùng
+        user_turns: List[str] = []
+        if chat_history:
+            for item in chat_history:
+                if item.get("sender") == "user":
+                    c = (item.get("content") or item.get("text") or "").strip()
+                    if c:
+                        user_turns.append(c)
+        if current_user_message.strip():
+            user_turns.append(current_user_message.strip())
+
+        for turn in user_turns:
+            is_clarif = bool(
+                re.search(r'^(?:trả lời câu hỏi làm rõ|trả lời|chọn|đáp án|tôi xin bổ sung|bổ sung thông tin|tôi có các dấu hiệu)[:\s"]+', turn, flags=re.IGNORECASE)
+                or "câu hỏi làm rõ" in turn.lower()
+            )
+            if is_clarif:
+                clarification_turns_count += 1
+                clean_t = self._parse_clarification_response(turn)
+            else:
+                clean_t = turn
+
+            if self._handle_general_medical_intent(clean_t):
+                continue
+
+            clinical_utterances.append(clean_t)
+            t = await self._analyze_triage_with_cache(text=clean_t)
+
+            # Khẳng định
+            syms = t.get("extracted_entities", {}).get("symptoms", [])
+            for s in syms:
+                st = s.get("standard_term")
+                if st:
+                    cumulative_symptoms[st] = s
+
+            # Phủ định
+            negs = t.get("extracted_entities", {}).get("negated_symptoms", []) or t.get("negated_symptoms", [])
+            for n in negs:
+                nt = n.get("standard_term")
+                if nt:
+                    cumulative_negated[nt] = n
+
+        # Loại trừ các triệu chứng khẳng định nếu đã bị phủ định ở các lượt làm rõ sau đó
+        for nt in list(cumulative_negated.keys()):
+            if nt in cumulative_symptoms:
+                del cumulative_symptoms[nt]
+
+        combined_text = " . ".join(clinical_utterances) if clinical_utterances else current_user_message
+
+        return {
+            "cumulative_symptoms": list(cumulative_symptoms.values()),
+            "cumulative_negated": list(cumulative_negated.values()),
+            "combined_text": combined_text,
+            "already_asked_texts": already_asked_texts,
+            "clarification_turns_count": clarification_turns_count
+        }
+
     async def process_patient_message(
         self,
         session_id: str,
@@ -287,9 +377,10 @@ class ChatService:
         """
         Xử lý tin nhắn của bệnh nhân kèm ngữ cảnh đa lượt (Multi-turn Cumulative Context):
         1. Nhận diện các câu hỏi thường gặp (Kháng sinh, khả năng hệ thống, hạ sốt) để phản hồi Fast-Path chuẩn mực.
-        2. Tích lũy toàn bộ triệu chứng từ các lượt trước và duy trì Sổ theo dõi Đa bệnh lý.
-        3. RAG retrieval kiến thức y khoa chuyên sâu từ ICD-10 & Phác đồ Bộ Y Tế.
-        4. Dùng Unified Clinical Reasoning (Local LLM / Gemini / Rule-based) để suy luận lâm sàng.
+        2. Tích lũy toàn bộ triệu chứng từ TẤT CẢ các lượt trước và duy trì Sổ theo dõi Đa bệnh lý.
+        3. Phân tầng theo 3 cấp độ: Sàng lọc ban đầu -> Chẩn đoán giả định (bắt buộc hỏi phân biệt) -> Kết luận xác định.
+        4. RAG retrieval kiến thức y khoa chuyên sâu từ ICD-10 & Phác đồ Bộ Y Tế.
+        5. Dùng Unified Clinical Reasoning (Local LLM / Gemini / Rule-based) để suy luận lâm sàng.
         """
         pipeline_start = time.time()
         # 1. Kiểm tra Fast-Path General Medical Intent (Kháng sinh, Hỏi chức năng, Cách hạ sốt...)
@@ -297,7 +388,6 @@ class ChatService:
         if general_intent_answer and not (audio_bytes or document_bytes):
             fast_lat_ms = max(int((time.time() - pipeline_start) * 1000), 4)
             fast_breakdown = {"intent_filter_ms": fast_lat_ms, "total_ms": fast_lat_ms}
-            # Nếu người dùng hỏi các câu hỏi kiến thức chung và không gửi tệp xét nghiệm/âm thanh
             return {
                 "message_id": str(uuid.uuid4()),
                 "session_id": session_id,
@@ -313,22 +403,12 @@ class ChatService:
                     "negated_symptoms": [],
                     "lab_indicators": {},
                     "top_predictions": [],
-                    "clarification": {"needs_clarification": False, "questions": []},
+                    "clarification": {"needs_clarification": False, "clinical_stage": "intent_handled", "questions": []},
                     "rag_citations": [],
                     "latency_ms": fast_lat_ms,
                     "pipeline_breakdown": fast_breakdown
                 }
             }
-
-        # 2. Kiểm tra xem tin nhắn hiện tại có phải câu hỏi tổng hợp hoặc câu trả lời trắc nghiệm không
-        is_clarification_answer = bool(
-            re.search(r'^(?:trả lời|chọn|đáp án|tôi xin bổ sung|bổ sung thông tin|tôi có các dấu hiệu)[:\s"]+', user_message, flags=re.IGNORECASE)
-            or "câu hỏi làm rõ" in user_message.lower()
-        )
-        if is_clarification_answer:
-            clean_user_message = self._parse_clarification_response(user_message)
-        else:
-            clean_user_message = re.sub(r'^(?:trả lời|chọn|đáp án|tôi xin bổ sung|bổ sung thông tin|tôi có các dấu hiệu)[:\s"]+', '', user_message, flags=re.IGNORECASE).strip('"\';. ')
 
         is_summary_query = bool(re.search(
             r'(?:tôi đang bị những gì|tôi bị những bệnh gì|bị những gì|tổng hợp|tóm tắt|có những bệnh gì|các bệnh tôi bị|còn.*nữa mà|còn bệnh|tất cả các bệnh)',
@@ -339,116 +419,75 @@ class ChatService:
         # Trích xuất toàn bộ các vấn đề bệnh lý đã phát hiện trong cả phiên khám
         session_problems = self._extract_all_session_problems(chat_history, user_message)
 
-        # 2. Phân tích triệu chứng ở tin nhắn hiện tại
+        # 2. TÍCH LŨY TOÀN BỘ NGỮ CẢNH ĐA LƯỢT TỪ ĐẦU PHIÊN ĐẾN GIỜ
         t_ner_start = time.time()
-        curr_triage = await self._analyze_triage_with_cache(
-            text=clean_user_message,
+        session_context = await self._extract_cumulative_session_context(chat_history, user_message)
+        cumulative_symptoms = session_context["cumulative_symptoms"]
+        cumulative_negated = session_context["cumulative_negated"]
+        active_text = session_context["combined_text"]
+        already_asked_texts = session_context["already_asked_texts"]
+        clarification_turns_count = session_context["clarification_turns_count"]
+
+        # Phân tích nguy cơ bệnh học với bối cảnh lũy kế toàn diện
+        triage_data = await self._analyze_triage_with_cache(
+            text=active_text,
             audio_bytes=audio_bytes,
             audio_filename=audio_filename,
             document_bytes=document_bytes,
             document_filename=document_filename
         )
         ner_ms = max(int((time.time() - t_ner_start) * 1000), 1)
-        curr_symptoms = curr_triage.get("extracted_entities", {}).get("symptoms", [])
-        curr_negated = curr_triage.get("extracted_entities", {}).get("negated_symptoms", []) or curr_triage.get("negated_symptoms", [])
 
-        # 3. Tìm lượt kể triệu chứng lâm sàng gần nhất (Last Active Symptom Turn) để tránh nhiễu lịch sử cũ
-        last_symptom_turn = ""
-        last_symptoms = []
-        if chat_history:
-            for item in reversed(chat_history):
-                if item.get("sender") == "user":
-                    c = item.get("content") or item.get("text") or ""
-                    if c and not re.search(r'^(?:trả lời|chọn|đáp án|tôi xin bổ sung)[:\s"]+', c, flags=re.IGNORECASE) and "câu hỏi làm rõ" not in c.lower():
-                        if not self._handle_general_medical_intent(c):
-                            t = await self._analyze_triage_with_cache(text=c)
-                            syms = t.get("extracted_entities", {}).get("symptoms", [])
-                            if syms:
-                                last_symptom_turn = c
-                                last_symptoms = syms
-                                break
+        # Hợp nhất danh sách triệu chứng khẳng định
+        current_extracted = triage_data.get("extracted_entities", {}).get("symptoms", [])
+        seen_terms = {s.get("standard_term"): s for s in cumulative_symptoms if s.get("standard_term")}
+        for s in current_extracted:
+            st = s.get("standard_term")
+            if st and st not in seen_terms:
+                seen_terms[st] = s
+        symptoms = list(seen_terms.values())
 
-        # 4. Định tuyến ngữ cảnh lâm sàng thông minh:
-        active_negated = curr_negated
-        if is_summary_query and len(session_problems) > 0:
-            triage_data = curr_triage
-            active_text = user_message
-            active_symptoms = []
-            seen_terms = set()
-            for p in session_problems:
-                for s_ent in p.get("symptom_entities", []):
-                    st = s_ent.get("standard_term")
-                    if st and st not in seen_terms:
-                        active_symptoms.append(s_ent)
-                        seen_terms.add(st)
-            top_preds = session_problems
-            is_clarification_turn = False
-        elif len(curr_symptoms) > 0 and not is_clarification_answer:
-            triage_data = curr_triage
-            active_text = user_message
-            active_symptoms = curr_symptoms
-            top_preds = triage_data.get("triage_results", [])
-            is_clarification_turn = False
-        elif last_symptom_turn:
-            active_text = f"{last_symptom_turn} . {clean_user_message}"
-            triage_data = await self._analyze_triage_with_cache(
-                text=active_text,
-                audio_bytes=audio_bytes,
-                audio_filename=audio_filename,
-                document_bytes=document_bytes,
-                document_filename=document_filename
-            )
-            raw_symptoms = triage_data.get("extracted_entities", {}).get("symptoms", []) or last_symptoms
-            neg_entities = triage_data.get("extracted_entities", {}).get("negated_symptoms", []) or curr_negated
-            active_negated = neg_entities
-
-            # Prune triệu chứng đã bị loại trừ khỏi danh sách triệu chứng khẳng định
-            neg_terms = {s.get("standard_term") for s in active_negated if s.get("standard_term")}
-            active_symptoms = [s for s in raw_symptoms if s.get("standard_term") not in neg_terms]
-            top_preds = triage_data.get("triage_results", [])
-            is_clarification_turn = is_clarification_answer
-        else:
-            triage_data = curr_triage
-            active_text = user_message
-            active_symptoms = curr_symptoms
-            top_preds = triage_data.get("triage_results", [])
-            is_clarification_turn = False
+        # Loại bỏ các triệu chứng đã bị phủ định
+        neg_terms = {s.get("standard_term") for s in cumulative_negated if s.get("standard_term")}
+        symptoms = [s for s in symptoms if s.get("standard_term") not in neg_terms]
 
         is_emergency = triage_data.get("is_emergency", False)
-        symptoms = active_symptoms
         lab_indicators = triage_data.get("lab_indicators", {})
-        clarification = triage_data.get("clarification_loop", {})
+        top_preds = triage_data.get("triage_results", [])
+        top_prob = top_preds[0].get("probability", 0.0) if top_preds else 0.0
 
-        # Khi người dùng đã gửi câu trả lời làm rõ, tắt cờ cần hỏi làm rõ
-        if is_clarification_answer:
-            clarification["needs_clarification"] = False
+        # 3. XÁC ĐỊNH PHÂN TẦNG LÂM SÀNG (3-Tier Clinical Confidence Stage)
+        clinical_stage = clarification_engine.determine_clinical_stage(
+            top_probability=top_prob,
+            symptom_count=len(symptoms),
+            clarification_turns_count=clarification_turns_count,
+            is_emergency=is_emergency
+        )
 
-        # Nếu không bóc tách được triệu chứng nào và không có kết quả xét nghiệm
-        has_clinical_evidence = len(symptoms) > 0 or len(lab_indicators) > 0 or len(session_problems) > 0
+        clarification = {
+            "needs_clarification": (clinical_stage != "definitive_conclusion"),
+            "clinical_stage": clinical_stage,
+            "confidence_score": round(top_prob, 3),
+            "questions": []
+        }
 
-        # Nếu không có triệu chứng lâm sàng rõ ràng hoặc cần đào sâu bệnh cảnh
-        if not has_clinical_evidence:
-            top_preds = []
-            clarification["needs_clarification"] = True
-            clarification["questions"] = clarification_engine.generate_context_aware_questions(
-                user_text=user_message,
-                detected_symptoms=[s.get("standard_term", "") if isinstance(s, dict) else str(s) for s in symptoms]
-            )
-        elif clarification.get("needs_clarification") and (not clarification.get("questions") or len(clarification.get("questions", [])) == 0):
+        # Sinh câu hỏi làm rõ phân biệt nếu chưa đạt kết luận sơ bộ xác định
+        if clinical_stage != "definitive_conclusion":
             top_codes = [p.get("icd_code") for p in top_preds if p.get("icd_code")]
             clarification["questions"] = clarification_engine.generate_context_aware_questions(
-                user_text=user_message,
+                user_text=active_text,
                 detected_symptoms=[s.get("standard_term", "") if isinstance(s, dict) else str(s) for s in symptoms],
-                top_disease_codes=top_codes
+                top_disease_codes=top_codes,
+                already_asked_texts=already_asked_texts
             )
 
-        # 3. RAG Knowledge Retrieval (Redis Cached)
+        # 4. RAG Knowledge Retrieval (Redis Cached)
         t_rag_start = time.time()
         primary_code = top_preds[0].get("icd_code") if top_preds else None
         rag_docs = await rag_service.a_retrieve_medical_knowledge(active_text, disease_code=primary_code)
         rag_ms = max(int((time.time() - t_rag_start) * 1000), 1)
 
-        # 4. Suy luận lâm sàng đa tầng (Local LLM -> Cloud Gemini -> Deterministic Template)
+        # 5. Suy luận lâm sàng đa tầng (Local LLM -> Cloud Gemini -> Deterministic Template)
         t_llm_start = time.time()
         clinical_advice = await clinical_reasoning_service.generate_clinical_advice(
             patient_message=user_message,
@@ -460,8 +499,9 @@ class ChatService:
             is_emergency=is_emergency,
             gemini_api_key=gemini_api_key,
             cohere_api_key=cohere_api_key,
-            negated_symptoms=active_negated,
-            clarifying_questions=clarification.get("questions")
+            negated_symptoms=cumulative_negated,
+            clarifying_questions=clarification.get("questions"),
+            clinical_stage=clinical_stage
         )
         llm_ms = max(int((time.time() - t_llm_start) * 1000), 1)
         ai_response_text = clinical_advice.get("text", "")
@@ -576,7 +616,7 @@ class ChatService:
             "is_emergency": is_emergency,
             "red_flag": triage_data.get("red_flag_details", {}),
             "symptoms": symptoms,
-            "negated_symptoms": active_negated,
+            "negated_symptoms": cumulative_negated,
             "lab_indicators": lab_indicators,
             "top_predictions": top_preds,
             "clarification": clarification,
