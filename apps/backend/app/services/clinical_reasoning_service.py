@@ -181,10 +181,12 @@ class UnifiedClinicalReasoningService:
 
         # 3. Fallback sang Deterministic nếu cả 2 cloud đều không trả lời
         cloud_errors = []
-        if self.gemini_service.last_error:
-            cloud_errors.append(self.gemini_service.last_error)
-        if self.cohere_service.last_error:
-            cloud_errors.append(self.cohere_service.last_error)
+        gemini_err = getattr(self.gemini_service, "last_error", None)
+        if gemini_err:
+            cloud_errors.append(gemini_err)
+        cohere_err = getattr(self.cohere_service, "last_error", None)
+        if cohere_err:
+            cloud_errors.append(cohere_err)
 
         if not response_text:
             response_text = self._build_deterministic_clinical_response(

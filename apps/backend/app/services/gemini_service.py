@@ -19,9 +19,12 @@ class GeminiMedicalReasoningService:
     - Tổng hợp Bệnh Án Hoàn Chỉnh chuẩn hóa Bộ Y Tế Việt Nam.
     """
 
+    RATE_LIMITED = "RATE_LIMITED"
+
     def __init__(self):
         self.api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY", "")
         self.model_name = "gemini-2.0-flash"
+        self.last_error: Optional[str] = None
         self._cached_models: List[str] = []
         self._cached_models_time: float = 0.0
 
