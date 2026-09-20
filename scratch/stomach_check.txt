@@ -1,0 +1,42 @@
+PRIMARY:
+<clinical_thinking>
+- Cơ chế bệnh sinh & Liên kết triệu chứng: Biểu hiện Đau quặn thượng vị, Ợ chua phù hợp với phản ứng quá mẫn giải phóng Histamin và các chất trung gian hóa học từ dưỡng bào (Mast cell) và bạch cầu ái kiềm qua trung gian IgE hoặc cơ chế kích ứng tiếp xúc trực tiếp tại lớp thượng bì.
+- Chẩn đoán phân biệt & Loại trừ: Hướng chẩn đoán: **Loét tá tràng** (`K26.9`) - Độ tin cậy: **76.5%**. Phân biệt với: Viêm loét dạ dày tá tràng (K29.7). Tiêu chuẩn: Dị ứng tiếp xúc khu trú vùng tiếp xúc; Mày đay phù nề dạng dát sẩn phù di chuyển nhanh.
+- Đánh giá cờ đỏ (Red Flags): BÁO ĐỘNG ĐỎ PHẢN VỆ: Phù mạch Angioedema vùng môi/mí mắt, cảm giác nghẹn họng, khàn tiếng, khó thở thanh quản, thở rít hoặc hoa mắt tụt huyết áp.
+- Định hướng tiếp theo: Rà soát toàn bộ tiền sử dùng thuốc, thức ăn lạ (hải sản, nhộng), côn trùng đốt trong 24 giờ; ngừng ngay tác nhân nghi ngờ và chuẩn bị sẵn thuốc kháng Histamin H1.
+</clinical_thinking>
+
+Chào bạn, tôi là **Trợ Lý Y Tế AI (MediBot)** tham vấn theo chuẩn Bộ Y Tế Việt Nam.
+🔍 **Dấu hiệu đã ghi nhận:** Đau quặn thượng vị, Ợ chua, Đầy bụng khó tiêu, Viêm da dị ứng / Dị ứng da mặt.
+
+🩺 **Chẩn đoán Giả định Lâm sàng (Provisional Hypothesis):**
+Dựa trên sự kết hợp các dấu hiệu bạn chia sẻ qua các lượt hội thoại, hệ thống đang **giả định nghi ngờ nhiều nhất** về:
+1. **Loét tá tràng** (ICD-10: `K26.9`) — **Bệnh nghi ngờ chính (Tạm thời): 76.5%**
+   *Chuyên khoa:* Tiêu hóa
+
+👉 *Để chuyển từ trường hợp giả định sang kết luận sơ bộ chính xác, xin vui lòng làm rõ thêm:*
+**1. Để làm rõ thêm định hướng về Loét tá tràng, bạn có xuất hiện các biểu hiện nào dưới đây không?**
+   *(Gợi ý: Có biểu hiện đặc trưng: đau thượng vị lúc đói, đau ban đêm làm thức giấc / Có kèm theo: đau cồn cào thượng vị khi đói, đau nửa đêm về sáng / Các triệu chứng nhẹ hơn hoặc chỉ thoáng qua / Không có các dấu hiệu đặc thù kể trên)*
+**2. Cơn đau bụng của bạn khu trú ở đâu và xuất hiện vào lúc nào?**
+   *(Gợi ý: Đau quặn / cồn cào vùng thượng vị (trên rốn) / Đau nhiều lúc đói hoặc ban đêm / Đau tức cồn cào ngay sau khi ăn no / Đau âm ỉ bất kỳ thời điểm nào)*
+
+📋 **Hướng dẫn xử trí tạm thời an toàn:**
+- Chia nhỏ bữa ăn (4-5 bữa/ngày), chọn thức ăn mềm, lỏng, dễ tiêu (cháo, súp).
+- Không nằm ngay sau ăn, kiêng đồ chua cay, nhiều dầu mỡ, chất kích thích (cà phê, rượu bia).
+
+ALT:
+<clinical_thinking>
+- Cơ chế bệnh sinh & Liên kết triệu chứng: Biểu hiện Đau quặn thượng vị, Ợ chua phù hợp với phản ứng quá mẫn giải phóng Histamin và các chất trung gian hóa học từ dưỡng bào (Mast cell) và bạch cầu ái kiềm qua trung gian IgE hoặc cơ chế kích ứng tiếp xúc trực tiếp tại lớp thượng bì.
+- Chẩn đoán phân biệt & Loại trừ: Hướng chẩn đoán: **Loét tá tràng** (`K26.9`) - Độ tin cậy: **76.5%**. Phân biệt với: Viêm loét dạ dày tá tràng (K29.7). Tiêu chuẩn: Dị ứng tiếp xúc khu trú vùng tiếp xúc; Mày đay phù nề dạng dát sẩn phù di chuyển nhanh.
+- Đánh giá cờ đỏ (Red Flags): BÁO ĐỘNG ĐỎ PHẢN VỆ: Phù mạch Angioedema vùng môi/mí mắt, cảm giác nghẹn họng, khàn tiếng, khó thở thanh quản, thở rít hoặc hoa mắt tụt huyết áp.
+- Định hướng tiếp theo: Rà soát toàn bộ tiền sử dùng thuốc, thức ăn lạ (hải sản, nhộng), côn trùng đốt trong 24 giờ; ngừng ngay tác nhân nghi ngờ và chuẩn bị sẵn thuốc kháng Histamin H1.
+</clinical_thinking>
+
+📋 **GÓC NHÌN HỘI CHẨN CHUYÊN KHOA ĐỐI CHIẾU (SECOND OPINION AI)**
+
+🔬 **Đánh giá chuyên môn độc lập:**
+- **Định hướng lâm sàng:** Đồng thuận theo dõi nhóm bệnh lý **Loét tá tràng** (Mã ICD-10: `K26.9`) — **Tỉ lệ dự đoán: 76.5%** (Độ tin cậy lâm sàng) dựa trên các biểu hiện (Đau quặn thượng vị, Ợ chua, Đầy bụng khó tiêu).
+- **Rà soát an toàn dược lâm sàng:** Cần đặc biệt lưu ý không tự ý sử dụng kháng sinh hoặc corticoid khi chưa có đơn chỉ định từ bác sĩ. Với triệu chứng sốt hoặc đau nhức, chỉ dùng Paracetamol đúng liều (10-15mg/kg/lần, cách nhau 4-6 giờ, người lớn không quá 3g/ngày).
+- **Phác đồ & Chăm sóc bổ trợ:** Tham chiếu phác đồ BYT: _Phác đồ Bộ Y Tế: Hướng dẫn Chẩn đoán & Lâm sàng Loét tá tràng (K26.9), Phác đồ: Loét tá tràng (K26.9)_. Đảm bảo uống đủ 2 - 2.5 lít nước mỗi ngày, ăn đồ ăn mềm dễ tiêu hóa và theo dõi sát diễn biến thân nhiệt.
+
+⚠️ **Dấu hiệu cảnh báo cần đi viện ngay:** Khó thở, tức ngực dữ dội, nôn liên tục không uống được nước, hoặc sốt cao trên 39°C không hạ.

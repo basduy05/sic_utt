@@ -60,7 +60,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({
   const [elapsed, setElapsed] = useState(0);
   const [showDislikeInput, setShowDislikeInput] = useState(false);
   const [dislikeReason, setDislikeReason] = useState('');
-  const [dualViewMode, setDualViewMode] = useState<'split' | 'single'>('split');
+  const [dualViewMode, setDualViewMode] = useState<'split' | 'single'>('single');
 
   const altAnswers = message.alternative_answers || [];
   const totalAnswers = 1 + altAnswers.length;
@@ -184,10 +184,10 @@ export const MessageItem: React.FC<MessageItemProps> = ({
       {/* Bubble Container - Single Unified Frame */}
       <div
         className={`chat-message-bubble ${
-          !isUser && totalAnswers > 1 && dualViewMode === 'split'
-            ? 'w-full max-w-[98%] lg:max-w-[96%]'
+          !isUser && totalAnswers > 1
+            ? 'w-full max-w-[96%] lg:max-w-[94%]'
             : 'max-w-[92%] md:max-w-[88%] lg:max-w-[85%]'
-        } rounded-[1.6rem] px-5 py-4 shadow-sm transition-all relative ${
+        } rounded-[1.6rem] px-5 py-4 shadow-sm transition-[max-width,width] duration-300 relative ${
           isUser
             ? 'bg-gradient-to-br from-teal-600 to-blue-600 text-white rounded-tr-xs shadow-teal-500/20'
             : isEmergency
@@ -389,88 +389,6 @@ export const MessageItem: React.FC<MessageItemProps> = ({
         {/* --- CASE 2 & 3: STREAMING CONTENT OR COMPLETED RESPONSE --- */}
         {!isThinking && (
           <>
-            {/* Reasoning Accordion on top of Assistant Answer */}
-            {!isUser && !message.isStreaming && message.content && (
-              <div className="mb-3">
-                <button
-                  type="button"
-                  onClick={() => setShowReasoning(!showReasoning)}
-                  className="w-full flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-50/90 hover:bg-slate-100/90 text-slate-600 hover:text-slate-900 border border-slate-200/80 transition text-xs group"
-                >
-                  <div className="flex items-center space-x-2">
-                    <Cpu className="w-3.5 h-3.5 text-teal-600 group-hover:rotate-12 transition-transform" />
-                    <span className="font-semibold text-slate-800 text-[11px]">
-                      Quy trình phân tích lâm sàng (4 bước)
-                    </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
-                      Chuẩn BYT & ICD-10
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-1.5 text-[10px] font-mono text-slate-500">
-                    {latencyVal ? (
-                      <span className="font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200 flex items-center gap-1">
-                        <Zap size={10} className="text-amber-500 fill-amber-400" />
-                        {latencyVal}ms
-                      </span>
-                    ) : null}
-                    <ChevronDown
-                      size={12}
-                      className={`transition-transform duration-200 ${
-                        showReasoning ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </div>
-                </button>
-
-                {showReasoning && (
-                  <div className="mt-2 p-3 bg-slate-50/90 border border-slate-200/80 rounded-xl space-y-2 text-xs animate-in fade-in slide-in-from-top-1 duration-200">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-                      <div className="flex items-center space-x-2 text-slate-700 bg-white p-2 rounded-lg border border-slate-100 shadow-2xs">
-                        <CheckCircle size={13} className="text-emerald-500 flex-shrink-0" />
-                        <div>
-                          <span className="font-semibold">PhoBERT NER:</span>
-                          <span className="text-slate-500 ml-1">
-                            {message.pipeline_breakdown?.ner_ms
-                              ? `${message.pipeline_breakdown.ner_ms}ms`
-                              : 'Trích xuất triệu chứng'}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2 text-slate-700 bg-white p-2 rounded-lg border border-slate-100 shadow-2xs">
-                        <CheckCircle size={13} className="text-emerald-500 flex-shrink-0" />
-                        <div>
-                          <span className="font-semibold">RAG Dense Search:</span>
-                          <span className="text-slate-500 ml-1">
-                            {message.pipeline_breakdown?.rag_ms
-                              ? `${message.pipeline_breakdown.rag_ms}ms`
-                              : '640 phác đồ BYT'}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2 text-slate-700 bg-white p-2 rounded-lg border border-slate-100 shadow-2xs">
-                        <CheckCircle size={13} className="text-emerald-500 flex-shrink-0" />
-                        <div>
-                          <span className="font-semibold">Red Flag Guard:</span>
-                          <span className="text-slate-500 ml-1">An toàn cấp cứu</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2 text-slate-700 bg-white p-2 rounded-lg border border-slate-100 shadow-2xs">
-                        <CheckCircle size={13} className="text-emerald-500 flex-shrink-0" />
-                        <div>
-                          <span className="font-semibold">Gemini 2.0 Flash:</span>
-                          <span className="text-slate-500 ml-1">
-                            {message.pipeline_breakdown?.llm_ms
-                              ? `${message.pipeline_breakdown.llm_ms}ms`
-                              : 'Tổng hợp khuyến nghị'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* While streaming text: show subtle in-flight indicator */}
             {!isUser && message.isStreaming && message.content && (
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 mb-2 rounded-full bg-teal-50 border border-teal-200 text-[10px] font-medium text-teal-800">
@@ -479,82 +397,64 @@ export const MessageItem: React.FC<MessageItemProps> = ({
               </div>
             )}
 
-            {/* Dual AI View Mode Bar (When multiple AI answers are available) */}
+            {/* Dual AI Model Tabs & View Mode Switcher (Single AI view by default) */}
             {!isUser && totalAnswers > 1 && !message.isStreaming && (
-              <div className="flex flex-wrap items-center justify-between gap-2 bg-gradient-to-r from-teal-50 via-cyan-50 to-blue-50 border border-teal-200/90 rounded-xl px-3.5 py-2 mb-3 shadow-2xs">
-                <div className="flex items-center space-x-2">
-                  <span className="flex h-2 w-2 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
-                  </span>
-                  <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-                    <Bot className="w-4 h-4 text-teal-600" />
-                    Hội Chẩn Song Song 2 Mô Hình AI (Dual-AI Consensus)
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 bg-white/90 p-0.5 rounded-lg border border-teal-200/70 text-[11px]">
+              <div className="flex flex-wrap items-center justify-between gap-2 p-1.5 mb-3 rounded-2xl bg-gradient-to-r from-teal-50/70 via-slate-50 to-cyan-50/70 border border-slate-200/90 shadow-2xs">
+                {/* AI Tabs for 1-by-1 viewing */}
+                <div className="flex items-center gap-1.5 flex-wrap">
                   <button
                     type="button"
-                    onClick={() => setDualViewMode('split')}
-                    className={`px-2.5 py-1 rounded-md font-medium transition ${
-                      dualViewMode === 'split'
-                        ? 'bg-teal-600 text-white shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                    onClick={() => {
+                      onSetActiveAnswerIndex?.(message.id, 0);
+                      setDualViewMode('single');
+                    }}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      dualViewMode === 'single' && activeIndex === 0
+                        ? 'bg-white text-teal-900 shadow-xs border border-teal-300 ring-1 ring-teal-200 font-bold'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
                     }`}
                   >
-                    ⊞ Song song 2 AI
+                    <span className="w-2.5 h-2.5 rounded-full bg-teal-500 shadow-2xs"></span>
+                    <span>AI 1: Bác sĩ Chính</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-md bg-teal-50 text-teal-700 border border-teal-200/70">
+                      {formatProviderLabel(message.provider || 'gemini').split(' ')[0]}
+                    </span>
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setDualViewMode('single')}
-                    className={`px-2.5 py-1 rounded-md font-medium transition ${
-                      dualViewMode === 'single'
-                        ? 'bg-teal-600 text-white shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    ⊟ Từng AI ({activeIndex + 1}/{totalAnswers})
-                  </button>
-                </div>
-              </div>
-            )}
 
-            {/* Single Answer Switcher (when user chose single view mode) */}
-            {!isUser && totalAnswers > 1 && !message.isStreaming && dualViewMode === 'single' && (
-              <div className="flex items-center justify-between bg-teal-50/80 border border-teal-200/90 rounded-xl px-3 py-1.5 mb-2.5 text-xs shadow-2xs">
-                <div className="flex items-center space-x-2">
-                  <span className="font-semibold text-slate-700">Đang hiển thị:</span>
-                  <span className="px-2 py-0.5 rounded-full bg-teal-600 text-white font-bold text-[11px]">
-                    {activeIndex + 1} / {totalAnswers}
-                  </span>
-                  <span className="px-2 py-0.5 rounded-md bg-white border border-teal-200 text-teal-800 font-bold text-[10px] tracking-wide uppercase">
-                    {formatProviderLabel(currentProvider)}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-1">
                   <button
                     type="button"
-                    disabled={activeIndex === 0}
-                    onClick={() =>
-                      onSetActiveAnswerIndex?.(message.id, activeIndex - 1)
-                    }
-                    className="p-1 rounded-md bg-white hover:bg-teal-100 disabled:opacity-30 disabled:cursor-not-allowed border border-slate-200 text-slate-700 transition shadow-2xs"
-                    title="Câu trả lời trước"
+                    onClick={() => {
+                      onSetActiveAnswerIndex?.(message.id, 1);
+                      setDualViewMode('single');
+                    }}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      dualViewMode === 'single' && activeIndex === 1
+                        ? 'bg-white text-cyan-900 shadow-xs border border-cyan-300 ring-1 ring-cyan-200 font-bold'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+                    }`}
                   >
-                    <ChevronLeft size={14} />
-                  </button>
-                  <button
-                    type="button"
-                    disabled={activeIndex >= totalAnswers - 1}
-                    onClick={() =>
-                      onSetActiveAnswerIndex?.(message.id, activeIndex + 1)
-                    }
-                    className="p-1 rounded-md bg-white hover:bg-teal-100 disabled:opacity-30 disabled:cursor-not-allowed border border-slate-200 text-slate-700 transition shadow-2xs"
-                    title="Câu trả lời tiếp theo"
-                  >
-                    <ChevronRight size={14} />
+                    <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 shadow-2xs"></span>
+                    <span>AI 2: Hội chẩn Độc lập</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-md bg-cyan-50 text-cyan-700 border border-cyan-200/70">
+                      {formatProviderLabel(altAnswers[0]?.provider || 'cohere').split(' ')[0]}
+                    </span>
                   </button>
                 </div>
+
+                {/* Split vs Single Mode Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setDualViewMode(dualViewMode === 'split' ? 'single' : 'split')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    dualViewMode === 'split'
+                      ? 'bg-teal-700 text-white shadow-xs'
+                      : 'bg-white text-slate-700 hover:text-teal-900 border border-slate-200/90 shadow-2xs hover:bg-teal-50/50'
+                  }`}
+                  title={dualViewMode === 'split' ? 'Chuyển về xem từng AI' : 'Mở xem song song cả 2 AI'}
+                >
+                  <Bot size={13} className={dualViewMode === 'split' ? 'text-teal-200' : 'text-teal-600'} />
+                  <span>{dualViewMode === 'split' ? '⊟ Xem từng AI' : '⊞ So sánh song song'}</span>
+                </button>
               </div>
             )}
 
@@ -564,7 +464,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({
               <div className="space-y-3">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
                   {/* Card 1: AI 1 (Primary Model) */}
-                  <div className="rounded-2xl border border-teal-200/90 bg-gradient-to-b from-teal-50/20 to-white p-4 shadow-sm flex flex-col justify-between">
+                  <div className="rounded-2xl border border-teal-200/90 bg-gradient-to-b from-teal-50/20 to-white p-4 shadow-sm flex flex-col justify-between animate-in fade-in zoom-in-[0.99] duration-200">
                     <div>
                       <div className="flex items-center justify-between pb-2 mb-3 border-b border-teal-100">
                         <div className="flex items-center space-x-1.5">
@@ -597,7 +497,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({
                   </div>
 
                   {/* Card 2: AI 2 (Second Opinion / Cohere) */}
-                  <div className="rounded-2xl border border-cyan-200/90 bg-gradient-to-b from-cyan-50/20 to-white p-4 shadow-sm flex flex-col justify-between">
+                  <div className="rounded-2xl border border-cyan-200/90 bg-gradient-to-b from-cyan-50/20 to-white p-4 shadow-sm flex flex-col justify-between animate-in fade-in zoom-in-[0.99] duration-200">
                     <div>
                       <div className="flex items-center justify-between pb-2 mb-3 border-b border-cyan-100">
                         <div className="flex items-center space-x-1.5">

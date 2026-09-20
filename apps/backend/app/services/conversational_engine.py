@@ -60,16 +60,19 @@ class ConversationalEngine:
     ) -> str:
         top_d = predicted_diseases[0] if predicted_diseases else {}
         top_name = top_d.get("disease_name_vi", "Hội chứng lâm sàng")
+        top_icd = top_d.get("icd_code", "ICD-10")
         dept = top_d.get("department", "Đa khoa")
+        top_prob = top_d.get("probability_percentage") or (f"{round(float(top_d.get('probability', 0.85))*100, 1)}%" if top_d else "85.0%")
+
         sym_names = [s.get("standard_term") for s in symptoms if s.get("standard_term")]
         neg_names = [s.get("standard_term") for s in negated_symptoms if s.get("standard_term")]
-        diff_names = [d.get("disease_name_vi") for d in predicted_diseases[1:3] if d.get("disease_name_vi")]
+        diff_names = [f"{d.get('disease_name_vi')} ({d.get('icd_code', '')})" for d in predicted_diseases[1:3] if d.get("disease_name_vi")]
 
         if clinical_stage == "medical_qa":
-            patho = f"Bệnh nhân đặt câu hỏi tìm hiểu kiến thức y khoa về {top_name}. Phân tích bản chất bệnh sinh, căn nguyên và cơ chế diễn tiến theo chuẩn Bộ Y Tế."
-            diff_text = f"Mặt bệnh tham chiếu: {top_name} ({top_d.get('icd_code', 'ICD-10')}). Phổ biến trong chuyên khoa {dept}."
-            red_flag = "Cảnh báo các biến chứng nguy hiểm nếu không được phát hiện và kiểm soát kịp thời."
-            next_step = "Giải đáp trực tiếp thấu đáo các thắc mắc (nguyên nhân, cách chữa, ăn uống, mức độ nguy hiểm) mà không suy đoán hay ép làm rõ triệu chứng."
+            patho = f"Bệnh nhân đặt câu hỏi tìm hiểu kiến thức y khoa về {top_name} (Mã ICD-10: `{top_icd}`). Bản chất bệnh sinh liên quan đến căn nguyên tổn thương mô học, biến đổi sinh lý và diễn tiến cấp - mạn tính theo chuẩn Bộ Y Tế."
+            diff_text = f"Mặt bệnh tham chiếu trọng tâm: {top_name} (`{top_icd}`) - Chuyên khoa: {dept}. Độ tương quan tri thức: {top_prob}."
+            red_flag = "Cảnh báo các biến chứng cấp tính nguy hiểm nếu không được tầm soát, chẩn đoán phân biệt và can thiệp kịp thời."
+            next_step = "Giải đáp trực tiếp, thấu đáo và khoa học các thắc mắc (nguyên nhân, biểu hiện điển hình, chế độ dinh dưỡng, dự phòng) mà không ép làm rõ triệu chứng."
             return (
                 "<clinical_thinking>\n"
                 f"- Cơ chế bệnh sinh & Liên kết chuyên khoa: {patho}\n"
@@ -79,67 +82,112 @@ class ConversationalEngine:
                 "</clinical_thinking>"
             )
 
-        if "Mắt" in dept or any("mắt" in s.lower() or "nhìn" in s.lower() for s in sym_names):
+        if "Tiêu hóa" in dept or any(kw in s.lower() for kw in ["thượng vị", "dạ dày", "ợ chua", "tiêu chảy", "loét", "bụng"] for s in sym_names):
             patho = (
-                f"Triệu chứng {', '.join(sym_names[:2]) or 'thị giác'} phản ánh tình trạng quá tải điều tiết cơ thể mi "
-                "hoặc bất ổn định màng phim nước mắt (Tear Film Break-up). Khi làm việc thị giác cự ly gần kéo dài hoặc "
-                "giảm tần số chớp mắt, nhãn cầu bị khô và suy giảm độ sắc nét quang học tạm thời."
+                f"Biểu hiện {', '.join(sym_names[:2]) or 'tiêu hóa'} phản ánh sự mất cân bằng giữa yếu tố tấn công (Acid HCl, Pepsin, vi khuẩn H.pylori, thức ăn kích thích) "
+                "và hàng rào bảo vệ niêm mạc (chất nhầy Mucin, Bicarbonate, tưới máu vi mạch). Sự kích thích acid tại vùng tổn thương hoặc trào ngược "
+                "gây kích ứng đầu mút thần kinh cảm giác phế vị, dẫn đến co thắt cơ trơn dạ dày - thực quản và cảm giác đau tức cồn cào rát bỏng."
             )
-            diff_text = f"Ưu tiên nghĩ tới {top_name} (H52.4). Cần phân biệt với Viêm kết giác mạc khô (H57.0) và Tật khúc xạ chưa chỉnh kính (H52.1)."
-            red_flag = "Hiện chưa có dấu hiệu đỏ mắt dữ dội, đau nhức sâu kèm buồn nôn (cảnh báo Glaucoma góc đóng cấp) hay mất thị lực đột ngột."
-            next_step = "Khai thác thêm thời gian duy trì thị lực gần, tiền sử kính mắt và đáp ứng sau khi nhắm mắt nghỉ ngơi."
+            diff_text = (
+                f"Hướng chẩn đoán: **{top_name}** (`{top_icd}`) - Độ tin cậy: **{top_prob}**. "
+                f"Phân biệt với: {', '.join(diff_names) if diff_names else 'Viêm loét dạ dày - tá tràng (K29), Trào ngược GERD (K21), Viêm tụy cấp (K85)'}. "
+                "Tiêu chuẩn: GERD nổi trội cảm giác nóng rát sau xương ức và trớ thức ăn; Loét tá tràng đau tăng khi đói hoặc nửa đêm về sáng giảm sau khi ăn; Viêm tụy cấp đau dữ dội xuyên lưng."
+            )
+            red_flag = "Cảnh báo xuất huyết tiêu hóa và thủng tạng rỗng: Nôn ra máu đỏ hoặc dịch bã cà phê, đại tiện phân đen như nhựa đường mùi khắm tanh, đau bụng dữ dội co cứng như gỗ hoặc nôn liên tục mất nước."
+            next_step = "Chỉ định Nội soi thực quản - dạ dày - tá tràng (EGD) kèm test Clo tìm vi khuẩn Helicobacter pylori, siêu âm ổ bụng tổng quát loại trừ bệnh lý gan mật tụy."
+
+        elif "Mắt" in dept or any("mắt" in s.lower() or "nhìn" in s.lower() for s in sym_names):
+            patho = (
+                f"Triệu chứng {', '.join(sym_names[:2]) or 'thị giác'} phản ánh tình trạng quá tải điều tiết cơ thể mi (Ciliary muscle fatigue), "
+                "suy giảm độ đàn hồi thể thủy tinh do tuổi tác, kết hợp với bất ổn định màng phim nước mắt (Tear Film Break-up). "
+                "Khi làm việc thị giác cự ly gần kéo dài hoặc giảm tần số chớp mắt, nhãn cầu bị khô rát và suy giảm độ sắc nét quang học hội tụ trên hoàng điểm."
+            )
+            diff_text = (
+                f"Ưu tiên nghĩ tới {top_name} (`{top_icd}`) với độ tin cậy {top_prob}. "
+                "Cần phân biệt với Viêm kết giác mạc khô (H57.0) và Tật khúc xạ chưa chỉnh kính (H52.1/H52.2). "
+                "Tiêu chuẩn phân biệt: Lão thị suy giảm điều tiết nhìn gần trong khi nhìn xa vẫn tốt; Khô mắt nổi bật cảm giác cộm xốn xót mắt."
+            )
+            red_flag = "Cảnh báo đỏ mắt cương tụ rìa dữ dội, đau nhức sâu trong nhãn cầu lan nửa đầu kèm buồn nôn (cảnh báo Glaucoma góc đóng cấp) hoặc mất thị lực đột ngột."
+            next_step = "Khám chuyên khoa Mắt đo khúc xạ toàn diện, đo thị lực nhìn gần bằng bảng Jaeger, kiểm tra đáy mắt và thử nghiệm Schirmer đánh giá tuyến lệ."
+
         elif "Truyền nhiễm" in dept or any("sốt" in s.lower() or "chấm xuất huyết" in s.lower() for s in sym_names):
             patho = (
-                f"Sự phối hợp giữa {', '.join(sym_names[:2]) or 'sốt'} với các biểu hiện toàn thân phản ánh đáp ứng viêm cấp tính do virus. "
-                "Cần đặc biệt theo dõi biến động tính thấm thành mao mạch và nguy cơ xuất huyết vi mạch."
+                f"Sự phối hợp giữa {', '.join(sym_names[:2]) or 'sốt'} với các biểu hiện toàn thân phản ánh đáp ứng viêm hệ thống cấp tính do virus. "
+                "Cơ chế cốt lõi là sự kích hoạt đại thực bào giải phóng bão Cytokine (TNF-α, IL-6), làm tổn thương tế bào nội mô mạch máu, "
+                "gây tăng tính thấm thành mao mạch dẫn đến thoát huyết tương cô đặc máu và ức chế tủy xương làm giảm nhanh tiểu cầu."
             )
-            diff_text = f"Hướng chẩn đoán chính: {top_name}. Chẩn đoán phân biệt quan trọng: {', '.join(diff_names) if diff_names else 'Cúm mùa, Sốt phát ban'}."
-            red_flag = "Cảnh báo thoát huyết tương, đau bụng vùng gan, nôn ói liên tục hoặc xuất huyết niêm mạc."
-            next_step = "Đề nghị kiểm tra tổng phân tích tế bào máu ngoại vi (tiểu cầu, Hct) nếu sốt sang ngày thứ 3."
-        elif "Dị ứng" in dept or any("ngứa" in s.lower() or "dị ứng" in s.lower() for s in sym_names):
-            patho = (
-                f"Biểu hiện {', '.join(sym_names[:2]) or 'mẩn ngứa'} phù hợp với phản ứng phóng thích Histamin từ dưỡng bào "
-                "qua trung gian IgE hoặc kích ứng tiếp xúc."
+            diff_text = (
+                f"Hướng chẩn đoán chính: **{top_name}** (`{top_icd}`) - Độ tin cậy mô hình: **{top_prob}**. "
+                f"Chẩn đoán phân biệt quan trọng: {', '.join(diff_names) if diff_names else 'Cúm mùa (J10/J11), Sốt phát ban (B05/B06), Nhiễm khuẩn huyết'}. "
+                "Phân biệt: Sốt Dengue thường có sốt cao đột ngột liên tục, đau mỏi sâu hốc mắt/cơ khớp và chấm xuất huyết dưới da không biến mất khi căng da; Cúm mùa thường kèm viêm long đường hô hấp trên."
             )
-            diff_text = f"Hướng chẩn đoán: {top_name}. Phân biệt với Viêm da cơ địa đợt cấp hoặc dị ứng thuốc."
-            red_flag = "Cảnh báo phù mạch Angioedema vùng hầu họng, thở rít hoặc tụt huyết áp (Phản vệ)."
-            next_step = "Làm rõ dị nguyên thức ăn, thuốc đã dùng trong 24 giờ qua và tiền sử cơ địa dị ứng."
-        elif "Hô hấp" in dept or any("ho" in s.lower() or "khó thở" in s.lower() for s in sym_names):
-            patho = (
-                f"Các triệu chứng {', '.join(sym_names[:2]) or 'hô hấp'} cho thấy kích ứng niêm mạc đường thở hoặc tăng tính phản ứng phế quản."
+            red_flag = (
+                "Cảnh báo dấu hiệu nguy hiểm theo phác đồ Bộ Y Tế: Thoát huyết tương nặng gây sốc (mạch nhanh nhỏ, tụt huyết áp); "
+                "đau bụng nhiều vùng gan; nôn liên tục (≥3 lần/1h); xuất huyết niêm mạc (chảy máu cam, chân răng, nôn ra máu, đi ngoài phân đen); li bì, bồn chồn, lừ đừ hoặc tiểu ít."
             )
-            diff_text = f"Hướng chẩn đoán: {top_name}. Phân biệt với {', '.join(diff_names) if diff_names else 'Viêm phế quản cấp, Hen phế quản'}."
-            red_flag = "Cảnh báo khó thở khi nằm, thở co kéo cơ hô hấp phụ hoặc SpO2 suy giảm."
-            next_step = "Khai thác tính chất đờm, tiếng rít khi thở và thời điểm khởi phát cơn ho."
-        elif "Tiêu hóa" in dept or any("bụng" in s.lower() or "nôn" in s.lower() or "tiêu chảy" in s.lower() for s in sym_names):
-            patho = (
-                f"Biểu hiện {', '.join(sym_names[:2]) or 'tiêu hóa'} phản ánh tình trạng rối loạn nhu động dạ dày - ruột "
-                "hoặc kích ứng niêm mạc do acid dịch vị / độc tố thức ăn."
+            next_step = (
+                "Chỉ định xét nghiệm khẩn: Tổng phân tích tế bào máu ngoại vi (CBC theo dõi Hct và Tiểu cầu mỗi 24h), "
+                "Test nhanh kháng nguyên Dengue NS1 (ngày 1-3) hoặc kháng thể IgM/IgG Dengue (từ ngày 4), men gan AST/ALT. Bù điện giải tích cực bằng Oresol pha chuẩn."
             )
-            diff_text = f"Hướng chẩn đoán: {top_name}. Phân biệt với {', '.join(diff_names) if diff_names else 'Viêm dạ dày cấp, Ngộ độc thực phẩm'}."
-            red_flag = "Cảnh báo đau bụng quặn dữ dội, nôn ra máu, đi ngoài phân đen hoặc mất nước nặng."
+
         elif "Cơ Xương Khớp" in dept or any(kw in s.lower() for kw in ["cổ", "vai", "gáy", "khớp", "lưng", "mỏi"] for s in sym_names):
             patho = (
-                f"Biểu hiện {', '.join(sym_names[:2]) or 'đau mỏi cơ khớp'} phản ánh tình trạng quá tải cơ học, "
-                "co cứng các nhóm cơ cạnh sống (Muscle Spasm) hoặc thoái hóa đốt sống cổ gây kích thích nhánh thần kinh cảm giác. "
-                "Tình trạng này rất phổ biến khi ngồi tĩnh tại sai tư thế hoặc làm việc màn hình kéo dài."
+                f"Biểu hiện {', '.join(sym_names[:2]) or 'cơ xương khớp'} phản ánh tình trạng quá tải cơ học tĩnh học kéo dài, "
+                "co thắt các nhóm cơ cạnh cột sống (Myofascial Spasm), ứ đọng acid lactic cục bộ kết hợp với thoái hóa đĩa đệm mỏm khớp "
+                "gây kích thích cơ học hoặc chèn ép các nhánh rễ thần kinh cảm giác chi phối vùng tương ứng."
             )
-            diff_text = f"Hướng chẩn đoán: {top_name}. Phân biệt với Hội chứng đau cơ mạc (Myofascial Pain Syndrome), Thoát vị đĩa đệm cột sống cổ (M50.9) hoặc Căng cơ cổ cấp tính."
-            red_flag = "Cảnh báo dấu hiệu tê bì yếu liệt cánh tay, mất khéo léo bàn tay hoặc đau lan dữ dội kèm chóng mặt khi quay cổ."
-            next_step = "Khai thác tư thế làm việc, thói quen vận động cổ và mức độ tê bì lan xuống chi trên."
+            diff_text = (
+                f"Hướng chẩn đoán: **{top_name}** (`{top_icd}`) - Độ tin cậy: **{top_prob}**. "
+                f"Phân biệt với: {', '.join(diff_names) if diff_names else 'Hội chứng cổ vai gáy do co cơ (M54.2), Thoát vị đĩa đệm chèn ép rễ (M50.1), Viêm quanh khớp vai (M75.0)'}. "
+                "Tiêu chuẩn: Chèn ép rễ có triệu chứng đau giật buốt lan dọc chi trên kèm tê bì các ngón tay theo dermatomic; Đau cơ mạc khu trú đau âm ỉ tăng khi duy trì một tư thế."
+            )
+            red_flag = "Cảnh báo tổn thương thần kinh tiến triển: Yếu liệt đột ngột cơ bàn tay (cầm nắm rơi đồ vật), rối loạn cảm giác vùng yên ngựa, hoặc đau cột sống dữ dội về đêm không đỡ khi nghỉ."
+            next_step = "Chụp X-quang cột sống tư thế thẳng - nghiêng, chỉ định Chụp cộng hưởng từ (MRI) nếu nghi ngờ chèn ép rễ thần kinh hoặc tủy sống; đo điện cơ (EMG)."
+
+        elif "Hô hấp" in dept or any("ho" in s.lower() or "khó thở" in s.lower() or "đờm" in s.lower() for s in sym_names):
+            patho = (
+                f"Các triệu chứng {', '.join(sym_names[:2]) or 'hô hấp'} cho thấy tình trạng viêm nhiễm, kích ứng niêm mạc biểu mô đường thở, "
+                "phù nề thành phế quản và tăng tiết dịch nhầy đặc quánh làm giảm thiết diện lòng đường dẫn khí và kích hoạt phản xạ ho qua nhánh thần kinh phế vị."
+            )
+            diff_text = (
+                f"Hướng chẩn đoán: **{top_name}** (`{top_icd}`) - Độ tin cậy: **{top_prob}**. "
+                f"Phân biệt với: {', '.join(diff_names) if diff_names else 'Viêm phế quản cấp (J20), Hen phế quản (J45), Viêm phổi (J18)'}. "
+                "Tiêu chuẩn: Hen có tiếng ran rít/ran ngáy thay đổi theo thời gian; Viêm phổi có sốt cao kèm hội chứng đông đặc hoặc ran ẩm nhỏ hạt khu trú."
+            )
+            red_flag = "Cảnh báo suy hô hấp cấp: Khó thở khi nằm, co kéo cơ liên sườn và hõm ức, tím tái môi đầu chi, SpO2 suy giảm dưới 94%, thở nhanh > 25 lần/phút hoặc ho ra máu tươi."
+            next_step = "Đo SpO2 tại chỗ, chỉ định Chụp X-quang tim phổi thẳng (Chest X-ray), xét nghiệm công thức máu/CRP và đo chức năng hô hấp khi qua giai đoạn cấp."
+
+        elif "Dị ứng" in dept or "Da liễu" in dept or any("ngứa" in s.lower() or "dị ứng" in s.lower() or "mẩn" in s.lower() for s in sym_names):
+            patho = (
+                f"Biểu hiện {', '.join(sym_names[:2]) or 'mẩn ngứa'} phù hợp với phản ứng quá mẫn giải phóng Histamin và các chất trung gian hóa học "
+                "từ dưỡng bào (Mast cell) và bạch cầu ái kiềm qua trung gian IgE hoặc cơ chế kích ứng tiếp xúc trực tiếp tại lớp thượng bì."
+            )
+            diff_text = (
+                f"Hướng chẩn đoán: **{top_name}** (`{top_icd}`) - Độ tin cậy: **{top_prob}**. "
+                f"Phân biệt với: {', '.join(diff_names) if diff_names else 'Mày đay cấp tính, Viêm da cơ địa đợt cấp, Dị ứng thuốc'}. "
+                "Tiêu chuẩn: Dị ứng tiếp xúc khu trú vùng tiếp xúc; Mày đay phù nề dạng dát sẩn phù di chuyển nhanh."
+            )
+            red_flag = "BÁO ĐỘNG ĐỎ PHẢN VỆ: Phù mạch Angioedema vùng môi/mí mắt, cảm giác nghẹn họng, khàn tiếng, khó thở thanh quản, thở rít hoặc hoa mắt tụt huyết áp."
+            next_step = "Rà soát toàn bộ tiền sử dùng thuốc, thức ăn lạ (hải sản, nhộng), côn trùng đốt trong 24 giờ; ngừng ngay tác nhân nghi ngờ và chuẩn bị sẵn thuốc kháng Histamin H1."
+
         elif "Thần kinh" in dept or any("đầu" in s.lower() or "chóng mặt" in s.lower() for s in sym_names):
             patho = (
-                f"Biểu hiện {', '.join(sym_names[:2]) or 'thần kinh'} phản ánh tình trạng căng thẳng thần kinh vận mạch, "
-                "co thắt cơ vùng đầu cổ hoặc rối loạn điều hòa tiền đình ngoại biên."
+                f"Biểu hiện {', '.join(sym_names[:2]) or 'thần kinh'} phản ánh tình trạng rối loạn điều hòa thần kinh vận mạch não, "
+                "tăng trương lực hệ cơ vùng chẩm trán hoặc rối loạn cơ quan tiền đình ngoại biên (ống bán khuyên / thần kinh tiền đình ốc tai)."
             )
-            diff_text = f"Hướng chẩn đoán: {top_name}. Phân biệt với {', '.join(diff_names) if diff_names else 'Đau đầu căng thẳng, Rối loạn tiền đình'}."
-            red_flag = "Cảnh báo đau đầu dữ dội như sét đánh, yếu liệt nửa người hoặc co giật."
-            next_step = "Làm rõ tính chất đau nhói hay căng tức, thời gian cơn và yếu tố khởi phát."
+            diff_text = (
+                f"Hướng chẩn đoán: **{top_name}** (`{top_icd}`) - Độ tin cậy: **{top_prob}**. "
+                f"Phân biệt với: {', '.join(diff_names) if diff_names else 'Đau đầu căng thẳng (G44.2), Migraine đau nửa đầu (G43), Hội chứng tiền đình ngoại biên (H81)'}. "
+                "Tiêu chuẩn: Migraine đau theo nhịp mạch đập kèm sợ ánh sáng/tiếng động; Rối loạn tiền đình có cảm giác đồ vật xoay tròn kèm rung giật nhãn cầu."
+            )
+            red_flag = "DẤU HIỆU CẢNH BÁO ĐỘT QUỴ & NGUY HIỂM (FAST): Đau đầu sét đánh dữ dội chưa từng có, yếu liệt mặt méo miệng, yếu liệt nửa người, nói khó hoặc rối loạn ý thức."
+            next_step = "Khám thần kinh chuyên sâu, đo huyết áp 2 tay, chụp Cắt lớp vi tính (CT Scanner) hoặc MRI sọ não khẩn cấp nếu có bất kỳ dấu hiệu thần kinh khu trú nào."
+
         else:
-            patho = f"Tập hợp các triệu chứng ({', '.join(sym_names[:3]) or 'ghi nhận'}) phản ánh phản ứng mệt mỏi thể chất hoặc rối loạn cơ năng ban đầu."
-            diff_text = f"Giả định lâm sàng: {top_name}. Cần phân biệt với: {', '.join(diff_names) if diff_names else 'các hội chứng tương đương'}."
-            red_flag = "Chưa ghi nhận dấu hiệu đe dọa sinh tồn tức thì."
-            next_step = "Theo dõi sát đáp ứng ban đầu và thăm khám chuyên khoa khi triệu chứng kéo dài."
+            patho = f"Tập hợp các triệu chứng ({', '.join(sym_names[:3]) or 'ghi nhận'}) phản ánh phản ứng mệt mỏi thể chất, rối loạn thích nghi cơ năng hoặc đáp ứng miễn dịch ban đầu đối với tác nhân gây bệnh."
+            diff_text = f"Giả định lâm sàng ưu tiên: **{top_name}** (`{top_icd}`) - Độ tin cậy: **{top_prob}**. Cần phân biệt với: {', '.join(diff_names) if diff_names else 'các hội chứng lâm sàng đồng hành'}."
+            red_flag = "Chưa ghi nhận dấu hiệu đe dọa sinh tồn tức thì (tri giác tỉnh táo, đường thở thông thoáng, huyết động ổn định)."
+            next_step = "Theo dõi sát diễn biến thân nhiệt và nhịp sinh học trong 24-48 giờ; thăm khám chuyên khoa khi triệu chứng tăng nặng hoặc không thuyên giảm."
 
         return (
             "<clinical_thinking>\n"

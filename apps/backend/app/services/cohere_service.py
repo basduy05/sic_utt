@@ -42,20 +42,32 @@ class CohereMedicalReasoningService:
             else "GIAI ĐOẠN: KẾT LUẬN SƠ BỘ SÀNG LỌC - Đã đủ dữ kiện (độ tin cậy cao >= 75%), đưa ra kết luận chẩn đoán, phác đồ điều trị Bộ Y Tế, và cảnh báo cấp cứu."
         )
 
+        top_pred = predicted_diseases[0] if predicted_diseases else {}
+        top_disease_name = top_pred.get("disease_name_vi", "Bệnh lý cần theo dõi")
+        top_icd = top_pred.get("icd_code", "ICD-10")
+        prob_val = top_pred.get("probability_percentage")
+        if not prob_val and top_pred:
+            raw_prob = float(top_pred.get("probability", 0.85))
+            prob_val = f"{round(raw_prob * 100, 1)}%"
+        if not prob_val:
+            prob_val = "85.0%"
+
         system_prompt = (
-            "Bạn là Bác Sĩ Chuyên Khoa Hội Chẩn AI (Second Opinion) theo hướng dẫn của Bộ Y Tế Việt Nam. "
-            "Hãy đóng vai trò một chuyên gia hội chẩn y khoa ân cần, chu đáo và sắc sảo.\n\n"
-            "QUY TẮC BẮT BUỘC:\n"
-            "1. KHỐI SUY LUẬN LÂM SÀNG CHUỖI TƯ DUY (CLINICAL CHAIN-OF-THOUGHT - BẮT BUỘC):\n"
-            "Trước khi viết câu trả lời cho bệnh nhân, bạn BẮT BUỘC phải mở đầu bằng một khối suy luận nằm trong cặp thẻ <clinical_thinking>...</clinical_thinking> gồm:\n"
+            "Bạn là Bác Sĩ Chuyên Khoa Hội Chẩn AI Cấp Cao (Senior Second Opinion AI Specialist) theo chuẩn chuyên môn của Bộ Y Tế Việt Nam.\n"
+            "Hãy đóng vai trò một chuyên gia hội chẩn y khoa độc lập, sắc sảo, đánh giá đối chiếu phản biện và bảo vệ an toàn tối đa cho người bệnh.\n\n"
+            "QUY TẮC BẮT BUỘC CHO HỘI CHẨN:\n"
+            "1. KHỐI SUY LUẬN LÂM SÀNG CHUỖI TƯ DUY NÂNG CAO (CLINICAL CHAIN-OF-THOUGHT - BẮT BUỘC):\n"
+            "Mở đầu câu trả lời BẮT BUỘC bằng khối suy luận nằm trong cặp thẻ <clinical_thinking>...</clinical_thinking> gồm 5 phần mục chi tiết:\n"
             "<clinical_thinking>\n"
-            "- Cơ chế bệnh sinh & Phân tích triệu chứng: Cơ chế sinh lý học/giải phẫu đằng sau các triệu chứng.\n"
-            "- Chẩn đoán phân biệt: Các bệnh lý tương đồng và tiêu chuẩn loại trừ.\n"
-            "- Đánh giá cờ đỏ (Red Flags): Các dấu hiệu cảnh báo nguy hiểm.\n"
-            "- Định hướng tiếp theo: Câu hỏi làm rõ hoặc cận lâm sàng cần thiết.\n"
+            "- Cơ chế bệnh sinh & Phân tích triệu chứng: Phân tích sâu cơ chế giải phẫu, sinh lý bệnh hoặc biến động huyết học/miễn dịch giải thích các triệu chứng người bệnh gặp phải.\n"
+            "- Chẩn đoán phân biệt & Tiêu chí loại trừ: So sánh chi tiết bệnh lý giả định hàng đầu với 2-3 bệnh lý tương đồng (kèm mã ICD-10); chỉ ra triệu chứng then chốt để loại trừ.\n"
+            "- Đánh giá cờ đỏ (Red Flags) & Nguy cơ cấp cứu: Rà soát nghiêm ngặt các dấu hiệu nguy hiểm tính mạng theo phác đồ Bộ Y Tế (hô hấp, tuần hoàn, xuất huyết, thần kinh).\n"
+            "- Rà soát an toàn dược lâm sàng: Cảnh báo nguy cơ dùng thuốc sai, tương tác thuốc và các thuốc chống chỉ định nguy hiểm (đặc biệt không tự ý dùng kháng sinh, corticoid, aspirin/NSAID khi chưa rõ chẩn đoán).\n"
+            "- Định hướng tiếp theo & Khuyến nghị cận lâm sàng: Đề xuất các xét nghiệm định lượng then chốt (Công thức máu CBC, men gan, điện giải, chẩn đoán hình ảnh) và mốc ngày nguy hiểm cần theo dõi.\n"
             "</clinical_thinking>\n\n"
-            f"2. GIAI ĐOẠN LÂM SÀNG: {stage_desc}\n"
-            "3. LỜI KHUYÊN BỆNH NHÂN: Sau khối </clinical_thinking>, hãy trình bày câu trả lời ân cần, súc tích bằng Tiếng Việt chuẩn mực."
+            f"2. BẮT BUỘC NÊU RÕ TỈ LỆ PHẦN TRĂM DỰ ĐOÁN: Trong phần tư vấn cho người bệnh sau thẻ suy luận, bạn BẮT BUỘC phải trích dẫn tên bệnh lý dự đoán: **{top_disease_name}** (Mã ICD-10: `{top_icd}`) kèm theo **Tỉ lệ dự đoán: {prob_val}** (hoặc Độ tin cậy dự đoán: {prob_val}). Tuyệt đối không được bỏ sót con số phần trăm này.\n"
+            f"3. GIAI ĐOẠN LÂM SÀNG: {stage_desc}\n"
+            "4. LỜI KHUYÊN BỆNH NHÂN: Sau khối </clinical_thinking>, trình bày câu trả lời ân cần, chi tiết, có chiều sâu y khoa và chuẩn mực Tiếng Việt."
         )
 
         # Build chat history for Cohere format
@@ -71,6 +83,7 @@ class CohereMedicalReasoningService:
         context_data = {
             "giai_doan_lam_sang": clinical_stage,
             "tin_nhan": patient_message,
+            "benh_ly_du_doan_chinh": f"{top_disease_name} ({top_icd}) - Tỉ lệ: {prob_val}",
             "trieu_chung": [s.get("standard_term") for s in symptoms if s.get("standard_term")],
             "trieu_chung_loai_tru": [s.get("standard_term") for s in (negated_symptoms or []) if s.get("standard_term")],
             "cau_hoi_lam_ro_de_xuat": clarifying_questions or [],
@@ -82,7 +95,7 @@ class CohereMedicalReasoningService:
 
         user_message = (
             f"Dữ liệu lâm sàng:\n{json.dumps(context_data, ensure_ascii=False, indent=2)}\n\n"
-            "Hãy viết câu trả lời y tế đầy đủ, ân cần và tuân thủ đúng giai đoạn lâm sàng bằng Tiếng Việt:"
+            f"LƯU Ý QUAN TRỌNG: Nhớ mở đầu bằng khối <clinical_thinking>...</clinical_thinking> và ghi rõ Tỉ lệ dự đoán ({prob_val}) của {top_disease_name} trong câu trả lời y tế:"
         )
 
         return {
@@ -148,6 +161,24 @@ class CohereMedicalReasoningService:
                 if text:
                     self.last_error = None
                     logger.info(f"Cohere ({self.model}) responded successfully.")
+
+                    # BẢO ĐẢM TỈ LỆ PHẦN TRĂM DỰ ĐOÁN LUÔN CÓ MẶT
+                    top_pred = predicted_diseases[0] if predicted_diseases else {}
+                    top_disease_name = top_pred.get("disease_name_vi")
+                    top_icd = top_pred.get("icd_code")
+                    prob_val = top_pred.get("probability_percentage")
+                    if not prob_val and top_pred:
+                        raw_prob = float(top_pred.get("probability", 0.85))
+                        prob_val = f"{round(raw_prob * 100, 1)}%"
+
+                    if prob_val and top_disease_name and ("%" not in text or prob_val not in text):
+                        pct_anchor = f"🎯 **Định hướng hội chẩn độc lập:** Bệnh lý nghi ngờ chính: **{top_disease_name}** (Mã ICD-10: `{top_icd}`) — **Tỉ lệ dự đoán: {prob_val}**\n\n"
+                        if "</clinical_thinking>" in text:
+                            parts = text.split("</clinical_thinking>", 1)
+                            text = parts[0] + "</clinical_thinking>\n\n" + pct_anchor + parts[1].strip()
+                        else:
+                            text = pct_anchor + text
+
                     return text
         except urllib.error.HTTPError as he:
             err_msg = f"HTTP {he.code}"

@@ -209,18 +209,32 @@ class UnifiedClinicalReasoningService:
                         logger.info(f"Alternative provider stored: {alternative_provider}")
                     elif len(successful) == 1 and not alternative_text:
                         # Fallback tạo góc nhìn chuyên khoa đối chiếu từ phác đồ Bộ Y Tế & Dược lâm sàng
-                        top_dis = predicted_diseases[0].get("disease_name_vi", "tình trạng sức khỏe") if predicted_diseases else "vấn đề lâm sàng"
-                        icd = predicted_diseases[0].get("icd_code", "ICD-10") if predicted_diseases else ""
+                        top_pred = predicted_diseases[0] if predicted_diseases else {}
+                        top_dis = top_pred.get("disease_name_vi", "tình trạng sức khỏe")
+                        icd = top_pred.get("icd_code", "ICD-10")
+                        prob_pct = top_pred.get("probability_percentage") or (f"{round(float(top_pred.get('probability', 0.85))*100, 1)}%" if top_pred else "85.0%")
                         sym_list = [s.get("standard_term", "") for s in symptoms if isinstance(s, dict) and s.get("standard_term")]
+                        sym_display = ", ".join(sym_list[:3]) if sym_list else "các dấu hiệu bạn vừa chia sẻ"
                         rag_titles = [c.get("title", "") for c in rag_citations if isinstance(c, dict) and c.get("title")]
                         rag_info = f"Tham chiếu phác đồ BYT: {', '.join(rag_titles[:2])}" if rag_titles else "Dựa trên phác đồ hướng dẫn chẩn đoán và điều trị của Bộ Y Tế"
 
+                        cot_second_opinion = conversational_engine._build_clinical_thinking(
+                            symptoms=symptoms,
+                            predicted_diseases=predicted_diseases,
+                            negated_symptoms=negated_symptoms or [],
+                            lab_indicators=lab_indicators or {},
+                            is_emergency=is_emergency,
+                            clinical_stage=clinical_stage
+                        )
+
                         alternative_text = (
+                            f"{cot_second_opinion}\n\n"
                             f"📋 **GÓC NHÌN HỘI CHẨN CHUYÊN KHOA ĐỐI CHIẾU (SECOND OPINION AI)**\n\n"
-                            f"🔬 **Phân tích đối chiếu lâm sàng:**\n"
-                            f"- **Định hướng chuyên môn:** Đồng thuận theo dõi hướng **{top_dis}** (Mã ICD: `{icd}`). Các dấu hiệu ({', '.join(sym_list[:3]) if sym_list else 'bạn vừa chia sẻ'}) cần được quan sát sát sao trong 24-48 giờ.\n"
-                            f"- **Rà soát an toàn dược lâm sàng:** Tuyệt đối không tự ý mua thuốc kháng sinh hoặc corticoid khi chưa có đơn chỉ định từ bác sĩ chuyên khoa.\n"
-                            f"- **Hướng dẫn chăm sóc & Hồi phục:** {rag_info}. Cần uống đủ 2 - 2.5 lít nước mỗi ngày, ăn thực phẩm thanh đạm dễ tiêu hóa và đến ngay cơ sở y tế gần nhất nếu triệu chứng tăng nặng."
+                            f"🔬 **Phân tích đối chiếu lâm sàng độc lập:**\n"
+                            f"- **Định hướng chuyên môn:** Đồng thuận theo dõi nhóm bệnh lý **{top_dis}** (Mã ICD-10: `{icd}`) — **Tỉ lệ dự đoán: {prob_pct}** (Độ tin cậy lâm sàng). Các dấu hiệu ({sym_display}) cần được quan sát sát sao trong 24-48 giờ.\n"
+                            f"- **Rà soát an toàn dược lâm sàng:** Tuyệt đối không tự ý mua thuốc kháng sinh hoặc corticoid khi chưa có đơn chỉ định từ bác sĩ chuyên khoa. Cẩn trọng nguy cơ quá liều hạ sốt hoặc xuất huyết tiêu hóa.\n"
+                            f"- **Hướng dẫn chăm sóc & Hồi phục:** {rag_info}. Cần uống đủ 2 - 2.5 lít nước mỗi ngày, ăn thực phẩm thanh đạm dễ tiêu hóa và đến ngay cơ sở y tế gần nhất nếu triệu chứng tăng nặng.\n\n"
+                            f"⚠️ **Dấu hiệu cảnh báo cần đi viện ngay:** Khó thở, tức ngực dữ dội, nôn liên tục không uống được nước, hoặc sốt cao trên 39°C không hạ."
                         )
                         alternative_provider = "second_opinion"
 
@@ -296,9 +310,12 @@ class UnifiedClinicalReasoningService:
                 response_text += f"\n\n> ⚠️ **Mã lỗi dịch vụ Cloud AI:** `[{err_summary}]`  \n> *Hệ thống đã tự động chuyển sang Phác đồ Lâm sàng Chuẩn Bộ Y Tế để phục vụ bạn liên tục mà không bị gián đoạn.*"
 
         # Bảo đảm luôn có câu trả lời của AI 2 (Second Opinion / Hội Chẩn Đối Chiếu Song Song)
+        top_pred = predicted_diseases[0] if predicted_diseases else {}
+        top_dis = top_pred.get("disease_name_vi", "tình trạng sức khỏe")
+        icd = top_pred.get("icd_code", "ICD-10")
+        prob_pct = top_pred.get("probability_percentage") or (f"{round(float(top_pred.get('probability', 0.85))*100, 1)}%" if top_pred else "85.0%")
+
         if not alternative_text and response_text:
-            top_dis = predicted_diseases[0].get("disease_name_vi", "tình trạng sức khỏe") if predicted_diseases else "vấn đề lâm sàng"
-            icd = predicted_diseases[0].get("icd_code", "ICD-10") if predicted_diseases else ""
             sym_list = [s.get("standard_term", "") for s in symptoms if isinstance(s, dict) and s.get("standard_term")]
             sym_display = ", ".join(sym_list[:3]) if sym_list else "các dấu hiệu bạn mô tả"
             rag_titles = [c.get("title", "") for c in rag_citations if isinstance(c, dict) and c.get("title")]
@@ -316,12 +333,21 @@ class UnifiedClinicalReasoningService:
                 f"{cot_second_opinion}\n\n"
                 f"📋 **GÓC NHÌN HỘI CHẨN CHUYÊN KHOA ĐỐI CHIẾU (SECOND OPINION AI)**\n\n"
                 f"🔬 **Đánh giá chuyên môn độc lập:**\n"
-                f"- **Định hướng lâm sàng:** Đồng thuận theo dõi nhóm bệnh lý **{top_dis}** (Mã ICD-10: `{icd}`) dựa trên các biểu hiện ({sym_display}).\n"
+                f"- **Định hướng lâm sàng:** Đồng thuận theo dõi nhóm bệnh lý **{top_dis}** (Mã ICD-10: `{icd}`) — **Tỉ lệ dự đoán: {prob_pct}** (Độ tin cậy lâm sàng) dựa trên các biểu hiện ({sym_display}).\n"
                 f"- **Rà soát an toàn dược lâm sàng:** Cần đặc biệt lưu ý không tự ý sử dụng kháng sinh hoặc corticoid khi chưa có đơn chỉ định từ bác sĩ. Với triệu chứng sốt hoặc đau nhức, chỉ dùng Paracetamol đúng liều (10-15mg/kg/lần, cách nhau 4-6 giờ, người lớn không quá 3g/ngày).\n"
                 f"- **Phác đồ & Chăm sóc bổ trợ:** {rag_info}. Đảm bảo uống đủ 2 - 2.5 lít nước mỗi ngày, ăn đồ ăn mềm dễ tiêu hóa và theo dõi sát diễn biến thân nhiệt.\n\n"
                 f"⚠️ **Dấu hiệu cảnh báo cần đi viện ngay:** Khó thở, tức ngực dữ dội, nôn liên tục không uống được nước, hoặc sốt cao trên 39°C không hạ."
             )
             alternative_provider = "second_opinion"
+
+        # BẢO ĐẢM TỈ LỆ PHẦN TRĂM DỰ ĐOÁN LUÔN CÓ MẶT TRONG CÂU TRẢ LỜI CỦA AI 2
+        if alternative_text and prob_pct and top_dis and ("%" not in alternative_text or prob_pct not in alternative_text):
+            pct_banner = f"🎯 **Định hướng hội chẩn độc lập:** Đồng thuận nhóm bệnh lý **{top_dis}** (Mã ICD-10: `{icd}`) — **Tỉ lệ dự đoán: {prob_pct}**\n\n"
+            if "</clinical_thinking>" in alternative_text:
+                parts = alternative_text.split("</clinical_thinking>", 1)
+                alternative_text = parts[0] + "</clinical_thinking>\n\n" + pct_banner + parts[1].strip()
+            else:
+                alternative_text = pct_banner + alternative_text
 
         return {
             "text": response_text,

@@ -1,0 +1,15 @@
+<clinical_thinking>
+- Cơ chế bệnh sinh & Liên kết triệu chứng: Sự phối hợp giữa Sốt xuất huyết, Xuất huyết niêm mạc / Chảy máu chân răng với các biểu hiện toàn thân phản ánh đáp ứng viêm cấp tính do virus. Cần đặc biệt theo dõi biến động tính thấm thành mao mạch và nguy cơ xuất huyết vi mạch.
+- Chẩn đoán phân biệt & Loại trừ: Hướng chẩn đoán chính: Sốt Dengue [cổ điển]. Chẩn đoán phân biệt quan trọng: Cúm mùa, Sốt phát ban.
+- Đánh giá cờ đỏ (Red Flags): Cảnh báo thoát huyết tương, đau bụng vùng gan, nôn ói liên tục hoặc xuất huyết niêm mạc.
+- Định hướng tiếp theo: Đề nghị kiểm tra tổng phân tích tế bào máu ngoại vi (tiểu cầu, Hct) nếu sốt sang ngày thứ 3.
+</clinical_thinking>
+
+📋 **GÓC NHÌN HỘI CHẨN CHUYÊN KHOA ĐỐI CHIẾU (SECOND OPINION AI)**
+
+🔬 **Đánh giá chuyên môn độc lập:**
+- **Định hướng lâm sàng:** Đồng thuận theo dõi nhóm bệnh lý **Sốt Dengue [cổ điển]** (Mã ICD-10: `A90`) dựa trên các biểu hiện (Sốt xuất huyết, Xuất huyết niêm mạc / Chảy máu chân răng, Sốt).
+- **Rà soát an toàn dược lâm sàng:** Cần đặc biệt lưu ý không tự ý sử dụng kháng sinh hoặc corticoid khi chưa có đơn chỉ định từ bác sĩ. Với triệu chứng sốt hoặc đau nhức, chỉ dùng Paracetamol đúng liều (10-15mg/kg/lần, cách nhau 4-6 giờ, người lớn không quá 3g/ngày).
+- **Phác đồ & Chăm sóc bổ trợ:** Tham chiếu phác đồ BYT: _Phác đồ Bộ Y Tế: Hướng dẫn Chẩn đoán & Lâm sàng Sốt xuất huyết Dengue (A90), Phác đồ Dược Lâm Sàng & Xử Trí Sốt xuất huyết Dengue (A90)_. Đảm bảo uống đủ 2 - 2.5 lít nước mỗi ngày, ăn đồ ăn mềm dễ tiêu hóa và theo dõi sát diễn biến thân nhiệt.
+
+⚠️ **Dấu hiệu cảnh báo cần đi viện ngay:** Khó thở, tức ngực dữ dội, nôn liên tục không uống được nước, hoặc sốt cao trên 39°C không hạ.

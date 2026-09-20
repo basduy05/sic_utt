@@ -13,18 +13,18 @@ export interface ChatSession {
   telemetry: TelemetryData | null;
 }
 
-const DEFAULT_WELCOME_MESSAGE: ChatMessage = {
-  id: 'welcome_1',
-  sessionId: 'session_default',
+export const createWelcomeMessage = (sessionId: string = 'session_default'): ChatMessage => ({
+  id: `welcome_${Date.now()}`,
+  sessionId,
   sender: 'assistant',
   content: 'Xin chào! Tôi là Trợ Lý Y Tế AI (MediBot) chuẩn hóa Bộ Y Tế & ICD-10. Tôi sẽ hỏi thăm kỹ càng và ghi nhớ toàn bộ thông tin của bạn. Bạn đang gặp phải những triệu chứng hay vấn đề sức khỏe nào?',
-  timestamp: '2026-09-01T08:00:00.000Z',
-};
+  timestamp: new Date().toISOString(),
+});
 
 export function useChat() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [sessionId, setSessionId] = useState<string>('session_default');
-  const [messages, setMessages] = useState<ChatMessage[]>([DEFAULT_WELCOME_MESSAGE]);
+  const [messages, setMessages] = useState<ChatMessage[]>([createWelcomeMessage()]);
   const [telemetry, setTelemetry] = useState<TelemetryData | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState<boolean>(false);
@@ -70,14 +70,22 @@ export function useChat() {
           // BẢO VỆ CHỐNG NHIỄM DỮ LIỆU CŨ:
           // Bất kỳ phiên nào chưa có tin nhắn của người dùng thì telemetry BẮT BUỘC là null
           // Loại bỏ tin nhắn lỗi timeout cũ [ERR_TIMEOUT_WS_45S]
+          // Sửa timestamp nếu dính mốc cũ cố định 15:00
           parsed = parsed.map((s) => {
             const hasUserMsg = s.messages && s.messages.some((m) => m.sender === 'user');
             const cleanMsgs = (s.messages || [])
-              .map((m) => ({ ...m, isStreaming: false }))
+              .map((m) => ({
+                ...m,
+                isStreaming: false,
+                timestamp:
+                  m.id.startsWith('welcome_') && m.timestamp?.startsWith('2026-09-01T08:00')
+                    ? new Date().toISOString()
+                    : m.timestamp || new Date().toISOString(),
+              }))
               .filter((m) => !m.content?.includes('[ERR_TIMEOUT_WS_45S]'));
             return {
               ...s,
-              messages: cleanMsgs.length > 0 ? cleanMsgs : [{ ...DEFAULT_WELCOME_MESSAGE, id: `welcome_${Date.now()}`, sessionId: s.id }],
+              messages: cleanMsgs.length > 0 ? cleanMsgs : [createWelcomeMessage(s.id)],
               telemetry: hasUserMsg ? s.telemetry || null : null,
             };
           });
@@ -91,7 +99,7 @@ export function useChat() {
           const activeMsgs =
             active.messages && active.messages.length > 0
               ? active.messages
-              : [{ ...DEFAULT_WELCOME_MESSAGE, id: `welcome_${Date.now()}`, sessionId: active.id }];
+              : [createWelcomeMessage(active.id)];
           setMessages(activeMsgs);
 
           const hasUser = activeMsgs.some((m) => m.sender === 'user');
@@ -107,11 +115,7 @@ export function useChat() {
     // Khởi tạo phiên đầu tiên sạch hoàn toàn
     const initialId = `session_${Date.now()}`;
     activeSessionIdRef.current = initialId;
-    const initialWelcome: ChatMessage = {
-      ...DEFAULT_WELCOME_MESSAGE,
-      id: `welcome_${Date.now()}`,
-      sessionId: initialId,
-    };
+    const initialWelcome: ChatMessage = createWelcomeMessage(initialId);
     const initialSession: ChatSession = {
       id: initialId,
       title: 'Khám bệnh mới',
@@ -200,11 +204,7 @@ export function useChat() {
     const newId = `session_${Date.now()}`;
     activeSessionIdRef.current = newId;
 
-    const newMsg: ChatMessage = {
-      ...DEFAULT_WELCOME_MESSAGE,
-      id: `welcome_${Date.now()}`,
-      sessionId: newId,
-    };
+    const newMsg: ChatMessage = createWelcomeMessage(newId);
     const newSession: ChatSession = {
       id: newId,
       title: 'Khám bệnh mới',
@@ -248,13 +248,7 @@ export function useChat() {
         const targetMsgs =
           found.messages && found.messages.length > 0
             ? found.messages
-            : [
-                {
-                  ...DEFAULT_WELCOME_MESSAGE,
-                  id: `welcome_${Date.now()}`,
-                  sessionId: found.id,
-                },
-              ];
+            : [createWelcomeMessage(found.id)];
 
         const hasUser = targetMsgs.some((m) => m.sender === 'user');
         const targetTelemetry = hasUser ? found.telemetry || null : null;
@@ -288,7 +282,7 @@ export function useChat() {
           const nextMsgs =
             next.messages && next.messages.length > 0
               ? next.messages
-              : [{ ...DEFAULT_WELCOME_MESSAGE, id: `welcome_${Date.now()}`, sessionId: next.id }];
+              : [createWelcomeMessage(next.id)];
           setMessages(nextMsgs);
           const hasUser = nextMsgs.some((m) => m.sender === 'user');
           setTelemetry(hasUser ? next.telemetry || null : null);
@@ -299,11 +293,7 @@ export function useChat() {
         } else {
           const newId = `session_${Date.now()}`;
           activeSessionIdRef.current = newId;
-          const newMsg: ChatMessage = {
-            ...DEFAULT_WELCOME_MESSAGE,
-            id: `welcome_${Date.now()}`,
-            sessionId: newId,
-          };
+          const newMsg: ChatMessage = createWelcomeMessage(newId);
           const freshSession: ChatSession = {
             id: newId,
             title: 'Khám bệnh mới',
