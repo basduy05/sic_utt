@@ -189,7 +189,7 @@ class UnifiedClinicalReasoningService:
                 try:
                     results = await asyncio.wait_for(
                         asyncio.gather(*tasks, return_exceptions=True),
-                        timeout=5.0
+                        timeout=12.0
                     )
 
                     successful = []

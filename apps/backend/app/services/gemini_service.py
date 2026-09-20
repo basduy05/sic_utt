@@ -78,14 +78,21 @@ class GeminiMedicalReasoningService:
                 models_list = data.get("models", [])
                 
                 valid_models = []
+                EXCLUDED_TAGS = ("tts", "image", "imagen", "audio", "video", "realtime", "embedding", "embed", "vision", "tuning", "preview-tts", "exp-", "custom")
                 for m in models_list:
                     methods = m.get("supportedGenerationMethods", [])
                     if "generateContent" in methods:
                         m_name = m.get("name", "").replace("models/", "")
+                        m_lower = m_name.lower()
+                        if any(tag in m_lower for tag in EXCLUDED_TAGS):
+                            continue
+                        # Chỉ chấp nhận các model thuộc dòng gemini chuẩn
+                        if not m_lower.startswith("gemini"):
+                            continue
                         valid_models.append(m_name)
 
                 if valid_models:
-                    # Thứ tự ưu tiên: Gemini 2.0 Flash (Free 15 RPM chuẩn) -> 1.5 Flash -> 2.0 Flash Lite -> 1.5 Pro -> 2.5
+                    # Thứ tự ưu tiên: Gemini 2.0 Flash (Free 15 RPM chuẩn) -> 1.5 Flash -> 2.0 Flash Lite -> 1.5 Pro
                     def priority_rank(name: str) -> int:
                         n = name.lower()
                         # Chuẩn số 1: gemini-2.0-flash (Flash chính thức của Google AI Studio)
@@ -99,17 +106,17 @@ class GeminiMedicalReasoningService:
                             return 4
                         if "gemini-1.5-pro" in n:
                             return 5
-                        if "gemini-2.5-flash" in n:
+                        if "gemini-2.5-flash" in n and "preview" not in n:
                             return 6
-                        if "gemini-2.5" in n:
-                            return 7
-                        return 10
+                        return 20
 
                     valid_models.sort(key=priority_rank)
-                    self._cached_models = valid_models
+                    # Chỉ lấy các model rank < 20
+                    clean_models = [m for m in valid_models if priority_rank(m) < 20]
+                    self._cached_models = clean_models if clean_models else ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.0-flash-lite", "gemini-1.5-pro"]
                     self._cached_models_time = now
-                    logger.info(f"Dynamically discovered {len(valid_models)} active Gemini models (Top: {valid_models[:4]})")
-                    return valid_models
+                    logger.info(f"Dynamically discovered {len(self._cached_models)} active text Gemini models (Top: {self._cached_models[:3]})")
+                    return self._cached_models
         except Exception as e:
             logger.warning(f"Failed to query dynamic Gemini models list ({e}). Using modern fallback list.")
 
@@ -118,8 +125,7 @@ class GeminiMedicalReasoningService:
             "gemini-2.0-flash",
             "gemini-1.5-flash",
             "gemini-2.0-flash-lite",
-            "gemini-1.5-pro",
-            "gemini-2.5-flash"
+            "gemini-1.5-pro"
         ]
         return fallback_models
 
@@ -341,10 +347,12 @@ class GeminiMedicalReasoningService:
 
         for attempt_idx, key_to_use in enumerate(keys_to_attempt[:3]):
             models_to_try = self._get_available_models(key_to_use)[:4]
+            rate_limit_count = 0
             for model in models_to_try:
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key_to_use}"
-                result = self._call_gemini_with_backoff(url, payload, max_retries=1, timeout=6.5)
+                result = self._call_gemini_with_backoff(url, payload, max_retries=1, timeout=8.5)
                 if result is self.RATE_LIMITED:
+                    rate_limit_count += 1
                     logger.warning(f"Model '{model}' returned 429 for key ...{key_to_use[-6:]}. Trying next model in list...")
                     continue
                 if result and isinstance(result, dict):
@@ -357,9 +365,10 @@ class GeminiMedicalReasoningService:
                                 self.last_error = None
                                 logger.info(f"Gemini response generated successfully using model '{model}'.")
                                 return text
-                if self.last_error and any(code in self.last_error for code in ["401", "403", "400"]):
+                if self.last_error and any(code in self.last_error for code in ["401", "403"]):
                     break
-            if self.last_error and "429" in self.last_error:
+            # Chỉ đưa key vào cooldown nếu TẤT CẢ các model chuẩn đều bị 429
+            if rate_limit_count == len(models_to_try) and rate_limit_count > 0:
                 self.mark_key_rate_limited(key_to_use, cooldown_seconds=30.0)
         return None
 

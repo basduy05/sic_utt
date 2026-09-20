@@ -431,9 +431,9 @@ function ChatPageContent() {
       )}
 
       {/* Main Split-View Layout */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-0 overflow-hidden">
-        {/* Left Column: Multimodal Chatbox (7 cols) */}
-        <div className="lg:col-span-7 h-full max-h-full flex flex-col min-h-0 overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 min-h-0 overflow-hidden">
+        {/* Left Column: Multimodal Chatbox (8 cols) */}
+        <div className="lg:col-span-8 h-full max-h-full flex flex-col min-h-0 overflow-hidden">
           <ChatBox
             messages={messages}
             isProcessing={isProcessing}
@@ -446,8 +446,8 @@ function ChatPageContent() {
           />
         </div>
 
-        {/* Right Column: Dynamic Medical Side Dashboard (5 cols) */}
-        <div className="lg:col-span-5 h-full max-h-full overflow-y-auto custom-scrollbar space-y-4 pr-1.5 pb-2 medical-side-dashboard">
+        {/* Right Column: Dynamic Medical Side Dashboard (4 cols - nhỏ gọn, thanh thoát hơn) */}
+        <div className="lg:col-span-4 h-full max-h-full overflow-y-auto custom-scrollbar space-y-3 pr-1 pb-2 medical-side-dashboard">
           {/* Clarification Widget */}
           <ClarificationWidget
             clarification={telemetry?.clarification}

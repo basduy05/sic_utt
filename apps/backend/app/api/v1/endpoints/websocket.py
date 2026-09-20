@@ -111,19 +111,19 @@ async def websocket_chat_endpoint(websocket: WebSocket, session_id: str = None):
 
                 # 5. Streaming Typewriter effect cho Text câu trả lời của Chatbot
                 full_text = response.get("text_content", "")
-                words = full_text.split(" ")
-
-                accumulated = ""
-                for i, word in enumerate(words):
-                    chunk = word + (" " if i < len(words) - 1 else "")
-                    accumulated += chunk
-                    await websocket.send_json({
-                        "type": "stream_chunk",
-                        "session_id": current_session_id,
-                        "chunk": chunk,
-                        "accumulated": accumulated
-                    })
-                    await asyncio.sleep(0.015)  # 15ms typewriter delay
+                if full_text:
+                    step = 14
+                    accumulated = ""
+                    for i in range(0, len(full_text), step):
+                        chunk = full_text[i:i + step]
+                        accumulated += chunk
+                        await websocket.send_json({
+                            "type": "stream_chunk",
+                            "session_id": current_session_id,
+                            "chunk": chunk,
+                            "accumulated": accumulated
+                        })
+                        await asyncio.sleep(0.01)  # 10ms smooth typewriter delay
 
                 await websocket.send_json({
                     "type": "stream_end",

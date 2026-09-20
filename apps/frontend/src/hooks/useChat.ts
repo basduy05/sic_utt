@@ -344,6 +344,11 @@ export function useChat() {
   }, [sessionId]);
 
   const handleStreamChunk = useCallback((chunk: string, accumulated: string) => {
+    // Dữ liệu đang được truyền tải liên tục, hủy bỏ timeout khẩn cấp để không bao giờ bị cắt ngắn giữa chừng
+    if (processingTimeoutRef.current) {
+      clearTimeout(processingTimeoutRef.current);
+      processingTimeoutRef.current = null;
+    }
     setMessages((prev) =>
       prev.map((msg) =>
         msg.isStreaming && msg.sender === 'assistant'
@@ -474,7 +479,7 @@ export function useChat() {
           setIsProcessing(false);
           setMessages((prev) =>
             prev.map((msg) =>
-              msg.id === tempAssistantId
+              msg.id === tempAssistantId || (msg.isStreaming && msg.sender === 'assistant')
                 ? {
                     ...msg,
                     id: res.message_id || tempAssistantId,
@@ -506,7 +511,7 @@ export function useChat() {
           const errDetail = restErr?.message || 'Không thể kết nối đến máy chủ';
           setMessages((prev) =>
             prev.map((msg) =>
-              msg.id === tempAssistantId && msg.isStreaming
+              (msg.id === tempAssistantId || (msg.isStreaming && msg.sender === 'assistant'))
                 ? {
                     ...msg,
                     content:
@@ -528,13 +533,13 @@ export function useChat() {
         }
       };
 
-      // Thiết lập timeout tự động: Nếu WS không hoàn thành trong 12s, tự động lấy kết quả qua REST
+      // Thiết lập timeout tự động: Cho phép thời gian đủ cho toàn bộ AI Pipeline (45s)
       if (processingTimeoutRef.current) {
         clearTimeout(processingTimeoutRef.current);
       }
       processingTimeoutRef.current = setTimeout(() => {
-        executeRestFallback('WS_TIMEOUT_12S');
-      }, 12000);
+        executeRestFallback('WS_TIMEOUT_45S');
+      }, 45000);
 
       // If WebSocket is active, use WS streaming
       if (isConnected) {
