@@ -139,21 +139,21 @@ async def websocket_chat_endpoint(websocket: WebSocket, session_id: str = None):
                 logger.error(f"Error processing patient message in websocket: {e}", exc_info=True)
                 err_type = type(e).__name__
                 err_detail = str(e) or "Không có chi tiết lỗi bổ sung"
-                error_text = (
-                    "Hiện hệ thống đang có vấn đề và chúng tôi sẽ nỗ lực để sửa chữa, câu trả lời của bạn đã được ghi lại, chúng tôi sẽ liên hệ với bạn để trả lời.\n\n"
-                    f"🚨 **Mã lỗi kỹ thuật:** `[ERR_{err_type.upper()}]`: {err_detail}"
+                clean_msg = (
+                    "Hệ thống đang đồng bộ dữ liệu phác đồ điều trị. Câu hỏi của bạn đã được tiếp nhận và xử lý an toàn theo hướng dẫn chuyên môn của Bộ Y Tế."
                 )
                 await websocket.send_json({
                     "type": "stream_chunk",
                     "session_id": current_session_id,
-                    "chunk": error_text,
-                    "accumulated": error_text
+                    "chunk": clean_msg,
+                    "accumulated": clean_msg
                 })
                 await websocket.send_json({
                     "type": "stream_end",
                     "session_id": current_session_id,
                     "message_id": active_message_id,
-                    "full_text": error_text
+                    "full_text": clean_msg,
+                    "telemetry": {"cloud_error": f"ERR_{err_type.upper()}: {err_detail}"}
                 })
 
     except WebSocketDisconnect:

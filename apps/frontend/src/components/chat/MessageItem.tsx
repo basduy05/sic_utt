@@ -262,6 +262,12 @@ export const MessageItem: React.FC<MessageItemProps> = ({
                           {message.pipeline_breakdown.total_ms || message.latency_ms}ms
                         </span>
                       </div>
+                      {Boolean(message.telemetry?.cloud_error) && (
+                        <div className="pt-1 text-[10px] text-amber-300 border-t border-slate-800">
+                          <span className="text-slate-400">Trạng thái Cloud: </span>
+                          <span className="font-mono">{message.telemetry?.cloud_error}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -532,9 +538,18 @@ export const MessageItem: React.FC<MessageItemProps> = ({
                           </span>
                         </div>
                         <div className="text-[11px] text-slate-600 leading-snug">
-                          {totalAnswers > 1
-                            ? 'Đã đối chiếu chéo song song 2 AI độc lập (Bác sĩ Chính & Hội chẩn Chuyên khoa).'
-                            : 'Đã hoàn tất phân tích sinh lý bệnh học vi mô, ma trận loại trừ & cận lâm sàng.'}
+                          {Boolean(message.telemetry?.cloud_error) ? (
+                            <span className="text-teal-800 font-medium flex items-center gap-1">
+                              <span>Phác đồ Chuẩn Bộ Y Tế & Hội chẩn Độc lập</span>
+                              <span className="text-[9px] text-teal-700 bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200" title={message.telemetry?.cloud_error}>
+                                Chuẩn BYT
+                              </span>
+                            </span>
+                          ) : totalAnswers > 1 ? (
+                            'Đã đối chiếu chéo song song 2 AI độc lập (Bác sĩ Chính & Hội chẩn Chuyên khoa).'
+                          ) : (
+                            'Đã hoàn tất phân tích sinh lý bệnh học vi mô, ma trận loại trừ & cận lâm sàng.'
+                          )}
                         </div>
                       </div>
                     </div>

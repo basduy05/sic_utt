@@ -69,6 +69,7 @@ export interface TelemetryData {
     llm_ms?: number;
     total_ms?: number;
   };
+  cloud_error?: string;
 }
 
 /** Một câu trả lời từ một provider (Gemini, Cohere, deterministic...) */

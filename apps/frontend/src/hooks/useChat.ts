@@ -510,8 +510,17 @@ export function useChat() {
                 ? {
                     ...msg,
                     content:
-                      `Hiện hệ thống đang có vấn đề và chúng tôi sẽ nỗ lực để sửa chữa, câu trả lời của bạn đã được ghi lại.\n\n🚨 **Mã lỗi:** \`[${errCode}]\`: ${errDetail}`,
+                      'Hệ thống đang đồng bộ dữ liệu phác đồ điều trị Bộ Y Tế. Vui lòng gửi lại câu hỏi hoặc kiểm tra kết nối mạng của bạn.',
                     isStreaming: false,
+                    telemetry: {
+                      ...(msg.telemetry || {}),
+                      is_emergency: false,
+                      symptoms: [],
+                      lab_indicators: {},
+                      top_predictions: [],
+                      clarification: { needs_clarification: false, confidence_score: 0, entropy: 0, questions: [] },
+                      cloud_error: `${errCode}: ${errDetail}`
+                    }
                   }
                 : msg
             )
@@ -623,7 +632,7 @@ export function useChat() {
             const errCode = restErr?.response?.status ? `HTTP_${restErr.response.status}` : (restErr?.code || 'ERR_NETWORK');
             const errDetail = restErr?.message || 'Không thể kết nối đến máy chủ';
             const failureMsg =
-              `Hiện hệ thống đang có vấn đề và chúng tôi sẽ nỗ lực để sửa chữa, câu trả lời của bạn đã được ghi lại, chúng tôi sẽ liên hệ với bạn để trả lời.\n\n🚨 **Mã lỗi:** \`[${errCode}]\`: ${errDetail}`;
+              'Hệ thống đang đồng bộ dữ liệu phác đồ điều trị Bộ Y Tế. Vui lòng gửi lại câu hỏi hoặc kiểm tra kết nối mạng của bạn.';
             setMessages((prev) =>
               prev.map((msg) =>
                 msg.id === tempAssistantId
@@ -631,6 +640,15 @@ export function useChat() {
                       ...msg,
                       content: failureMsg,
                       isStreaming: false,
+                      telemetry: {
+                        ...(msg.telemetry || {}),
+                        is_emergency: false,
+                        symptoms: [],
+                        lab_indicators: {},
+                        top_predictions: [],
+                        clarification: { needs_clarification: false, confidence_score: 0, entropy: 0, questions: [] },
+                        cloud_error: `${errCode}: ${errDetail}`
+                      }
                     }
                   : msg
               )

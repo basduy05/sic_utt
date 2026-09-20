@@ -85,43 +85,41 @@ class GeminiMedicalReasoningService:
                         valid_models.append(m_name)
 
                 if valid_models:
-                    # Thứ tự ưu tiên: Gemini 3.0 -> Gemini 2.5 -> Gemini 2.0 Flash -> Flash Lite -> Pro
+                    # Thứ tự ưu tiên: Gemini 2.0 Flash (Free 15 RPM chuẩn) -> 1.5 Flash -> 2.0 Flash Lite -> 1.5 Pro -> 2.5
                     def priority_rank(name: str) -> int:
                         n = name.lower()
-                        if "gemini-3" in n:
+                        # Chuẩn số 1: gemini-2.0-flash (Flash chính thức của Google AI Studio)
+                        if n in ("gemini-2.0-flash", "models/gemini-2.0-flash"):
                             return 1
-                        if "gemini-2.5-flash" in n:
+                        if "gemini-2.0-flash" in n and "lite" not in n and "thinking" not in n and "exp" not in n:
                             return 2
-                        if "gemini-2.5" in n:
+                        if "gemini-1.5-flash" in n and "8b" not in n:
                             return 3
                         if "gemini-2.0-flash-lite" in n:
                             return 4
-                        if "gemini-2.0-flash" in n:
+                        if "gemini-1.5-pro" in n:
                             return 5
-                        if "gemini-2.0" in n:
+                        if "gemini-2.5-flash" in n:
                             return 6
-                        if "flash" in n:
+                        if "gemini-2.5" in n:
                             return 7
                         return 10
 
                     valid_models.sort(key=priority_rank)
                     self._cached_models = valid_models
                     self._cached_models_time = now
-                    logger.info(f"Dynamically discovered {len(valid_models)} active Gemini models: {valid_models[:6]}")
+                    logger.info(f"Dynamically discovered {len(valid_models)} active Gemini models (Top: {valid_models[:4]})")
                     return valid_models
         except Exception as e:
             logger.warning(f"Failed to query dynamic Gemini models list ({e}). Using modern fallback list.")
 
-        # Fallback danh sách các model mới nhất đang hoạt động
+        # Fallback danh sách các model chuẩn nhất của Google AI Studio
         fallback_models = [
-            "gemini-2.5-flash",
             "gemini-2.0-flash",
-            "gemini-2.0-flash-lite",
-            "gemini-2.5-pro",
-            "gemini-2.0-pro-exp",
-            "gemini-1.5-flash-latest",
             "gemini-1.5-flash",
-            "gemini-1.5-pro"
+            "gemini-2.0-flash-lite",
+            "gemini-1.5-pro",
+            "gemini-2.5-flash"
         ]
         return fallback_models
 
@@ -269,9 +267,14 @@ class GeminiMedicalReasoningService:
                 return json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as he:
             status = he.code
+            err_body = ""
+            try:
+                err_body = he.read().decode("utf-8", errors="ignore")
+            except Exception:
+                pass
             if status == 429:
                 self.last_error = f"Gemini HTTP 429 (Vượt hạn mức yêu cầu Google AI Studio)"
-                logger.warning(f"Gemini API rate limited (HTTP 429). Stopping immediately.")
+                logger.warning(f"Gemini API rate limited (HTTP 429) on {url.split('?')[0]}. Details: {err_body[:200]}")
                 return self.RATE_LIMITED  # type: ignore
             elif status in (401, 403):
                 self.last_error = f"Gemini HTTP {status} (Khóa API không hợp lệ hoặc bị từ chối quyền)"
@@ -306,7 +309,7 @@ class GeminiMedicalReasoningService:
         perspective: str = "primary"
     ) -> Optional[str]:
         """
-        Gọi Google Gemini API với giới hạn thời gian phản hồi nhanh <= 3.5s.
+        Gọi Google Gemini API với thời gian phản hồi timeout 6.5s và thử lần lượt các model Flash.
         """
         self.last_error = None
         keys_to_attempt = []
@@ -337,13 +340,13 @@ class GeminiMedicalReasoningService:
         )
 
         for attempt_idx, key_to_use in enumerate(keys_to_attempt[:3]):
-            models_to_try = self._get_available_models(key_to_use)[:2]
+            models_to_try = self._get_available_models(key_to_use)[:4]
             for model in models_to_try:
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key_to_use}"
-                result = self._call_gemini_with_backoff(url, payload, max_retries=1, timeout=3.5)
+                result = self._call_gemini_with_backoff(url, payload, max_retries=1, timeout=6.5)
                 if result is self.RATE_LIMITED:
-                    self.mark_key_rate_limited(key_to_use, cooldown_seconds=60.0)
-                    break
+                    logger.warning(f"Model '{model}' returned 429 for key ...{key_to_use[-6:]}. Trying next model in list...")
+                    continue
                 if result and isinstance(result, dict):
                     candidates = result.get("candidates", [])
                     if candidates:
@@ -356,6 +359,8 @@ class GeminiMedicalReasoningService:
                                 return text
                 if self.last_error and any(code in self.last_error for code in ["401", "403", "400"]):
                     break
+            if self.last_error and "429" in self.last_error:
+                self.mark_key_rate_limited(key_to_use, cooldown_seconds=30.0)
         return None
 
     async def stream_medical_reasoning(
