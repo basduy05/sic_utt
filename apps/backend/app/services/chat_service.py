@@ -826,6 +826,7 @@ class ChatService:
             "latency_ms": total_ms,
             "pipeline_breakdown": pipeline_breakdown,
             "provider": clinical_advice.get("provider", "unknown"),
+            "cloud_errors": clinical_advice.get("cloud_errors", []),
         }
 
         return {

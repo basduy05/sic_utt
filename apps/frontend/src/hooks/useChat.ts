@@ -78,7 +78,7 @@ export function useChat() {
                 ...m,
                 isStreaming: false,
                 timestamp:
-                  m.id.startsWith('welcome_') && m.timestamp?.startsWith('2026-09-01T08:00')
+                  m.id.startsWith('welcome') || m.id === 'welcome_1' || m.timestamp?.includes('2026-09-01') || m.timestamp?.includes('08:00:00')
                     ? new Date().toISOString()
                     : m.timestamp || new Date().toISOString(),
               }))
@@ -89,6 +89,10 @@ export function useChat() {
               telemetry: hasUserMsg ? s.telemetry || null : null,
             };
           });
+
+          try {
+            localStorage.setItem('medibot_chat_sessions', JSON.stringify(parsed));
+          } catch {}
 
           setSessions(parsed);
           const savedActiveId = localStorage.getItem('medibot_active_session_id');

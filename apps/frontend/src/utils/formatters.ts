@@ -1,9 +1,19 @@
-export function formatTimestamp(isoString: string): string {
+export function formatTimestamp(isoString?: string): string {
   try {
+    if (!isoString) {
+      return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    }
+    // Chống triệt để lỗi mốc giờ cũ 15:00 (do các phiên trước lưu chuỗi tĩnh 2026-09-01T08:00:00.000Z)
+    if (isoString.includes('2026-09-01') || isoString.includes('08:00:00.000Z')) {
+      return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    }
     const date = new Date(isoString);
+    if (isNaN(date.getTime())) {
+      return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    }
     return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
   } catch {
-    return '';
+    return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
   }
 }
 

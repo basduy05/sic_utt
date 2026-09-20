@@ -304,11 +304,6 @@ class UnifiedClinicalReasoningService:
             )
             used_provider = "deterministic_clinical_protocol"
 
-            # Nếu cloud AI gặp lỗi (429, 503, 404...), hiển thị rõ mã lỗi cho người dùng biết
-            if cloud_errors:
-                err_summary = " | ".join(cloud_errors)
-                response_text += f"\n\n> ⚠️ **Mã lỗi dịch vụ Cloud AI:** `[{err_summary}]`  \n> *Hệ thống đã tự động chuyển sang Phác đồ Lâm sàng Chuẩn Bộ Y Tế để phục vụ bạn liên tục mà không bị gián đoạn.*"
-
         # Bảo đảm luôn có câu trả lời của AI 2 (Second Opinion / Hội Chẩn Đối Chiếu Song Song)
         top_pred = predicted_diseases[0] if predicted_diseases else {}
         top_dis = top_pred.get("disease_name_vi", "tình trạng sức khỏe")

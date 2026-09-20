@@ -59,15 +59,40 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const prevMsgCountRef = useRef<number>(messages.length);
+  const isUserScrolledUpRef = useRef<boolean>(false);
 
-  // Auto-scroll inside chat messages container
+  // Monitor user manual scroll to avoid hijacking scroll when reading previous content
+  const handleScroll = () => {
+    if (!scrollContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+    // If distance from bottom is greater than 100px, user intentionally scrolled up
+    isUserScrolledUpRef.current = scrollHeight - scrollTop - clientHeight > 100;
+  };
+
+  // Smart Auto-scroll: Only scroll if new message arrived or actively streaming, NOT on tab/answer switches!
   useEffect(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({
-        top: scrollContainerRef.current.scrollHeight,
-        behavior: 'smooth',
-      });
+    if (!scrollContainerRef.current) return;
+
+    const hasNewMessage = messages.length > prevMsgCountRef.current;
+    prevMsgCountRef.current = messages.length;
+
+    const isStreaming = messages.some((m) => m.isStreaming);
+
+    // If user clicked tab to switch answer or toggled view without adding new messages, DO NOT auto-scroll!
+    if (!hasNewMessage && !isStreaming) {
+      return;
     }
+
+    // If streaming and user intentionally scrolled up to read previous messages, don't jerk screen
+    if (isStreaming && isUserScrolledUpRef.current) {
+      return;
+    }
+
+    scrollContainerRef.current.scrollTo({
+      top: scrollContainerRef.current.scrollHeight,
+      behavior: isStreaming ? 'auto' : 'smooth',
+    });
   }, [messages]);
 
   // Autocomplete suggestions based on input length
@@ -125,6 +150,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
       {/* Messages Scroll Area */}
       <div
         ref={scrollContainerRef}
+        onScroll={handleScroll}
         className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6 space-y-4 min-h-0"
       >
         {messages.map((msg) => (

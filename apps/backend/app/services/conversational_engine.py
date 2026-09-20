@@ -419,11 +419,6 @@ class ConversationalEngine:
                         if title:
                             lines.append(f"• **{title}:** {content[:250]}...")
 
-        # 5. THÔNG BÁO LỖI CLOUD NẾU CÓ
-        if cloud_errors:
-            err_summary = " | ".join(cloud_errors)
-            lines.append(f"\n\n> ⚠️ **Mã lỗi dịch vụ Cloud AI:** `[{err_summary}]`  \n> *Hệ thống đã tự động chuyển sang Phác đồ Lâm sàng Chuẩn Bộ Y Tế để phục vụ bạn liên tục mà không bị gián đoạn.*")
-
         return "\n".join(lines)
 
 conversational_engine = ConversationalEngine()
