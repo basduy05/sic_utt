@@ -16,7 +16,7 @@ class CohereMedicalReasoningService:
 
     def __init__(self):
         self.api_key = os.getenv("COHERE_API_KEY", "")
-        self.model = "command-r"
+        self.model = "command-r-08-2024"
         self.api_base = "https://api.cohere.com/v1/chat"
         self.last_error: Optional[str] = None
 

@@ -36,6 +36,16 @@ class ConversationalEngine:
             "is_answering_clarification": bool(re.search(
                 r'(?:tối qua|hôm qua|ngày nay|có ăn|không ăn|uống chút|uống bia|không sốt|chưa uống)',
                 msg
+            )),
+            "is_asking_disease_info": bool(re.search(
+                r'(?:(?:bệnh|chứng|hội chứng)\s+.*(?:là gì|như thế nào|thế nào|ra sao|có nghĩa là gì)|(?:là gì|định nghĩa|khái niệm|bản chất).*(?:bệnh|hội chứng|tình trạng)|(?:là gì|thế nào)\??$|'
+                r'(?:nguyên nhân|tại sao lại bị|do đâu mà bị|yếu tố nguy cơ|nguyên nhân gây|vì sao bị)|'
+                r'(?:chữa|điều trị|trị|khỏi).*(?:dứt điểm|khỏi hẳn|được không|như thế nào|thế nào|tự khỏi)|phác đồ điều trị|có mổ được không|'
+                r'(?:kiêng (?:ăn )?gì|nên ăn gì|không nên ăn gì|chế độ ăn|ăn uống thế nào|uống nước gì|thực đơn cho người|bồi bổ)|'
+                r'(?:có nguy hiểm không|nguy hiểm không|có để lại di chứng không|biến chứng|tiên lượng|sống được bao lâu|ảnh hưởng gì không)|'
+                r'(?:phòng ngừa|phòng tránh|phòng bệnh|làm sao để (?:phòng|tránh|không bị)|cách (?:phòng|tránh|ngừa))|'
+                r'(?:uống thuốc gì|dùng thuốc như thế nào|thuốc nào tốt|tác dụng phụ|uống bao nhiêu viên|cách dùng thuốc|uống trước hay sau ăn))',
+                msg
             ))
         }
 
@@ -54,6 +64,20 @@ class ConversationalEngine:
         sym_names = [s.get("standard_term") for s in symptoms if s.get("standard_term")]
         neg_names = [s.get("standard_term") for s in negated_symptoms if s.get("standard_term")]
         diff_names = [d.get("disease_name_vi") for d in predicted_diseases[1:3] if d.get("disease_name_vi")]
+
+        if clinical_stage == "medical_qa":
+            patho = f"Bệnh nhân đặt câu hỏi tìm hiểu kiến thức y khoa về {top_name}. Phân tích bản chất bệnh sinh, căn nguyên và cơ chế diễn tiến theo chuẩn Bộ Y Tế."
+            diff_text = f"Mặt bệnh tham chiếu: {top_name} ({top_d.get('icd_code', 'ICD-10')}). Phổ biến trong chuyên khoa {dept}."
+            red_flag = "Cảnh báo các biến chứng nguy hiểm nếu không được phát hiện và kiểm soát kịp thời."
+            next_step = "Giải đáp trực tiếp thấu đáo các thắc mắc (nguyên nhân, cách chữa, ăn uống, mức độ nguy hiểm) mà không suy đoán hay ép làm rõ triệu chứng."
+            return (
+                "<clinical_thinking>\n"
+                f"- Cơ chế bệnh sinh & Liên kết chuyên khoa: {patho}\n"
+                f"- Chuyên đề tham chiếu: {diff_text}\n"
+                f"- Đánh giá cờ đỏ (Red Flags): {red_flag}\n"
+                f"- Định hướng tư vấn: {next_step}\n"
+                "</clinical_thinking>"
+            )
 
         if "Mắt" in dept or any("mắt" in s.lower() or "nhìn" in s.lower() for s in sym_names):
             patho = (
@@ -231,80 +255,121 @@ class ConversationalEngine:
             lines.append("- Ăn thức ăn lỏng, mềm, nguội, dễ tiêu hóa như cháo thịt nạc, súp gà. Tránh các thực phẩm có màu đỏ, đen, nâu sẫm để không gây nhầm lẫn nếu có xuất huyết tiêu hóa.")
 
         # 4. TỔNG HỢP NHẬN ĐỊNH LÂM SÀNG THEO GIAI ĐOẠN
-        valid_diseases = [d for d in (predicted_diseases or []) if d.get("probability", 0) >= 0.15]
+        # Giai đoạn 0: Giải đáp kiến thức y khoa & Giáo dục sức khỏe (Medical QA Intent - Không suy đoán hay đoán mò)
+        if clinical_stage == "medical_qa" or intents.get("is_asking_disease_info"):
+            target_dis = predicted_diseases[0].get("disease_name_vi", "") if predicted_diseases else ""
+            target_code = predicted_diseases[0].get("icd_code", "") if predicted_diseases else ""
+            target_dept = predicted_diseases[0].get("department", "") if predicted_diseases else ""
+            
+            lines.append(f"\n📚 **TƯ VẤN KIẾN THỨC Y KHOA CHUẨN BỘ Y TẾ**" + (f": **{target_dis.upper()}** (Mã ICD-10: `{target_code}`)" if target_dis else ""))
+            if target_dept:
+                lines.append(f"*Chuyên khoa phụ trách:* {target_dept}\n")
 
-        # Giai đoạn 1: Chưa đủ căn cứ
-        if clinical_stage == "initial_screening" or not valid_diseases:
-            if not (intents["is_asking_medication"] or intents["is_asking_emergency"] or intents["is_asking_symptom_meaning"]):
-                lines.append("\n🩺 **Nhận định lâm sàng:**")
-                lines.append("Dựa trên các dấu hiệu bạn vừa chia sẻ, hiện tại cần làm rõ thêm các chi tiết bệnh cảnh để nhận định chính xác.")
-                if clarifying_questions:
-                    lines.append("\n👉 *Vui lòng trả lời thêm các câu hỏi sau:*")
+            # Trích dẫn phác đồ RAG trực tiếp từ CSDL Bộ Y Tế
+            if rag_citations:
+                for cit in rag_citations[:2]:
+                    c_title = cit.get("title", "")
+                    c_content = cit.get("content", "")
+                    if c_content:
+                        lines.append(f"📖 **{c_title}:**\n{c_content}\n")
+
+            # Giải đáp trọng tâm vào đúng nội dung người dùng thắc mắc
+            if any(k in msg_lower for k in ["nguyên nhân", "tại sao", "do đâu", "vì sao"]):
+                lines.append("🔍 **Nguyên nhân & Yếu tố nguy cơ chính:**")
+                lines.append("- Quá trình thoái hóa tự nhiên, lão hóa khớp và giảm chiều cao đĩa đệm theo thời gian.")
+                lines.append("- Thói quen sinh hoạt và nghề nghiệp: Ngồi sai tư thế, cúi bấm điện thoại lâu, làm việc máy tính tĩnh tại kéo dài.")
+                lines.append("- Vận động quá tải, vi chấn thương lặp đi lặp lại hoặc thiếu hụt các khoáng chất cần thiết.")
+            elif any(k in msg_lower for k in ["chữa", "điều trị", "khỏi", "dứt điểm", "tự khỏi"]):
+                lines.append("🩺 **Phương pháp điều trị & Khả năng hồi phục:**")
+                lines.append("- **Điều trị bảo tồn (Ưu tiên hàng đầu):** Chiếm trên 85-90% trường hợp, gồm vật lý trị liệu, kéo giãn cột sống, tập phục hồi chức năng và điều chỉnh tư thế công thái học.")
+                lines.append("- **Điều trị nội khoa:** Sử dụng thuốc giảm đau, giãn cơ, kháng viêm hoặc bảo vệ sụn khớp theo đơn của bác sĩ.")
+                lines.append("- **Can thiệp ngoại khoa (Phẫu thuật):** Chỉ đặt ra khi có chèn ép rễ thần kinh/tủy sống nặng gây teo cơ, yếu liệt chi hoặc điều trị bảo tồn thất bại.")
+            elif any(k in msg_lower for k in ["kiêng", "ăn gì", "chế độ ăn", "dinh dưỡng"]):
+                lines.append("🥗 **Chế độ dinh dưỡng & Chăm sóc:**")
+                lines.append("- **Nên bổ sung:** Thực phẩm giàu Canxi, Vitamin D3, Magie, Omega-3 và rau xanh đậm màu.")
+                lines.append("- **Cần kiêng cữ:** Hạn chế rượu bia, thuốc lá, đồ ăn quá mặn, thực phẩm chế biến sẵn nhiều dầu mỡ.")
+            elif any(k in msg_lower for k in ["nguy hiểm", "biến chứng"]):
+                lines.append("⚠️ **Mức độ nguy hiểm & Biến chứng cần đề phòng:**")
+                lines.append("- Bệnh là quá trình thoái hóa tiến triển mạn tính lành tính, không gây nguy hiểm tính mạng tức thì.")
+                lines.append("- Cần lưu ý đề phòng các biến chứng: Chèn ép rễ thần kinh cánh tay (gây tê bì, yếu tay), đau đầu do thiểu năng tuần hoàn đốt sống - thân nền, hoặc thoát vị đĩa đệm thứ phát.")
+
+            lines.append("\n💡 **Lời khuyên chuyên khoa:** Để có phác đồ điều trị và luyện tập chuẩn mực cho từng người bệnh, bạn nên đến cơ sở y tế chuyên khoa để được bác sĩ thăm khám trực tiếp và chụp X-quang/MRI khi cần thiết.")
+
+        else:
+            valid_diseases = [d for d in (predicted_diseases or []) if d.get("probability", 0) >= 0.15]
+
+            # Giai đoạn 1: Chưa đủ căn cứ
+            if clinical_stage == "initial_screening" or not valid_diseases:
+                if not (intents["is_asking_medication"] or intents["is_asking_emergency"] or intents["is_asking_symptom_meaning"]):
+                    lines.append("\n🩺 **Nhận định lâm sàng:**")
+                    lines.append("Dựa trên các dấu hiệu bạn vừa chia sẻ, hiện tại cần làm rõ thêm các chi tiết bệnh cảnh để nhận định chính xác.")
+                    if clarifying_questions:
+                        lines.append("\n👉 *Vui lòng trả lời thêm các câu hỏi sau:*")
+                        for q_idx, q in enumerate(clarifying_questions, 1):
+                            lines.append(f"**{q_idx}. {q.get('question')}**")
+                            if q.get('options'):
+                                lines.append(f"   *(Gợi ý: {' / '.join(q.get('options'))})*")
+
+            # Giai đoạn 2: Chẩn đoán giả định lâm sàng
+            elif clinical_stage == "provisional_assumption":
+                lines.append("\n🩺 **Chẩn đoán Giả định Lâm sàng (Provisional Hypothesis):**")
+                lines.append("Dựa trên sự kết hợp các dấu hiệu bạn chia sẻ qua các lượt hội thoại, hệ thống đang **giả định nghi ngờ nhiều nhất** về:")
+                for idx, d in enumerate(valid_diseases[:2], 1):
+                    d_name = d.get("disease_name_vi") or "Bệnh lý"
+                    prob_str = d.get("probability_percentage", f"{int(d.get('probability', 0)*100)}%")
+                    role_label = "Bệnh nghi ngờ chính (Tạm thời)" if idx == 1 else "Chẩn đoán phân biệt cần theo dõi"
+                    lines.append(f"{idx}. **{d_name}** (ICD-10: `{d.get('icd_code', 'N/A')}`) — **{role_label}: {prob_str}**")
+                    if d.get("department"):
+                        lines.append(f"   *Chuyên khoa:* {d.get('department')}")
+
+                if clarifying_questions and not is_emergency and not intents["is_asking_emergency"]:
+                    lines.append("\n👉 *Để chuyển từ trường hợp giả định sang kết luận sơ bộ chính xác, xin vui lòng làm rõ thêm:*")
                     for q_idx, q in enumerate(clarifying_questions, 1):
                         lines.append(f"**{q_idx}. {q.get('question')}**")
                         if q.get('options'):
                             lines.append(f"   *(Gợi ý: {' / '.join(q.get('options'))})*")
 
-        # Giai đoạn 2: Chẩn đoán giả định lâm sàng
-        elif clinical_stage == "provisional_assumption":
-            lines.append("\n🩺 **Chẩn đoán Giả định Lâm sàng (Provisional Hypothesis):**")
-            lines.append("Dựa trên sự kết hợp các dấu hiệu bạn chia sẻ qua các lượt hội thoại, hệ thống đang **giả định nghi ngờ nhiều nhất** về:")
-            for idx, d in enumerate(valid_diseases[:2], 1):
-                d_name = d.get("disease_name_vi") or "Bệnh lý"
-                prob_str = d.get("probability_percentage", f"{int(d.get('probability', 0)*100)}%")
-                role_label = "Bệnh nghi ngờ chính (Tạm thời)" if idx == 1 else "Chẩn đoán phân biệt cần theo dõi"
-                lines.append(f"{idx}. **{d_name}** (ICD-10: `{d.get('icd_code', 'N/A')}`) — **{role_label}: {prob_str}**")
-                if d.get("department"):
-                    lines.append(f"   *Chuyên khoa:* {d.get('department')}")
+                if not intents["is_asking_medication"]:
+                    top_dept = valid_diseases[0].get("department", "") if valid_diseases else ""
+                    lines.append("\n📋 **Hướng dẫn xử trí tạm thời an toàn:**")
+                    if "Mắt" in top_dept or any("mắt" in s.get("standard_term", "").lower() for s in symptoms):
+                        lines.append("- **Quy tắc 20-20-20:** Cứ sau mỗi 20 phút nhìn sách hoặc màn hình, hãy nhìn xa cự ly 6 mét trong 20 giây để giãn cơ thể mi.")
+                        lines.append("- **Làm dịu mắt:** Sử dụng dung dịch nhỏ mắt Natri Hyaluronate hoặc nước muối sinh lý 0.9% để làm ẩm bề mặt nhãn cầu, chườm ấm mắt nhẹ nhàng 5-10 phút.")
+                        lines.append("- **Khoảng cách thị giác:** Đảm bảo đủ ánh sáng, cự ly đọc tối thiểu 50-60cm, hạn chế tiếp xúc màn hình trước khi ngủ.")
+                    elif "Truyền nhiễm" in top_dept or any("sốt" in s.get("standard_term", "").lower() for s in symptoms):
+                        lines.append("- Bù đủ nước và điện giải (Oresol pha đúng liều lượng, nước trái cây giàu vitamin C).")
+                        lines.append("- Hạ sốt an toàn bằng Paracetamol nếu sốt ≥ 38.5°C; tuyệt đối không dùng Ibuprofen / Aspirin khi chưa loại trừ sốt xuất huyết.")
+                        lines.append("- Nghỉ ngơi nơi thoáng khí, theo dõi sát thân nhiệt và các vết xuất huyết dưới da.")
+                    elif "Tiêu hóa" in top_dept:
+                        lines.append("- Chia nhỏ bữa ăn (4-5 bữa/ngày), chọn thức ăn mềm, lỏng, dễ tiêu (cháo, súp).")
+                        lines.append("- Không nằm ngay sau ăn, kiêng đồ chua cay, nhiều dầu mỡ, chất kích thích (cà phê, rượu bia).")
+                    elif "Da liễu" in top_dept:
+                        lines.append("- Tạm ngưng các loại mỹ phẩm, kem bôi lạ; rửa nhẹ vùng da bằng nước mát sạch hoặc nước muối sinh lý.")
+                        lines.append("- Tránh cào gãi làm xước da, có thể chườm mát nhẹ để giảm cảm giác nóng rát, ngứa ngáy.")
+                    else:
+                        lines.append("- Nghỉ ngơi điều độ, hạn chế làm việc quá sức và tránh căng thẳng thần kinh.")
+                        lines.append("- Uống đủ nước ấm (1.5 - 2 lít/ngày), theo dõi sát diễn biến triệu chứng.")
 
-            if clarifying_questions and not is_emergency and not intents["is_asking_emergency"]:
-                lines.append("\n👉 *Để chuyển từ trường hợp giả định sang kết luận sơ bộ chính xác, xin vui lòng làm rõ thêm:*")
-                for q_idx, q in enumerate(clarifying_questions, 1):
-                    lines.append(f"**{q_idx}. {q.get('question')}**")
-                    if q.get('options'):
-                        lines.append(f"   *(Gợi ý: {' / '.join(q.get('options'))})*")
+            # Giai đoạn 3: Kết luận sơ bộ xác định
+            else:
+                lines.append("\n🏥 **Kết luận Sơ bộ Sàng lọc (Definitive Screening Diagnosis):**")
+                for idx, d in enumerate(valid_diseases[:3], 1):
+                    d_name = d.get("disease_name_vi") or "Bệnh lý"
+                    prob_str = d.get("probability_percentage", f"{int(d.get('probability', 0)*100)}%")
+                    if idx == 1:
+                        lines.append(f"1. **Bệnh chính nghĩ nhiều nhất:** **{d_name}** (ICD-10: `{d.get('icd_code', 'N/A')}`) — **Độ tin cậy: {prob_str}**")
+                    else:
+                        lines.append(f"{idx}. **Chẩn đoán phân biệt:** **{d_name}** (ICD-10: `{d.get('icd_code', 'N/A')}`) — {prob_str}")
+                    if d.get("department"):
+                        lines.append(f"   *Chuyên khoa:* {d.get('department')}")
 
-            if not intents["is_asking_medication"]:
-                top_dept = valid_diseases[0].get("department", "") if valid_diseases else ""
-                lines.append("\n📋 **Hướng dẫn xử trí tạm thời an toàn:**")
-                if "Mắt" in top_dept or any("mắt" in s.get("standard_term", "").lower() for s in symptoms):
-                    lines.append("- **Quy tắc 20-20-20:** Cứ sau mỗi 20 phút nhìn sách hoặc màn hình, hãy nhìn xa cự ly 6 mét trong 20 giây để giãn cơ thể mi.")
-                    lines.append("- **Làm dịu mắt:** Sử dụng dung dịch nhỏ mắt Natri Hyaluronate hoặc nước muối sinh lý 0.9% để làm ẩm bề mặt nhãn cầu, chườm ấm mắt nhẹ nhàng 5-10 phút.")
-                    lines.append("- **Khoảng cách thị giác:** Đảm bảo đủ ánh sáng, cự ly đọc tối thiểu 50-60cm, hạn chế tiếp xúc màn hình trước khi ngủ.")
-                elif "Truyền nhiễm" in top_dept or any("sốt" in s.get("standard_term", "").lower() for s in symptoms):
-                    lines.append("- Bù đủ nước và điện giải (Oresol pha đúng liều lượng, nước trái cây giàu vitamin C).")
-                    lines.append("- Hạ sốt an toàn bằng Paracetamol nếu sốt ≥ 38.5°C; tuyệt đối không dùng Ibuprofen / Aspirin khi chưa loại trừ sốt xuất huyết.")
-                    lines.append("- Nghỉ ngơi nơi thoáng khí, theo dõi sát thân nhiệt và các vết xuất huyết dưới da.")
-                elif "Tiêu hóa" in top_dept:
-                    lines.append("- Chia nhỏ bữa ăn (4-5 bữa/ngày), chọn thức ăn mềm, lỏng, dễ tiêu (cháo, súp).")
-                    lines.append("- Không nằm ngay sau ăn, kiêng đồ chua cay, nhiều dầu mỡ, chất kích thích (cà phê, rượu bia).")
-                elif "Da liễu" in top_dept:
-                    lines.append("- Tạm ngưng các loại mỹ phẩm, kem bôi lạ; rửa nhẹ vùng da bằng nước mát sạch hoặc nước muối sinh lý.")
-                    lines.append("- Tránh cào gãi làm xước da, có thể chườm mát nhẹ để giảm cảm giác nóng rát, ngứa ngáy.")
-                else:
-                    lines.append("- Nghỉ ngơi điều độ, hạn chế làm việc quá sức và tránh căng thẳng thần kinh.")
-                    lines.append("- Uống đủ nước ấm (1.5 - 2 lít/ngày), theo dõi sát diễn biến triệu chứng.")
-
-        # Giai đoạn 3: Kết luận sơ bộ xác định
-        else:
-            lines.append("\n🏥 **Kết luận Sơ bộ Sàng lọc (Definitive Screening Diagnosis):**")
-            for idx, d in enumerate(valid_diseases[:3], 1):
-                d_name = d.get("disease_name_vi") or "Bệnh lý"
-                prob_str = d.get("probability_percentage", f"{int(d.get('probability', 0)*100)}%")
-                if idx == 1:
-                    lines.append(f"1. **Bệnh chính nghĩ nhiều nhất:** **{d_name}** (ICD-10: `{d.get('icd_code', 'N/A')}`) — **Độ tin cậy: {prob_str}**")
-                else:
-                    lines.append(f"{idx}. **Chẩn đoán phân biệt:** **{d_name}** (ICD-10: `{d.get('icd_code', 'N/A')}`) — {prob_str}")
-                if d.get("department"):
-                    lines.append(f"   *Chuyên khoa:* {d.get('department')}")
-
-            if rag_citations:
-                lines.append("\n📚 **Hướng dẫn phác đồ & Dược lâm sàng (Bộ Y Tế):**")
-                for cit in rag_citations[:2]:
-                    title = cit.get("title", "")
-                    content = cit.get("content", "")
-                    if title:
-                        lines.append(f"• **{title}:** {content[:250]}...")
+                if rag_citations:
+                    lines.append("\n📚 **Hướng dẫn phác đồ & Dược lâm sàng (Bộ Y Tế):**")
+                    for cit in rag_citations[:2]:
+                        title = cit.get("title", "")
+                        content = cit.get("content", "")
+                        if title:
+                            lines.append(f"• **{title}:** {content[:250]}...")
 
         # 5. THÔNG BÁO LỖI CLOUD NẾU CÓ
         if cloud_errors:

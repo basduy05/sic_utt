@@ -213,6 +213,9 @@ class HybridClinicalPredictor:
         has_back_spine = any(kw in all_syms_str for kw in ["đau lưng", "mỏi lưng", "thắt lưng", "cột sống", "thoát vị", "đĩa đệm"])
         has_eye_symptoms = any(kw in all_syms_str for kw in ["mỏi mắt", "đau mắt", "đỏ mắt", "cộm mắt", "khô mắt", "chảy nước mắt", "nhìn mờ", "thị lực"])
 
+        has_ergonomic = any(kw in all_syms_str for kw in ["máy tính", "ngồi lâu", "điện thoại", "cúi", "ngồi làm việc", "văn phòng", "tư thế", "cổ gáy", "vai gáy"])
+        has_fatigue_or_muscle = any(kw in all_syms_str for kw in ["mỏi", "mỏi người", "ê ẩm", "đau mỏi", "căng cứng"])
+
         for idx, d in enumerate(self.disease_classes):
             code = d.get("code")
             # 1. Hội chứng Sốt Dengue (A90): Sốt cao + (Chấm xuất huyết / Đau hốc mắt / Đau khớp)
@@ -226,25 +229,47 @@ class HybridClinicalPredictor:
 
             # 2. Hội chứng Cúm (J10): Sốt cao + Đau mỏi người nhưng KHÔNG xuất huyết
             if code in ["J10", "J11"]:
-                if has_fever and not has_petechiae and (has_arthralgia or "ho" in all_syms_str):
-                    p_final[idx] *= 3.0
+                has_flu_resp = any(kw in all_syms_str for kw in ["ho", "rát họng", "đau họng", "nghẹt mũi", "ngạt mũi", "chảy nước mũi", "sổ mũi"])
+                if has_fever and not has_petechiae:
+                    if has_flu_resp and (has_arthralgia or has_retro_orbital):
+                        p_final[idx] *= 12.0  # Củng cố mạnh chẩn đoán Cúm mùa khi có đầy đủ Sốt + Hô hấp + Đau cơ / Hốc mắt
+                    elif has_flu_resp or has_arthralgia:
+                        p_final[idx] *= 4.5
+                    else:
+                        p_final[idx] *= 2.0
                 elif has_petechiae:
                     p_final[idx] *= 0.1  # Cúm rất hiếm khi nổi chấm xuất huyết ấn không mất
+
+            # Phạt J00 (Cảm lạnh thông thường) khi có sốt cao kèm đau nhức cơ toàn thân (đặc trưng của Cúm mùa, không phải cảm lạnh)
+            if code == "J00" and has_fever and (has_arthralgia or any(k in all_syms_str for k in ["sốt cao", "38", "39", "40", "rét run"])):
+                p_final[idx] *= 0.25
 
             # 3. Phạt nặng các bệnh hô hấp (URI / Cảm / Viêm mũi họng) nếu hoàn toàn KHÔNG CÓ triệu chứng hô hấp và KHÔNG sốt
             if code.startswith("J0") or code.startswith("J1") or code.startswith("J2"):
                 if not has_respiratory and not has_fever:
                     p_final[idx] *= 0.05
 
-            # 4. Hội chứng Thoái hóa cột sống cổ / Hội chứng đau mỏi vai gáy (M47.9) & Thoát vị cổ (M50.9)
-            if code == "M47.9":
-                if has_neck_shoulder:
-                    p_final[idx] *= 6.5
-                elif has_back_spine:
-                    p_final[idx] *= 3.0
-            elif code == "M50.9":
-                if has_neck_shoulder:
-                    p_final[idx] *= 4.5
+            # 4. Hội chứng Thoái hóa cột sống cổ / Hội chứng đau mỏi vai gáy (M47.9), Thoát vị cổ (M50.9), Đau lưng (M54.5)
+            if code in ["M47.9", "M50.9", "M54.5"]:
+                if has_fever:
+                    # BỆNH LÝ CƠ XƯƠNG KHỚP THOÁI HÓA DO TƯ THẾ / VĂN PHÒNG KHÔNG GÂY SỐT CẤP TÍNH
+                    p_final[idx] *= 0.05
+                else:
+                    if code == "M47.9":
+                        if has_neck_shoulder:
+                            p_final[idx] *= 12.0
+                        elif has_ergonomic and has_neck_shoulder:
+                            p_final[idx] *= 8.0
+                        elif has_back_spine:
+                            p_final[idx] *= 3.0
+                    elif code == "M50.9":
+                        if has_neck_shoulder:
+                            p_final[idx] *= 5.0
+                        elif has_ergonomic and has_neck_shoulder:
+                            p_final[idx] *= 3.5
+                    elif code == "M54.5":
+                        if has_back_spine:
+                            p_final[idx] *= 8.0
 
             # 5. Bệnh lý Mắt (H10.9, H52.4, H57.0)
             if code.startswith("H10") or code.startswith("H52") or code.startswith("H57"):
@@ -339,6 +364,32 @@ class HybridClinicalPredictor:
 
             if has_symptom_match:
                 overlap_mask[idx] = True
+
+        # Rào chắn loại suy lâm sàng nghiêm ngặt (Clinical Exclusion Gatekeeper)
+        # Chống chẩn đoán mò nhầm sang Bệnh tim mạch cấp, Parkinson, hoặc Đau đầu
+        has_chest_pain = any(kw in all_syms_str for kw in ["đau ngực", "tức ngực", "thắt ngực", "ngực trái", "sau xương ức", "đè nặng ngực", "bóp nghẹt ngực"])
+        has_parkinson_signs = any(kw in all_syms_str for kw in ["run tay", "run chân", "run rẩy", "liệt rung", "chậm chạp vận động", "khó đi lại"])
+        has_headache_actual = any(kw in all_syms_str for kw in ["đau đầu", "nhức đầu", "đau nửa đầu", "nửa đầu", "thái dương", "choáng váng"])
+
+        for idx, d in enumerate(self.disease_classes):
+            code = d.get("code", "")
+            # 1. Bệnh mạch vành / Đau thắt ngực (I20, I21): Bắt buộc phải có đau ngực/tức ngực trừ khi có ECG/Troponin
+            if code.startswith("I20") or code.startswith("I21"):
+                if not has_chest_pain and not has_lab:
+                    overlap_mask[idx] = False
+                    p_final[idx] = 0.0
+
+            # 2. Parkinson (G20): Bắt buộc phải có triệu chứng run/liệt rung
+            if code == "G20":
+                if not has_parkinson_signs:
+                    overlap_mask[idx] = False
+                    p_final[idx] = 0.0
+
+            # 3. Đau đầu căng thẳng (G44.2) / Migraine (G43.9): Bắt buộc phải có đau đầu thực sự
+            if code in ["G44.2", "G43.9"]:
+                if not has_headache_actual:
+                    overlap_mask[idx] = False
+                    p_final[idx] = 0.0
 
         # Triệt tiêu xác suất của các bệnh hoàn toàn không có triệu chứng khớp (Zero Overlap)
         # Loại bỏ triệt để các bệnh đoán mò (Chắp lẹo mắt, Loét giác mạc, Alzheimer...)

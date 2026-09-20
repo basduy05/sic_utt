@@ -123,6 +123,25 @@ class EntityNormalizer:
         for cid, cterm, cat in default_clinical_concepts:
             if cterm.lower() not in seen_terms:
                 self.concepts.append({"id": cid, "standard_term": cterm, "category": cat})
+
+        # Bổ sung các cụm từ triệu chứng cơ xương khớp / công thái học phổ biến
+        common_ergonomic_phrases = {
+            "mỏi ê ẩm": {"id": "sym_mỏi_người", "standard_term": "Mỏi người", "category": "Cơ xương khớp"},
+            "mỏi ê ẩm toàn thân": {"id": "sym_mỏi_người", "standard_term": "Mỏi người", "category": "Cơ xương khớp"},
+            "mỏi toàn thân": {"id": "sym_mỏi_người", "standard_term": "Mỏi người", "category": "Cơ xương khớp"},
+            "ê ẩm toàn thân": {"id": "sym_mỏi_người", "standard_term": "Mỏi người", "category": "Cơ xương khớp"},
+            "đau mỏi toàn thân": {"id": "sym_mỏi_người", "standard_term": "Mỏi người", "category": "Cơ xương khớp"},
+            "mỏi cổ": {"id": "sym_mỏi_cổ", "standard_term": "Mỏi cổ", "category": "Cơ xương khớp"},
+            "đau mỏi cổ": {"id": "sym_mỏi_cổ", "standard_term": "Mỏi cổ", "category": "Cơ xương khớp"},
+            "đau mỏi vai gáy": {"id": "dau_moi_vai_gay", "standard_term": "Đau mỏi cổ vai gáy / Đau vai", "category": "Cơ xương khớp"},
+            "mỏi vai gáy": {"id": "dau_moi_vai_gay", "standard_term": "Đau mỏi cổ vai gáy / Đau vai", "category": "Cơ xương khớp"},
+            "mỏi bả vai": {"id": "dau_moi_vai_gay", "standard_term": "Đau mỏi cổ vai gáy / Đau vai", "category": "Cơ xương khớp"},
+        }
+        for k, v in common_ergonomic_phrases.items():
+            self.exact_lookup[k] = v
+            if k not in seen_terms:
+                self.concepts.append(v)
+                seen_terms.add(k)
                 seen_terms.add(cterm.lower())
             if cterm.lower() not in self.exact_lookup:
                 self.exact_lookup[cterm.lower()] = {"id": cid, "standard_term": cterm, "category": cat}
@@ -324,6 +343,16 @@ class EntityNormalizer:
                     if not any(er in target_id or er in target_term for er in eye_roots):
                         best_score = 0.0
 
+                # 8. Thần kinh / Đau đầu: Cấm map sang đau đầu nếu cụm từ không chứa gốc từ sọ não / đầu
+                head_roots = ["đầu", "dau", "trán", "thái dương", "nửa đầu", "chẩm", "đỉnh đầu"]
+                if ("dau_dau" in target_id or "đầu" in target_term) and not any(k in cleaned_lower for k in head_roots):
+                    best_score = 0.0
+
+                # 9. Đau mỏi cơ / Toàn thân: Nếu cụm từ là cảm giác mỏi cơ/ê ẩm, cấm map sang đau đầu hoặc tim mạch
+                if any(m_kw in cleaned_lower for m_kw in ["mỏi", "mệt", "ê ẩm", "toàn thân"]):
+                    if "dau_dau" in target_id or "dau_nguc" in target_id:
+                        best_score = 0.0
+
                 # Ngưỡng cosine similarity lâm sàng nghiêm ngặt: nâng lên >= 0.65
                 if best_score >= 0.65:
                     return {
@@ -335,6 +364,17 @@ class EntityNormalizer:
                     }
             except Exception as e:
                 logger.error(f"Error during semantic vector normalization: {e}")
+
+        # Loại bỏ các token rác, cụm từ con hoặc tính từ đệm không có giá trị triệu chứng độc lập
+        adjective_noise = {"ẩm", "ê ẩm", "nặng", "nhẹ", "lâu", "nhiều", "ít", "đỡ", "tăng", "hẳn", "mấy", "quá", "lắm", "_m"}
+        if len(cleaned.strip()) < 3 or cleaned_lower in adjective_noise:
+            return {
+                "id": "unknown",
+                "standard_term": "",
+                "similarity_score": 0.0,
+                "matched": False,
+                "method": "filtered_noise_fragment"
+            }
 
         # Giữ nguyên nhãn nơ-ron nếu độ tương đồng dưới ngưỡng
         clean_id = re.sub(r'[^a-zA-Z0-9_]', '_', cleaned.lower())

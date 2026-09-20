@@ -44,6 +44,24 @@ SLOT_TOPIC_MAP: Dict[str, str] = {
     "q_eye_triggers": "eye_habits",
     "q_myopia_signs": "eye_vision",
     "q_conjunctivitis_signs": "eye_symptoms",
+    # Mở rộng cho Cúm mùa, Sốt và Cơ Xương Khớp
+    "q_flu_respiratory_signs": "respiratory_nature",
+    "q_flu_systemic_myalgia": "fever_associated",
+    "q_flu_dengue_differential": "bleeding_signs",
+    "q_fever_associated_signs": "fever_associated",
+    "q_fever_danger_dengue": "bleeding_signs",
+    "q_liver_digestive": "gi_symptoms",
+    "q_liver_risk_habits": "liver_habits",
+    "q_cervical_spine_character": "cervical_spine",
+    "q_cervical_spine_aggravation": "cervical_spine",
+    "q_lumbar_spine_character": "lumbar_spine",
+    "q_bp_measurement": "cardio_bp",
+    "q_bp_associated_signs": "cardio_bp",
+    "q_diarrhea_frequency": "gi_symptoms",
+    "q_diarrhea_associated": "gi_symptoms",
+    "q_chickenpox_rash": "skin_sensation",
+    "q_asthma_nature": "respiratory_nature",
+    "q_appendicitis_pain_shift": "gi_symptoms",
 }
 
 def resolve_question_topic(question: Optional[Dict[str, Any]]) -> str:

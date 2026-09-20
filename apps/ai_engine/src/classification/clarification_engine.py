@@ -1,6 +1,8 @@
 import numpy as np
 import logging
 import re
+import os
+import json
 from typing import Dict, List, Any, Optional, Set
 
 logger = logging.getLogger(__name__)
@@ -133,12 +135,234 @@ class ClarificationEngine:
                     "Không có ghèn rỉ mắt, chỉ đỏ nhẹ"
                 ]
             }
+        ],
+        "J10": [
+            {
+                "id": "q_flu_respiratory_signs",
+                "question": "Đường hô hấp trên và vùng mắt/họng của bạn có biểu hiện nào dưới đây không?",
+                "options": [
+                    "Ho khan rát họng, nghẹt mũi hoặc chảy nước mũi trong",
+                    "Đau nhức sâu sau hai hốc mắt (tăng lên khi cử động liếc mắt)",
+                    "Đau rát bỏng sau xương ức khi ho hoặc hít thở sâu",
+                    "Không có triệu chứng hô hấp, đường thở thông thoáng bình thường"
+                ]
+            },
+            {
+                "id": "q_flu_systemic_myalgia",
+                "question": "Tính chất cơn sốt và mức độ đau nhức cơ thể của bạn diễn biến ra sao?",
+                "options": [
+                    "Đau nhức cơ bắp toàn thân ê ẩm như bị đánh, mệt lả kiệt sức",
+                    "Sốt cao đột ngột kèm ớn lạnh rét run từng cơn bần bật",
+                    "Sốt kèm mệt mỏi nhưng không đau nhức cơ khớp nhiều",
+                    "Thân nhiệt bình thường hoặc chỉ ấm đầu nhẹ"
+                ]
+            },
+            {
+                "id": "q_flu_dengue_differential",
+                "question": "Để phân biệt Cúm với Sốt xuất huyết và theo dõi an toàn, bạn có dấu hiệu nào sau đây không?",
+                "options": [
+                    "Không có nốt xuất huyết dưới da, không chảy máu chân răng/cam",
+                    "Có chấm đỏ li ti xuất huyết dưới da hoặc chảy máu niêm mạc",
+                    "Đau quặn tức vùng hạ sườn phải (vùng gan) hoặc nôn ói liên tục",
+                    "Khó thở, thở nhanh nông, đau tức ngực dữ dội (cần loại trừ viêm phổi)"
+                ]
+            }
+        ],
+        "J11": [
+            {
+                "id": "q_flu_respiratory_signs",
+                "question": "Đường hô hấp trên và vùng mắt/họng của bạn có biểu hiện nào dưới đây không?",
+                "options": [
+                    "Ho khan rát họng, nghẹt mũi hoặc chảy nước mũi trong",
+                    "Đau nhức sâu sau hai hốc mắt (tăng lên khi cử động liếc mắt)",
+                    "Đau rát bỏng sau xương ức khi ho hoặc hít thở sâu",
+                    "Không có triệu chứng hô hấp, đường thở thông thoáng bình thường"
+                ]
+            },
+            {
+                "id": "q_flu_systemic_myalgia",
+                "question": "Tính chất cơn sốt và mức độ đau nhức cơ thể của bạn diễn biến ra sao?",
+                "options": [
+                    "Đau nhức cơ bắp toàn thân ê ẩm như bị đánh, mệt lả kiệt sức",
+                    "Sốt cao đột ngột kèm ớn lạnh rét run từng cơn bần bật",
+                    "Sốt kèm mệt mỏi nhưng không đau nhức cơ khớp nhiều",
+                    "Thân nhiệt bình thường hoặc chỉ ấm đầu nhẹ"
+                ]
+            },
+            {
+                "id": "q_flu_dengue_differential",
+                "question": "Để phân biệt Cúm với Sốt xuất huyết và theo dõi an toàn, bạn có dấu hiệu nào sau đây không?",
+                "options": [
+                    "Không có nốt xuất huyết dưới da, không chảy máu chân răng/cam",
+                    "Có chấm đỏ li ti xuất huyết dưới da hoặc chảy máu niêm mạc",
+                    "Đau quặn tức vùng hạ sườn phải (vùng gan) hoặc nôn ói liên tục",
+                    "Khó thở, thở nhanh nông, đau tức ngực dữ dội (cần loại trừ viêm phổi)"
+                ]
+            }
+        ],
+        "K76.0": [
+            {
+                "id": "q_liver_digestive",
+                "question": "Vùng hạ sườn phải và hệ tiêu hóa của bạn có biểu hiện nào dưới đây không?",
+                "options": [
+                    "Tức nặng, đau tức âm ỉ vùng hạ sườn phải (vùng gan)",
+                    "Đầy bụng khó tiêu, chướng hơi đặc biệt sau ăn nhiều dầu mỡ",
+                    "Nước tiểu sẫm màu như nước vối, vàng da hoặc vàng mắt",
+                    "Không đau tức vùng gan, tiêu hóa bình thường"
+                ]
+            },
+            {
+                "id": "q_liver_risk_habits",
+                "question": "Bạn có tiền sử hoặc thói quen nào liên quan đến chuyển hóa / chức năng gan không?",
+                "options": [
+                    "Thường xuyên uống rượu bia hoặc ăn đồ nhiều dầu mỡ, thừa cân",
+                    "Từng xét nghiệm thấy men gan cao (AST/ALT) hoặc gan nhiễm mỡ",
+                    "Đang dùng thuốc kéo dài hoặc có tiền sử viêm gan B, C",
+                    "Chưa từng mắc bệnh gan mật, không uống rượu bia"
+                ]
+            }
+        ],
+        "M47.9": [
+            {
+                "id": "q_cervical_spine_character",
+                "question": "Vị trí và tính chất cảm giác đau mỏi ở vùng cổ gáy của bạn như thế nào?",
+                "options": [
+                    "Đau mỏi căng cứng vùng cổ vai gáy, khó xoay hoặc cúi ngửa đầu",
+                    "Đau mỏi cổ kèm tê rần, tê bì lan xuống vai hoặc cánh tay/ngón tay",
+                    "Mỏi ê ẩm bả vai gáy sau khi ngồi làm việc máy tính lâu một tư thế",
+                    "Cổ vận động bình thường, không đau căng cứng"
+                ]
+            },
+            {
+                "id": "q_cervical_spine_aggravation",
+                "question": "Triệu chứng đau mỏi cổ vai gáy thay đổi như thế nào khi nghỉ ngơi hoặc vận động?",
+                "options": [
+                    "Tăng nặng khi ngồi làm việc máy tính, cúi bấm điện thoại lâu",
+                    "Đỡ hẳn khi được nằm nghỉ ngơi, xoa bóp hoặc chườm ấm",
+                    "Xuất hiện liên tục cả ngày, ê ẩm vùng vai gáy và thắt lưng",
+                    "Đã uống thuốc giảm đau nhưng chỉ đỡ tạm thời rồi đau lại"
+                ]
+            }
+        ],
+        "M54.5": [
+            {
+                "id": "q_lumbar_spine_character",
+                "question": "Vị trí và đặc điểm cơn đau vùng lưng của bạn diễn biến như thế nào?",
+                "options": [
+                    "Đau mỏi âm ỉ vùng thắt lưng, tăng khi ngồi lâu hoặc cúi người",
+                    "Đau quặn thắt lưng lan xuống mông hoặc dọc cẳng chân (nghi thần kinh tọa)",
+                    "Đau nhói thắt lưng xuất hiện đột ngột sau khi mang vác vật nặng",
+                    "Vùng lưng bình thường, không đau mỏi"
+                ]
+            }
+        ],
+        "I10": [
+            {
+                "id": "q_bp_measurement",
+                "question": "Chỉ số huyết áp gần đây của bạn đo được là bao nhiêu?",
+                "options": [
+                    "Huyết áp tâm thu trên 140 mmHg (hoặc tâm trương trên 90 mmHg)",
+                    "Huyết áp bình thường quanh mức 120/80 mmHg",
+                    "Chưa đo huyết áp gần đây",
+                    "Có tiền sử đang uống thuốc hạ huyết áp hằng ngày"
+                ]
+            },
+            {
+                "id": "q_bp_associated_signs",
+                "question": "Bạn có các biểu hiện tuần hoàn sọ não nào dưới đây đi kèm không?",
+                "options": [
+                    "Đau tức nặng sau gáy, bốc hỏa nóng bừng mặt",
+                    "Chóng mặt, choáng váng hoa mắt hoặc mất thăng bằng",
+                    "Hồi hộp, tim đập nhanh hoặc tức nặng nhẹ vùng ngực",
+                    "Không có các dấu hiệu choáng váng hay đau gáy kể trên"
+                ]
+            }
+        ],
+        "G44.2": [
+            {
+                "id": "q_tension_headache_character",
+                "question": "Tính chất và vị trí cơn đau đầu của bạn có đặc điểm nào dưới đây?",
+                "options": [
+                    "Đau căng tức bó chặt như có dải băng thắt quanh đầu cả hai bên",
+                    "Đau âm ỉ cả ngày, tăng dần vào chiều tối khi căng thẳng/stress",
+                    "Không kèm buồn nôn, không sợ ánh sáng/tiếng động",
+                    "Đau nhói giật theo nhịp mạch ở nửa bên đầu"
+                ]
+            }
+        ],
+        "A09": [
+            {
+                "id": "q_diarrhea_frequency",
+                "question": "Tình trạng đi ngoài phân lỏng của bạn diễn biến như thế nào trong ngày?",
+                "options": [
+                    "Đi ngoài phân lỏng nước nhiều trên 3 - 5 lần/ngày",
+                    "Phân có nhầy máu hoặc mùi tanh nồng bất thường",
+                    "Chỉ đi phân lỏng 1 - 2 lần sau khi ăn đồ ăn lạ",
+                    "Không đi ngoài phân lỏng, đại tiện bình thường"
+                ]
+            },
+            {
+                "id": "q_diarrhea_associated",
+                "question": "Bạn có triệu chứng sốt hoặc đau quặn bụng đi kèm không?",
+                "options": [
+                    "Đau quặn bụng từng cơn quanh rốn kèm buồn nôn, nôn mửa",
+                    "Sốt nhẹ hoặc sốt cao kèm cảm giác khát nước nhiều",
+                    "Xuất hiện sau khi ăn thức ăn ôi thiu / thực phẩm để lâu",
+                    "Bụng chỉ đầy hơi khó tiêu nhẹ, không sốt"
+                ]
+            }
+        ],
+        "B01.9": [
+            {
+                "id": "q_chickenpox_rash",
+                "question": "Tình trạng tổn thương trên bề mặt da của bạn có biểu hiện nào dưới đây?",
+                "options": [
+                    "Nổi nốt phỏng nước trong li ti khắp người, có viền đỏ xung quanh",
+                    "Các nốt mụn nước có vết lõm ở giữa, ngứa ngáy dữ dội",
+                    "Mụn nước bắt đầu trợt loét đóng vảy màu nâu",
+                    "Không có nốt phỏng nước, chỉ là mẩn đỏ phẳng"
+                ]
+            }
+        ],
+        "J45.9": [
+            {
+                "id": "q_asthma_nature",
+                "question": "Cơn khó thở của bạn có đặc điểm nào dưới đây không?",
+                "options": [
+                    "Khó thở thành cơn, thở rít khò khè nhiều ở thì thở ra",
+                    "Cơn khó thở xuất hiện nhiều về đêm, gần sáng hoặc khi gặp lạnh",
+                    "Đỡ khó thở nhanh chóng sau khi dùng thuốc xịt giãn phế quản",
+                    "Khó thở liên tục cả ngày khi vận động gắng sức"
+                ]
+            }
+        ],
+        "K35.8": [
+            {
+                "id": "q_appendicitis_pain_shift",
+                "question": "Cơn đau bụng của bạn có hướng di chuyển và vị trí thế nào?",
+                "options": [
+                    "Đau âm ỉ từ quanh rốn / thượng vị rồi chuyển khu trú xuống bụng dưới bên phải",
+                    "Đau nhói tăng lên rõ rệt khi đi lại, ho hoặc khi ấn vào hố chậu phải rồi buông nhanh",
+                    "Kèm sốt nhẹ 37.5 - 38.5°C, chán ăn, buồn nôn hoặc nôn nhẹ",
+                    "Đau khắp cả bụng, không tập trung ở hố chậu phải"
+                ]
+            }
         ]
     }
 
     def __init__(self, confidence_threshold: float = 0.75, entropy_threshold: float = 1.2):
         self.confidence_threshold = confidence_threshold
         self.entropy_threshold = entropy_threshold
+        icd_path = os.path.abspath(os.path.join(
+            os.path.dirname(__file__), "..", "..", "..", "..", "data", "medical_lexicon", "icd10_codes.json"
+        ))
+        self.icd_db = {}
+        if os.path.exists(icd_path):
+            try:
+                with open(icd_path, "r", encoding="utf-8") as f:
+                    self.icd_db = json.load(f)
+            except Exception as e:
+                logger.warning(f"Error loading icd10_codes in ClarificationEngine: {e}")
 
     def calculate_entropy(self, probabilities: np.ndarray) -> float:
         """Tính Shannon Entropy H(P) = - sum(p * log2(p))."""
@@ -172,6 +396,32 @@ class ClarificationEngine:
 
         # Mặc định nằm ở tầng Giả định lâm sàng (Provisional Assumption)
         return "provisional_assumption"
+
+    def _synthesize_hypothesis_question(self, code: str) -> Optional[Dict[str, Any]]:
+        """Tự động sinh câu hỏi định hướng theo giả định lâm sàng (Hypothesis-Driven Question) từ ICD-10."""
+        info = self.icd_db.get(code, {})
+        if not info:
+            return None
+        name_vi = info.get("name_vi", code)
+        cardinal = info.get("cardinal_symptoms", [])
+        all_syms = info.get("all_symptoms", [])
+
+        key_signs = [s for s in cardinal if s][:2] or [s for s in all_syms if s][:2]
+        other_signs = [s for s in all_syms if s and s not in key_signs][:2]
+
+        options = []
+        if key_signs:
+            options.append(f"Có biểu hiện đặc trưng: {', '.join(key_signs)}")
+        if other_signs:
+            options.append(f"Có kèm theo: {', '.join(other_signs)}")
+        options.append("Các triệu chứng nhẹ hơn hoặc chỉ thoáng qua")
+        options.append("Không có các dấu hiệu đặc thù kể trên")
+
+        return {
+            "id": f"q_hypothesis_{code.lower().replace('.', '_')}",
+            "question": f"Để làm rõ thêm định hướng về {name_vi}, bạn có xuất hiện các biểu hiện nào dưới đây không?",
+            "options": options
+        }
 
     def generate_context_aware_questions(
         self,
@@ -210,17 +460,41 @@ class ClarificationEngine:
                 return False
             return True
 
-        # 1. Ưu tiên lấy từ ngân hàng câu hỏi chuyên biệt theo mã ICD-10
+        # 1. Ưu tiên lấy từ ngân hàng câu hỏi chuyên biệt theo mã ICD-10 của bệnh đang dự đoán
         if top_disease_codes:
             for code in top_disease_codes:
                 if code in self.DISCRIMINATING_QUESTIONS:
                     for q in self.DISCRIMINATING_QUESTIONS[code]:
                         if is_question_usable(q) and q not in questions and len(questions) < 2:
                             questions.append(q)
+                elif code in self.icd_db and len(questions) < 2:
+                    dyn_q = self._synthesize_hypothesis_question(code)
+                    if dyn_q and is_question_usable(dyn_q) and dyn_q not in questions:
+                        questions.append(dyn_q)
+
+        def _match_keywords(text: str, keywords: List[str]) -> bool:
+            text_lower = text.lower()
+            for kw in keywords:
+                kw_clean = kw.strip().lower()
+                if not kw_clean:
+                    continue
+                # Nếu là từ đơn ngắn (<= 5 ký tự), BẮT BUỘC dùng regex \b để tránh khớp nhầm chuỗi con
+                # Ví dụ: "ho" KHÔNG ĐƯỢC khớp "hoặc", "khoa học", "kế hoạch"
+                # "da" KHÔNG ĐƯỢC khớp "dạ dày", "đang"
+                # "tim" KHÔNG ĐƯỢC khớp "tiêm", "tiềm"
+                if len(kw_clean.split()) == 1 and len(kw_clean) <= 5:
+                    escaped = re.escape(kw_clean)
+                    pattern = rf'(?:\b|^){escaped}(?:\b|$)'
+                    if re.search(pattern, text_lower):
+                        return True
+                else:
+                    if kw_clean in text_lower:
+                        return True
+            return False
 
         # 2. Phân tích theo nhóm cơ quan chức năng
         # A. Tiêu hóa (Dạ dày, ruột, bụng, nôn, ợ chua, tiêu chảy, táo bón)
-        if len(questions) < 2 and any(kw in combined for kw in ["bụng", "dạ dày", "bao tử", "thượng vị", "ợ chua", "ợ hơi", "buồn nôn", "nôn ói", "tiêu chảy", "đi ngoài", "đầy bụng", "trĩ"]):
+        if len(questions) < 2 and _match_keywords(combined, ["bụng", "dạ dày", "bao tử", "thượng vị", "ợ chua", "ợ hơi", "buồn nôn", "nôn ói", "tiêu chảy", "đi ngoài", "đầy bụng", "trĩ"]):
             candidates = [
                 {
                     "id": "q_stomach_pos",
@@ -243,7 +517,7 @@ class ClarificationEngine:
                     questions.append(c)
 
         # B. Hô hấp & Tai mũi họng (Ho, đờm, khó thở, thở rít, rát họng, ngạt mũi, viêm phổi)
-        if len(questions) < 2 and any(kw in combined for kw in ["ho", "đờm", "khó thở", "thở dốc", "khò khè", "rát họng", "đau họng", "ngạt mũi", "sổ mũi", "phổi"]):
+        if len(questions) < 2 and _match_keywords(combined, ["ho", "đờm", "khó thở", "thở dốc", "khò khè", "rát họng", "đau họng", "ngạt mũi", "sổ mũi", "phổi", "viêm họng", "viêm phế quản"]):
             candidates = [
                 {
                     "id": "q_resp_cough_nature",
@@ -265,8 +539,9 @@ class ClarificationEngine:
                 if is_question_usable(c) and c not in questions and len(questions) < 2:
                     questions.append(c)
 
-        # C. Thần kinh & Sọ não (Đau đầu, nhức đầu, chóng mặt, mất ngủ, choáng váng, tê bì)
-        if len(questions) < 2 and any(kw in combined for kw in ["đầu", "nhức đầu", "đau đầu", "chóng mặt", "hoa mắt", "choáng", "mất ngủ", "tê bì", "buồn ngủ"]):
+        # C. Thần kinh & Sọ não (Đau đầu, nhức đầu, chóng mặt, mất ngủ, choáng váng)
+        # TUYỆT ĐỐI KHÔNG để "tê bì" ở đây để tránh nhầm tê bì tay chân/rễ thần kinh với đau đầu sọ não
+        if len(questions) < 2 and _match_keywords(combined, ["nhức đầu", "đau đầu", "chóng mặt", "hoa mắt", "choáng", "mất ngủ", "buồn ngủ", "đau nửa đầu"]):
             candidates = [
                 {
                     "id": "q_neuro_headache_type",
@@ -293,8 +568,26 @@ class ClarificationEngine:
                 if is_question_usable(c) and c not in questions and len(questions) < 2:
                     questions.append(c)
 
+        # C2. Thần kinh ngoại biên & Chèn ép rễ thần kinh (Tê bì, tê rần, chèn ép rễ cổ/thắt lưng)
+        if len(questions) < 2 and _match_keywords(combined, ["tê bì", "tê rần", "tê tay", "tê chân", "châm chích", "mất cảm giác", "yếu cơ"]):
+            candidates = [
+                {
+                    "id": "q_radiculopathy_distribution",
+                    "question": "Cảm giác tê bì hoặc châm chích của bạn lan như thế nào và có ảnh hưởng đến vận động không?",
+                    "options": [
+                        "Tê bì lan từ cổ xuống vai, dọc mặt ngoài cánh tay và các ngón tay",
+                        "Tê râm ran các đầu ngón tay, ngón chân như kiến bò",
+                        "Tê bì kèm yếu sức cơ, cảm giác vụng về hoặc dễ đánh rơi đồ vật",
+                        "Chỉ tê mỏi thoáng qua khi ngồi tì đè lâu một chỗ"
+                    ]
+                }
+            ]
+            for c in candidates:
+                if is_question_usable(c) and c not in questions and len(questions) < 2:
+                    questions.append(c)
+
         # D. Mắt & Thị giác (Chuyên khoa Mắt, Khúc xạ, Khô mắt, Mỏi mắt)
-        if len(questions) < 2 and any(kw in combined for kw in ["mắt", "thị giác", "nhìn mờ", "thị lực", "mỏi mắt", "khô mắt", "cộm mắt", "nhức mắt", "đau mắt", "đỏ mắt", "điều tiết", "cận thị", "lão thị"]):
+        if len(questions) < 2 and _match_keywords(combined, ["mắt", "thị giác", "nhìn mờ", "thị lực", "mỏi mắt", "khô mắt", "cộm mắt", "nhức mắt", "đau mắt", "đỏ mắt", "điều tiết", "cận thị", "lão thị"]):
             candidates = [
                 {
                     "id": "q_eye_symptoms",
@@ -331,9 +624,9 @@ class ClarificationEngine:
                 if is_question_usable(c) and c not in questions and len(questions) < 2:
                     questions.append(c)
 
-        # E. Da liễu & Dị ứng (Tránh dùng substring ngắn 'da' để không nhầm với 'đau', 'dạ dày')
-        derma_keywords = ["ngứa", "nổi mẩn", "rát da", "đỏ da", "phát ban", "mề đay", "dị ứng da", "mụn nước", "sẩn ngứa", "mẩn đỏ"]
-        if len(questions) < 2 and (any(kw in combined for kw in derma_keywords) or bool(re.search(r'\bda\b', combined, re.IGNORECASE))):
+        # E. Da liễu & Dị ứng
+        derma_keywords = ["ngứa", "nổi mẩn", "rát da", "đỏ da", "phát ban", "mề đay", "dị ứng da", "mụn nước", "sẩn ngứa", "mẩn đỏ", "da"]
+        if len(questions) < 2 and _match_keywords(combined, derma_keywords):
             candidates = [
                 {
                     "id": "q_derma_sensation",
@@ -351,7 +644,7 @@ class ClarificationEngine:
                     questions.append(c)
 
         # E. Tim mạch & Lồng ngực
-        if len(questions) < 2 and any(kw in combined for kw in ["ngực", "tức ngực", "đau ngực", "tim", "hồi hộp", "đánh trống ngực", "nhịp tim"]):
+        if len(questions) < 2 and _match_keywords(combined, ["ngực", "tức ngực", "đau ngực", "tim", "hồi hộp", "đánh trống ngực", "nhịp tim"]):
             candidates = [
                 {
                     "id": "q_cardio_pain_type",
@@ -368,8 +661,8 @@ class ClarificationEngine:
                 if is_question_usable(c) and c not in questions and len(questions) < 2:
                     questions.append(c)
 
-        # F. Sốt & Toàn thân
-        if len(questions) < 2 and any(kw in combined for kw in ["sốt", "mệt", "ớn lạnh", "rét", "uể oải"]):
+        # F. Sốt & Toàn thân (Bao gồm câu hỏi giai đoạn 1, 2 và phân tầng loại trừ cờ đỏ)
+        if len(questions) < 2 and _match_keywords(combined, ["sốt", "nóng", "ớn lạnh", "rét", "uể oải", "mệt mỏi"]):
             candidates = [
                 {
                     "id": "q_fever_pattern",
@@ -380,36 +673,40 @@ class ClarificationEngine:
                     "id": "q_fever_days",
                     "question": "Bạn đã bị sốt được bao nhiêu ngày và có dùng thuốc hạ sốt chưa?",
                     "options": ["Mới sốt trong 24 giờ qua", "Đã sốt 2 - 3 ngày liên tục", "Uống Paracetamol có hạ nhưng sau đó sốt lại", "Chưa dùng bất kỳ loại thuốc nào"]
+                },
+                {
+                    "id": "q_fever_associated_signs",
+                    "question": "Bên cạnh sốt và mệt mỏi, bạn có xuất hiện các triệu chứng toàn thân nào dưới đây không?",
+                    "options": [
+                        "Đau nhức cơ bắp ê ẩm toàn thân, đau sâu sau hai hốc mắt",
+                        "Ho khan rát họng, ngạt mũi hoặc chảy nước mũi trong",
+                        "Đau tức vùng bụng, buồn nôn hoặc chán ăn rõ rệt",
+                        "Không có triệu chứng nào khác, chỉ sốt và mệt rã rời"
+                    ]
+                },
+                {
+                    "id": "q_fever_danger_dengue",
+                    "question": "Để theo dõi an toàn và phân biệt Sốt xuất huyết / Cúm, bạn có dấu hiệu nào sau đây?",
+                    "options": [
+                        "Không có nốt xuất huyết dưới da, không chảy máu cam / chân răng",
+                        "Có chấm đỏ li ti xuất huyết dưới da hoặc chảy máu niêm mạc",
+                        "Đau tức dữ dội vùng hạ sườn phải, nôn nhiều liên tục",
+                        "Người li bì, lừ đừ, chân tay lạnh ẩm hoặc khó thở"
+                    ]
                 }
             ]
             for c in candidates:
                 if is_question_usable(c) and c not in questions and len(questions) < 2:
                     questions.append(c)
 
-        # G. Cơ Xương Khớp, Cột sống & Vai gáy (Mỏi cổ, đau vai gáy, mỏi người, cứng cổ, đau lưng, khớp)
-        if len(questions) < 2 and any(kw in combined for kw in ["cổ", "vai", "gáy", "lưng", "khớp", "mỏi người", "mỏi cổ", "cột sống", "xương", "mỏi cơ", "cơ bắp"]):
-            candidates = [
-                {
-                    "id": "q_ortho_position_character",
-                    "question": "Vị trí và tính chất cảm giác đau mỏi ở vùng cổ gáy / cơ thể của bạn thế nào?",
-                    "options": [
-                        "Đau mỏi căng cứng vùng cổ vai gáy, khó xoay hoặc cúi ngửa đầu",
-                        "Mỏi ê ẩm toàn thân sau khi làm việc máy tính hoặc ngồi lâu một tư thế",
-                        "Đau mỏi cổ kèm tê rần, tê bì lan xuống vai hoặc cánh tay/ngón tay",
-                        "Đau nhức các khớp khi cử động hoặc khi thời tiết thay đổi"
-                    ]
-                },
-                {
-                    "id": "q_ortho_triggers_relief",
-                    "question": "Triệu chứng mỏi xuất hiện nhiều nhất khi nào và có đỡ khi nghỉ ngơi không?",
-                    "options": [
-                        "Tăng nặng khi ngồi làm việc máy tính, cúi bấm điện thoại lâu",
-                        "Đỡ hẳn khi được nghỉ ngơi nằm thư giãn hoặc xoa bóp chườm ấm",
-                        "Xuất hiện liên tục cả ngày, ê ẩm vùng vai gáy và thắt lưng",
-                        "Đã uống thuốc giảm đau nhưng chỉ đỡ tạm thời rồi đau lại"
-                    ]
-                }
-            ]
+        # G. Cơ Xương Khớp, Cột sống & Vai gáy (CHỈ KÍCH HOẠT KHI CÓ TRIỆU CHỨNG GIẢI PHẪU RÕ RÀNG)
+        # TUYỆT ĐỐI KHÔNG dùng từ đơn "mỏi" hoặc "ê ẩm" vì "mệt mỏi / ê ẩm mình mẩy" là triệu chứng toàn thân do sốt/nhiễm trùng
+        ortho_keywords = [
+            "cổ vai gáy", "đau cổ", "mỏi cổ", "vai gáy", "đau vai", "cột sống", "đau lưng", "mỏi lưng",
+            "thắt lưng", "thoái hóa cổ", "thoát vị", "cứng cổ", "đau khớp", "sưng khớp", "gút", "viêm khớp"
+        ]
+        if len(questions) < 2 and _match_keywords(combined, ortho_keywords):
+            candidates = self.DISCRIMINATING_QUESTIONS.get("M47.9", [])
             for c in candidates:
                 if is_question_usable(c) and c not in questions and len(questions) < 2:
                     questions.append(c)

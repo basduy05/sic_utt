@@ -154,7 +154,7 @@ class MedicalNER:
         for s in unique_raw_symptoms:
             norm = self.normalizer.normalize(s)
             term = norm.get("standard_term")
-            if term and term not in seen_terms:
+            if term and norm.get("id") != "unknown" and len(term) >= 3 and term not in seen_terms:
                 normalized_symptoms.append(norm)
                 seen_terms.add(term)
 
@@ -165,7 +165,7 @@ class MedicalNER:
         for s in unique_raw_negated:
             norm = self.normalizer.normalize(s)
             term = norm.get("standard_term")
-            if term and term not in seen_negated:
+            if term and norm.get("id") != "unknown" and len(term) >= 3 and term not in seen_negated:
                 normalized_negated.append(norm)
                 seen_negated.add(term)
 
