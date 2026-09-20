@@ -60,6 +60,43 @@ class RedFlagDetector:
                 }
             ]
 
+    def _evaluate_anaphylaxis_rule(self, all_terms_str: str) -> Optional[Dict[str, Any]]:
+        """
+        Quy tắc lâm sàng phản vệ (WAO / Bộ Y Tế):
+        Tổn thương da/niêm mạc (mề đay, phù môi/mắt...) KÈM THEO
+        ít nhất một trong các biểu hiện:
+        1. Hô hấp (thở rít, khó thở, tức ngực, khàn tiếng...) HOẶC
+        2. Tuần hoàn/Toàn thân (choáng, ngất, tụt huyết áp...)
+        """
+        skin_terms = [
+            "mày đay", "mề đay", "ngứa", "phù môi", "ban đỏ", "sưng môi",
+            "sưng phù môi", "nổi mảng", "mẩn ngứa", "tê phù", "nổi cục đỏ",
+            "phù mạch", "phù quincke", "nổi mề đay", "sưng mắt", "phù mắt"
+        ]
+        resp_terms = [
+            "thở rít", "khó thở", "tức ngực", "khàn tiếng", "nghẹt cổ họng",
+            "nghẹt họng", "thở dốc", "tiếng rít", "rít thanh quản", "nghẹn thở",
+            "co thắt họng", "thở rít nhẹ"
+        ]
+        circ_terms = [
+            "choáng", "xây xẩm", "ngất", "tụt huyết áp", "hạ huyết áp",
+            "chóng mặt dữ dội", "mạch nhanh nhỏ", "vã mồ hôi lạnh", "ngất xỉu"
+        ]
+
+        has_skin = any(term in all_terms_str for term in skin_terms)
+        has_resp = any(term in all_terms_str for term in resp_terms)
+        has_circ = any(term in all_terms_str for term in circ_terms)
+
+        if has_skin and (has_resp or has_circ):
+            return {
+                "rule_id": "RF_ANAPHYLAXIS",
+                "disease_group": "Sốc phản vệ / Phù mạch cấp tính",
+                "severity": "CRITICAL_EMERGENCY",
+                "action_vi": "🚨 BÁO ĐỘNG ĐỎ: Dấu hiệu Phản vệ / Phù mạch thanh quản (Anaphylaxis / Quincke). Tình trạng co thắt đường thở hoặc phù nề niêm mạc sau tiếp xúc dị nguyên có thể đe dọa tính mạng. BẠN CẦN GỌI CẤP CỨU 115 HOẶC VÀO NGAY KHOA CẤP CỨU GẦN NHẤT ĐỂ TIÊM ADRENALINE!",
+                "emergency_phone": "115"
+            }
+        return None
+
     def evaluate(self, text: str, normalized_symptoms: Optional[List[Dict[str, Any]]] = None, lab_indicators: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Quét nhanh dấu hiệu nguy cấp trong text, thực thể triệu chứng và chỉ số máu.
@@ -73,7 +110,16 @@ class RedFlagDetector:
 
         triggered_flags = []
 
+        # 1. Đánh giá chuyên biệt Phản vệ / Phù mạch (Độ ưu tiên cao nhất, luật kết hợp đa hệ cơ quan)
+        anaphylaxis_flag = self._evaluate_anaphylaxis_rule(all_terms_str)
+        if anaphylaxis_flag:
+            triggered_flags.append(anaphylaxis_flag)
+
         for rule in self.rules:
+            # Tránh trùng lặp nếu RF_ANAPHYLAXIS đã được kích hoạt bởi luật kết hợp
+            if rule.get("id") == "RF_ANAPHYLAXIS" and any(f.get("rule_id") == "RF_ANAPHYLAXIS" for f in triggered_flags):
+                continue
+
             # Kiểm tra triggers_all
             all_satisfied = True
             for req in rule.get("triggers_all", []):

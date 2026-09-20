@@ -39,6 +39,94 @@ class ConversationalEngine:
             ))
         }
 
+    def _build_clinical_thinking(
+        self,
+        symptoms: List[Dict[str, Any]],
+        predicted_diseases: List[Dict[str, Any]],
+        negated_symptoms: List[Dict[str, Any]],
+        lab_indicators: Dict[str, Any],
+        is_emergency: bool,
+        clinical_stage: str
+    ) -> str:
+        top_d = predicted_diseases[0] if predicted_diseases else {}
+        top_name = top_d.get("disease_name_vi", "Hội chứng lâm sàng")
+        dept = top_d.get("department", "Đa khoa")
+        sym_names = [s.get("standard_term") for s in symptoms if s.get("standard_term")]
+        neg_names = [s.get("standard_term") for s in negated_symptoms if s.get("standard_term")]
+        diff_names = [d.get("disease_name_vi") for d in predicted_diseases[1:3] if d.get("disease_name_vi")]
+
+        if "Mắt" in dept or any("mắt" in s.lower() or "nhìn" in s.lower() for s in sym_names):
+            patho = (
+                f"Triệu chứng {', '.join(sym_names[:2]) or 'thị giác'} phản ánh tình trạng quá tải điều tiết cơ thể mi "
+                "hoặc bất ổn định màng phim nước mắt (Tear Film Break-up). Khi làm việc thị giác cự ly gần kéo dài hoặc "
+                "giảm tần số chớp mắt, nhãn cầu bị khô và suy giảm độ sắc nét quang học tạm thời."
+            )
+            diff_text = f"Ưu tiên nghĩ tới {top_name} (H52.4). Cần phân biệt với Viêm kết giác mạc khô (H57.0) và Tật khúc xạ chưa chỉnh kính (H52.1)."
+            red_flag = "Hiện chưa có dấu hiệu đỏ mắt dữ dội, đau nhức sâu kèm buồn nôn (cảnh báo Glaucoma góc đóng cấp) hay mất thị lực đột ngột."
+            next_step = "Khai thác thêm thời gian duy trì thị lực gần, tiền sử kính mắt và đáp ứng sau khi nhắm mắt nghỉ ngơi."
+        elif "Truyền nhiễm" in dept or any("sốt" in s.lower() or "chấm xuất huyết" in s.lower() for s in sym_names):
+            patho = (
+                f"Sự phối hợp giữa {', '.join(sym_names[:2]) or 'sốt'} với các biểu hiện toàn thân phản ánh đáp ứng viêm cấp tính do virus. "
+                "Cần đặc biệt theo dõi biến động tính thấm thành mao mạch và nguy cơ xuất huyết vi mạch."
+            )
+            diff_text = f"Hướng chẩn đoán chính: {top_name}. Chẩn đoán phân biệt quan trọng: {', '.join(diff_names) if diff_names else 'Cúm mùa, Sốt phát ban'}."
+            red_flag = "Cảnh báo thoát huyết tương, đau bụng vùng gan, nôn ói liên tục hoặc xuất huyết niêm mạc."
+            next_step = "Đề nghị kiểm tra tổng phân tích tế bào máu ngoại vi (tiểu cầu, Hct) nếu sốt sang ngày thứ 3."
+        elif "Dị ứng" in dept or any("ngứa" in s.lower() or "dị ứng" in s.lower() for s in sym_names):
+            patho = (
+                f"Biểu hiện {', '.join(sym_names[:2]) or 'mẩn ngứa'} phù hợp với phản ứng phóng thích Histamin từ dưỡng bào "
+                "qua trung gian IgE hoặc kích ứng tiếp xúc."
+            )
+            diff_text = f"Hướng chẩn đoán: {top_name}. Phân biệt với Viêm da cơ địa đợt cấp hoặc dị ứng thuốc."
+            red_flag = "Cảnh báo phù mạch Angioedema vùng hầu họng, thở rít hoặc tụt huyết áp (Phản vệ)."
+            next_step = "Làm rõ dị nguyên thức ăn, thuốc đã dùng trong 24 giờ qua và tiền sử cơ địa dị ứng."
+        elif "Hô hấp" in dept or any("ho" in s.lower() or "khó thở" in s.lower() for s in sym_names):
+            patho = (
+                f"Các triệu chứng {', '.join(sym_names[:2]) or 'hô hấp'} cho thấy kích ứng niêm mạc đường thở hoặc tăng tính phản ứng phế quản."
+            )
+            diff_text = f"Hướng chẩn đoán: {top_name}. Phân biệt với {', '.join(diff_names) if diff_names else 'Viêm phế quản cấp, Hen phế quản'}."
+            red_flag = "Cảnh báo khó thở khi nằm, thở co kéo cơ hô hấp phụ hoặc SpO2 suy giảm."
+            next_step = "Khai thác tính chất đờm, tiếng rít khi thở và thời điểm khởi phát cơn ho."
+        elif "Tiêu hóa" in dept or any("bụng" in s.lower() or "nôn" in s.lower() or "tiêu chảy" in s.lower() for s in sym_names):
+            patho = (
+                f"Biểu hiện {', '.join(sym_names[:2]) or 'tiêu hóa'} phản ánh tình trạng rối loạn nhu động dạ dày - ruột "
+                "hoặc kích ứng niêm mạc do acid dịch vị / độc tố thức ăn."
+            )
+            diff_text = f"Hướng chẩn đoán: {top_name}. Phân biệt với {', '.join(diff_names) if diff_names else 'Viêm dạ dày cấp, Ngộ độc thực phẩm'}."
+            red_flag = "Cảnh báo đau bụng quặn dữ dội, nôn ra máu, đi ngoài phân đen hoặc mất nước nặng."
+        elif "Cơ Xương Khớp" in dept or any(kw in s.lower() for kw in ["cổ", "vai", "gáy", "khớp", "lưng", "mỏi"] for s in sym_names):
+            patho = (
+                f"Biểu hiện {', '.join(sym_names[:2]) or 'đau mỏi cơ khớp'} phản ánh tình trạng quá tải cơ học, "
+                "co cứng các nhóm cơ cạnh sống (Muscle Spasm) hoặc thoái hóa đốt sống cổ gây kích thích nhánh thần kinh cảm giác. "
+                "Tình trạng này rất phổ biến khi ngồi tĩnh tại sai tư thế hoặc làm việc màn hình kéo dài."
+            )
+            diff_text = f"Hướng chẩn đoán: {top_name}. Phân biệt với Hội chứng đau cơ mạc (Myofascial Pain Syndrome), Thoát vị đĩa đệm cột sống cổ (M50.9) hoặc Căng cơ cổ cấp tính."
+            red_flag = "Cảnh báo dấu hiệu tê bì yếu liệt cánh tay, mất khéo léo bàn tay hoặc đau lan dữ dội kèm chóng mặt khi quay cổ."
+            next_step = "Khai thác tư thế làm việc, thói quen vận động cổ và mức độ tê bì lan xuống chi trên."
+        elif "Thần kinh" in dept or any("đầu" in s.lower() or "chóng mặt" in s.lower() for s in sym_names):
+            patho = (
+                f"Biểu hiện {', '.join(sym_names[:2]) or 'thần kinh'} phản ánh tình trạng căng thẳng thần kinh vận mạch, "
+                "co thắt cơ vùng đầu cổ hoặc rối loạn điều hòa tiền đình ngoại biên."
+            )
+            diff_text = f"Hướng chẩn đoán: {top_name}. Phân biệt với {', '.join(diff_names) if diff_names else 'Đau đầu căng thẳng, Rối loạn tiền đình'}."
+            red_flag = "Cảnh báo đau đầu dữ dội như sét đánh, yếu liệt nửa người hoặc co giật."
+            next_step = "Làm rõ tính chất đau nhói hay căng tức, thời gian cơn và yếu tố khởi phát."
+        else:
+            patho = f"Tập hợp các triệu chứng ({', '.join(sym_names[:3]) or 'ghi nhận'}) phản ánh phản ứng mệt mỏi thể chất hoặc rối loạn cơ năng ban đầu."
+            diff_text = f"Giả định lâm sàng: {top_name}. Cần phân biệt với: {', '.join(diff_names) if diff_names else 'các hội chứng tương đương'}."
+            red_flag = "Chưa ghi nhận dấu hiệu đe dọa sinh tồn tức thì."
+            next_step = "Theo dõi sát đáp ứng ban đầu và thăm khám chuyên khoa khi triệu chứng kéo dài."
+
+        return (
+            "<clinical_thinking>\n"
+            f"- Cơ chế bệnh sinh & Liên kết triệu chứng: {patho}\n"
+            f"- Chẩn đoán phân biệt & Loại trừ: {diff_text}"
+            + (f" Dấu hiệu loại trừ đã ghi nhận: {', '.join(neg_names)}." if neg_names else "") + "\n"
+            f"- Đánh giá cờ đỏ (Red Flags): {red_flag}\n"
+            f"- Định hướng tiếp theo: {next_step}\n"
+            "</clinical_thinking>"
+        )
+
     def generate_response(
         self,
         patient_message: str,
@@ -56,6 +144,18 @@ class ConversationalEngine:
         """Sinh câu phản hồi tự nhiên, chuẩn mực y khoa và trúng đích."""
         intents = self.classify_intent(patient_message)
         lines = []
+
+        # 0. KHỐI SUY LUẬN LÂM SÀNG CHUỖI TƯ DUY (CLINICAL CHAIN-OF-THOUGHT)
+        thinking_block = self._build_clinical_thinking(
+            symptoms=symptoms,
+            predicted_diseases=predicted_diseases,
+            negated_symptoms=negated_symptoms,
+            lab_indicators=lab_indicators,
+            is_emergency=is_emergency,
+            clinical_stage=clinical_stage
+        )
+        lines.append(thinking_block)
+        lines.append("")
 
         # 1. BÁO ĐỘNG ĐỎ CẤP CỨU NẾU CÓ RED FLAG
         if is_emergency:
@@ -165,9 +265,25 @@ class ConversationalEngine:
                         lines.append(f"   *(Gợi ý: {' / '.join(q.get('options'))})*")
 
             if not intents["is_asking_medication"]:
+                top_dept = valid_diseases[0].get("department", "") if valid_diseases else ""
                 lines.append("\n📋 **Hướng dẫn xử trí tạm thời an toàn:**")
-                lines.append("- Nghỉ ngơi điều độ, tránh làm việc nặng hoặc ra gió/ánh nắng gắt.")
-                lines.append("- Uống đủ nước ấm, theo dõi sát diễn biến triệu chứng.")
+                if "Mắt" in top_dept or any("mắt" in s.get("standard_term", "").lower() for s in symptoms):
+                    lines.append("- **Quy tắc 20-20-20:** Cứ sau mỗi 20 phút nhìn sách hoặc màn hình, hãy nhìn xa cự ly 6 mét trong 20 giây để giãn cơ thể mi.")
+                    lines.append("- **Làm dịu mắt:** Sử dụng dung dịch nhỏ mắt Natri Hyaluronate hoặc nước muối sinh lý 0.9% để làm ẩm bề mặt nhãn cầu, chườm ấm mắt nhẹ nhàng 5-10 phút.")
+                    lines.append("- **Khoảng cách thị giác:** Đảm bảo đủ ánh sáng, cự ly đọc tối thiểu 50-60cm, hạn chế tiếp xúc màn hình trước khi ngủ.")
+                elif "Truyền nhiễm" in top_dept or any("sốt" in s.get("standard_term", "").lower() for s in symptoms):
+                    lines.append("- Bù đủ nước và điện giải (Oresol pha đúng liều lượng, nước trái cây giàu vitamin C).")
+                    lines.append("- Hạ sốt an toàn bằng Paracetamol nếu sốt ≥ 38.5°C; tuyệt đối không dùng Ibuprofen / Aspirin khi chưa loại trừ sốt xuất huyết.")
+                    lines.append("- Nghỉ ngơi nơi thoáng khí, theo dõi sát thân nhiệt và các vết xuất huyết dưới da.")
+                elif "Tiêu hóa" in top_dept:
+                    lines.append("- Chia nhỏ bữa ăn (4-5 bữa/ngày), chọn thức ăn mềm, lỏng, dễ tiêu (cháo, súp).")
+                    lines.append("- Không nằm ngay sau ăn, kiêng đồ chua cay, nhiều dầu mỡ, chất kích thích (cà phê, rượu bia).")
+                elif "Da liễu" in top_dept:
+                    lines.append("- Tạm ngưng các loại mỹ phẩm, kem bôi lạ; rửa nhẹ vùng da bằng nước mát sạch hoặc nước muối sinh lý.")
+                    lines.append("- Tránh cào gãi làm xước da, có thể chườm mát nhẹ để giảm cảm giác nóng rát, ngứa ngáy.")
+                else:
+                    lines.append("- Nghỉ ngơi điều độ, hạn chế làm việc quá sức và tránh căng thẳng thần kinh.")
+                    lines.append("- Uống đủ nước ấm (1.5 - 2 lít/ngày), theo dõi sát diễn biến triệu chứng.")
 
         # Giai đoạn 3: Kết luận sơ bộ xác định
         else:

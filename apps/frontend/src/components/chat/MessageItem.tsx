@@ -23,6 +23,7 @@ import {
   ChevronLeft,
   ChevronRight,
   MessageSquare,
+  HelpCircle,
 } from 'lucide-react';
 import { ChatMessage } from '../../types/chat';
 import { formatTimestamp } from '../../utils/formatters';
@@ -32,6 +33,7 @@ interface MessageItemProps {
   message: ChatMessage;
   sessionId?: string;
   onSetActiveAnswerIndex?: (messageId: string, index: number) => void;
+  onSelectClarificationAnswer?: (answer: string) => void;
   onSubmitFeedback?: (
     messageId: string,
     sessionId: string,
@@ -47,6 +49,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({
   message,
   sessionId,
   onSetActiveAnswerIndex,
+  onSelectClarificationAnswer,
   onSubmitFeedback,
 }) => {
   const isUser = message.sender === 'user';
@@ -57,10 +60,21 @@ export const MessageItem: React.FC<MessageItemProps> = ({
   const [elapsed, setElapsed] = useState(0);
   const [showDislikeInput, setShowDislikeInput] = useState(false);
   const [dislikeReason, setDislikeReason] = useState('');
+  const [dualViewMode, setDualViewMode] = useState<'split' | 'single'>('split');
 
   const altAnswers = message.alternative_answers || [];
   const totalAnswers = 1 + altAnswers.length;
   const activeIndex = message.active_answer_index || 0;
+
+  const formatProviderLabel = (prov?: string) => {
+    const p = (prov || '').toLowerCase();
+    if (p.includes('cohere')) return 'Cohere AI';
+    if (p.includes('second_opinion') || p.includes('second')) return 'Second Opinion AI (Hội chẩn độc lập)';
+    if (p.includes('gemini')) return 'Google Gemini 2.0 Flash';
+    if (p.includes('local')) return 'Local LLM (Qwen/Ollama)';
+    if (p.includes('rule')) return 'Phác đồ Chuẩn Bộ Y Tế';
+    return prov || 'Mô hình AI';
+  };
 
   const currentText =
     activeIndex === 0
@@ -169,7 +183,11 @@ export const MessageItem: React.FC<MessageItemProps> = ({
 
       {/* Bubble Container - Single Unified Frame */}
       <div
-        className={`chat-message-bubble max-w-[92%] md:max-w-[88%] lg:max-w-[85%] rounded-[1.6rem] px-5 py-4 shadow-sm transition-all relative ${
+        className={`chat-message-bubble ${
+          !isUser && totalAnswers > 1 && dualViewMode === 'split'
+            ? 'w-full max-w-[98%] lg:max-w-[96%]'
+            : 'max-w-[92%] md:max-w-[88%] lg:max-w-[85%]'
+        } rounded-[1.6rem] px-5 py-4 shadow-sm transition-all relative ${
           isUser
             ? 'bg-gradient-to-br from-teal-600 to-blue-600 text-white rounded-tr-xs shadow-teal-500/20'
             : isEmergency
@@ -461,20 +479,56 @@ export const MessageItem: React.FC<MessageItemProps> = ({
               </div>
             )}
 
-            {/* Dual AI Answer Switcher (when multiple answers available) */}
+            {/* Dual AI View Mode Bar (When multiple AI answers are available) */}
             {!isUser && totalAnswers > 1 && !message.isStreaming && (
+              <div className="flex flex-wrap items-center justify-between gap-2 bg-gradient-to-r from-teal-50 via-cyan-50 to-blue-50 border border-teal-200/90 rounded-xl px-3.5 py-2 mb-3 shadow-2xs">
+                <div className="flex items-center space-x-2">
+                  <span className="flex h-2 w-2 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
+                  </span>
+                  <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                    <Bot className="w-4 h-4 text-teal-600" />
+                    Hội Chẩn Song Song 2 Mô Hình AI (Dual-AI Consensus)
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 bg-white/90 p-0.5 rounded-lg border border-teal-200/70 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => setDualViewMode('split')}
+                    className={`px-2.5 py-1 rounded-md font-medium transition ${
+                      dualViewMode === 'split'
+                        ? 'bg-teal-600 text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    ⊞ Song song 2 AI
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDualViewMode('single')}
+                    className={`px-2.5 py-1 rounded-md font-medium transition ${
+                      dualViewMode === 'single'
+                        ? 'bg-teal-600 text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    ⊟ Từng AI ({activeIndex + 1}/{totalAnswers})
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Single Answer Switcher (when user chose single view mode) */}
+            {!isUser && totalAnswers > 1 && !message.isStreaming && dualViewMode === 'single' && (
               <div className="flex items-center justify-between bg-teal-50/80 border border-teal-200/90 rounded-xl px-3 py-1.5 mb-2.5 text-xs shadow-2xs">
                 <div className="flex items-center space-x-2">
-                  <span className="font-semibold text-slate-700">Câu trả lời:</span>
+                  <span className="font-semibold text-slate-700">Đang hiển thị:</span>
                   <span className="px-2 py-0.5 rounded-full bg-teal-600 text-white font-bold text-[11px]">
                     {activeIndex + 1} / {totalAnswers}
                   </span>
                   <span className="px-2 py-0.5 rounded-md bg-white border border-teal-200 text-teal-800 font-bold text-[10px] tracking-wide uppercase">
-                    {currentProvider === 'gemini'
-                      ? 'Google Gemini'
-                      : currentProvider === 'cohere'
-                      ? 'Cohere AI'
-                      : currentProvider}
+                    {formatProviderLabel(currentProvider)}
                   </span>
                 </div>
                 <div className="flex items-center space-x-1">
@@ -505,18 +559,137 @@ export const MessageItem: React.FC<MessageItemProps> = ({
             )}
 
             {/* Message Body Content */}
-            <div className="chat-message-content text-base leading-relaxed font-normal">
-              {isUser ? (
-                <div className="whitespace-pre-wrap text-white font-medium text-base">
-                  {message.content}
+            {!isUser && totalAnswers > 1 && !message.isStreaming && dualViewMode === 'split' ? (
+              /* DUAL SIDE-BY-SIDE SIMULTANEOUS VIEW */
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
+                  {/* Card 1: AI 1 (Primary Model) */}
+                  <div className="rounded-2xl border border-teal-200/90 bg-gradient-to-b from-teal-50/20 to-white p-4 shadow-sm flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between pb-2 mb-3 border-b border-teal-100">
+                        <div className="flex items-center space-x-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-teal-500"></span>
+                          <span className="font-bold text-teal-950 text-xs">
+                            AI 1: {formatProviderLabel(message.provider || 'gemini')}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(message.content);
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 2000);
+                          }}
+                          className="p-1 rounded-md hover:bg-teal-100/70 text-slate-400 hover:text-teal-700 transition"
+                          title="Sao chép câu trả lời AI 1"
+                        >
+                          {copied ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
+                        </button>
+                      </div>
+                      <div className="chat-message-content text-[15px] leading-relaxed font-normal text-slate-800">
+                        {renderRichMarkdown(message.content)}
+                      </div>
+                    </div>
+                    <div className="mt-3 pt-2 border-t border-slate-100 text-[11px] text-teal-700 font-medium flex items-center gap-1">
+                      <CheckCircle size={12} className="text-teal-600" />
+                      <span>Ý kiến Chẩn đoán & Phác đồ điều trị ban đầu</span>
+                    </div>
+                  </div>
+
+                  {/* Card 2: AI 2 (Second Opinion / Cohere) */}
+                  <div className="rounded-2xl border border-cyan-200/90 bg-gradient-to-b from-cyan-50/20 to-white p-4 shadow-sm flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between pb-2 mb-3 border-b border-cyan-100">
+                        <div className="flex items-center space-x-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-cyan-500"></span>
+                          <span className="font-bold text-cyan-950 text-xs">
+                            AI 2: {formatProviderLabel(altAnswers[0]?.provider || 'second_opinion')}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (altAnswers[0]?.text) {
+                              navigator.clipboard.writeText(altAnswers[0].text);
+                              setCopied(true);
+                              setTimeout(() => setCopied(false), 2000);
+                            }
+                          }}
+                          className="p-1 rounded-md hover:bg-cyan-100/70 text-slate-400 hover:text-cyan-700 transition"
+                          title="Sao chép câu trả lời AI 2"
+                        >
+                          {copied ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
+                        </button>
+                      </div>
+                      <div className="chat-message-content text-[15px] leading-relaxed font-normal text-slate-800">
+                        {renderRichMarkdown(altAnswers[0]?.text || '')}
+                      </div>
+                    </div>
+                    <div className="mt-3 pt-2 border-t border-slate-100 text-[11px] text-cyan-700 font-medium flex items-center gap-1">
+                      <CheckCircle size={12} className="text-cyan-600" />
+                      <span>Ý kiến Hội chẩn chuyên khoa & An toàn dược lâm sàng</span>
+                    </div>
+                  </div>
                 </div>
-              ) : (
-                renderRichMarkdown(currentText)
-              )}
-              {message.isStreaming && (
-                <span className="inline-block w-2 h-4 ml-1 bg-teal-600 animate-pulse align-middle rounded-xs" />
-              )}
-            </div>
+
+                {/* Consensus Footer Notice */}
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] text-slate-600 flex items-center gap-2">
+                  <Sparkles size={13} className="text-amber-500 flex-shrink-0" />
+                  <span>
+                    <strong>Đồng thuận Y khoa:</strong> Hai câu trả lời trên được xử lý độc lập để bạn có góc nhìn toàn diện nhất. Cả 2 đều tuân thủ nguyên tắc an toàn cấp cứu & phác đồ Bộ Y Tế.
+                  </span>
+                </div>
+              </div>
+            ) : (
+              /* STANDARD SINGLE VIEW */
+              <div className="chat-message-content text-base leading-relaxed font-normal">
+                {isUser ? (
+                  <div className="whitespace-pre-wrap text-white font-medium text-base">
+                    {message.content}
+                  </div>
+                ) : (
+                  renderRichMarkdown(currentText)
+                )}
+                {message.isStreaming && (
+                  <span className="inline-block w-2 h-4 ml-1 bg-teal-600 animate-pulse align-middle rounded-xs" />
+                )}
+              </div>
+            )}
+
+            {/* Interactive Clarification Questions embedded directly in Chat */}
+            {!isUser && !message.isStreaming && message.telemetry?.clarification?.questions && message.telemetry.clarification.questions.length > 0 && (
+              <div className="mt-3.5 p-3.5 rounded-2xl bg-gradient-to-br from-amber-50/90 via-white to-amber-50/60 border border-amber-200/90 space-y-3 shadow-xs">
+                <div className="flex items-center space-x-2 text-amber-950 font-bold text-xs">
+                  <div className="p-1 rounded-lg bg-amber-500/15 text-amber-800">
+                    <HelpCircle className="w-3.5 h-3.5 text-amber-700" />
+                  </div>
+                  <span>Hỏi bổ sung lâm sàng (Bấm để chọn và trả lời ngay):</span>
+                </div>
+                {message.telemetry.clarification.questions.map((q, qIdx) => (
+                  <div key={q.id || qIdx} className="space-y-1.5 pt-1">
+                    <p className="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                      <span className="w-4 h-4 rounded-full bg-amber-200 text-amber-900 text-[10px] font-bold flex items-center justify-center flex-shrink-0">
+                        {qIdx + 1}
+                      </span>
+                      <span>{q.question}</span>
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 pl-5">
+                      {q.options?.map((opt, optIdx) => (
+                        <button
+                          key={optIdx}
+                          type="button"
+                          onClick={() => onSelectClarificationAnswer?.(`Tôi xin bổ sung: ${opt}`)}
+                          className="text-xs px-3 py-1.5 rounded-xl bg-white hover:bg-amber-100/90 text-slate-800 hover:text-amber-950 border border-amber-200/80 transition-all font-medium shadow-2xs hover:shadow-xs active:scale-95 text-left flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <span className="text-amber-600 font-bold">👉</span>
+                          <span>{opt}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Dislike Reason Input Box (Inline Form) */}
             {showDislikeInput && (

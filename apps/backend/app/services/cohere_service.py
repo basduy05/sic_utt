@@ -43,11 +43,19 @@ class CohereMedicalReasoningService:
         )
 
         system_prompt = (
-            "Bạn là Bác Sĩ Trợ Lý AI Chuyên Khoa chuẩn mực theo hướng dẫn của Bộ Y Tế Việt Nam. "
-            "Hãy đóng vai trò một người thầy thuốc ân cần, chu đáo và sắc sảo. "
-            "QUY TẮC: Luôn đọc lịch sử hỏi đáp, không hỏi lại thông tin đã có. "
-            f"{stage_desc} "
-            "Phân tích triệu chứng, đưa ra nhận định ICD-10, hướng dẫn xử trí an toàn bằng Tiếng Việt chuẩn mực."
+            "Bạn là Bác Sĩ Chuyên Khoa Hội Chẩn AI (Second Opinion) theo hướng dẫn của Bộ Y Tế Việt Nam. "
+            "Hãy đóng vai trò một chuyên gia hội chẩn y khoa ân cần, chu đáo và sắc sảo.\n\n"
+            "QUY TẮC BẮT BUỘC:\n"
+            "1. KHỐI SUY LUẬN LÂM SÀNG CHUỖI TƯ DUY (CLINICAL CHAIN-OF-THOUGHT - BẮT BUỘC):\n"
+            "Trước khi viết câu trả lời cho bệnh nhân, bạn BẮT BUỘC phải mở đầu bằng một khối suy luận nằm trong cặp thẻ <clinical_thinking>...</clinical_thinking> gồm:\n"
+            "<clinical_thinking>\n"
+            "- Cơ chế bệnh sinh & Phân tích triệu chứng: Cơ chế sinh lý học/giải phẫu đằng sau các triệu chứng.\n"
+            "- Chẩn đoán phân biệt: Các bệnh lý tương đồng và tiêu chuẩn loại trừ.\n"
+            "- Đánh giá cờ đỏ (Red Flags): Các dấu hiệu cảnh báo nguy hiểm.\n"
+            "- Định hướng tiếp theo: Câu hỏi làm rõ hoặc cận lâm sàng cần thiết.\n"
+            "</clinical_thinking>\n\n"
+            f"2. GIAI ĐOẠN LÂM SÀNG: {stage_desc}\n"
+            "3. LỜI KHUYÊN BỆNH NHÂN: Sau khối </clinical_thinking>, hãy trình bày câu trả lời ân cần, súc tích bằng Tiếng Việt chuẩn mực."
         )
 
         # Build chat history for Cohere format
@@ -143,12 +151,17 @@ class CohereMedicalReasoningService:
                     return text
         except urllib.error.HTTPError as he:
             err_msg = f"HTTP {he.code}"
+            err_body = ""
+            try:
+                err_body = he.read().decode("utf-8", errors="ignore")
+            except Exception:
+                pass
             if he.code == 429:
                 err_msg += " (Rate limit)"
             elif he.code in (401, 403):
                 err_msg += " (Khóa API không hợp lệ)"
             self.last_error = f"Cohere {err_msg}"
-            logger.warning(f"Cohere API returned {err_msg}.")
+            logger.warning(f"Cohere API returned {err_msg}. Detail: {err_body}")
         except Exception as e:
             self.last_error = f"Cohere Kết nối thất bại ({type(e).__name__})"
             logger.warning(f"Cohere call failed ({e}).")

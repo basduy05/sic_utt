@@ -1,4 +1,155 @@
 {
+  "sym_moi_mat": {
+    "standard_term": "Mỏi mắt điều tiết",
+    "icd_mapping": "H52.4",
+    "synonyms": [
+      "mỏi mắt",
+      "bị mỏi mắt",
+      "mắt mỏi",
+      "mắt mệt mỏi",
+      "nhức mỏi mắt",
+      "mỏi mắt khi đọc sách",
+      "mỏi mắt nhìn máy tính",
+      "mỏi mắt khi làm việc",
+      "mắt căng thẳng",
+      "mỏi điều tiết"
+    ],
+    "category": "Mắt",
+    "is_red_flag_potential": false
+  },
+  "sym_dau_nhuc_mat": {
+    "standard_term": "Đau nhức mắt",
+    "icd_mapping": "H57.9",
+    "synonyms": [
+      "đau mắt",
+      "nhức mắt",
+      "đau nhức mắt",
+      "nhức nhối mắt",
+      "thốn mắt",
+      "xót mắt",
+      "đau nhãn cầu"
+    ],
+    "category": "Mắt",
+    "is_red_flag_potential": false
+  },
+  "sym_kho_mat": {
+    "standard_term": "Khô mắt / Cộm rát mắt",
+    "icd_mapping": "H57.0",
+    "synonyms": [
+      "khô mắt",
+      "cộm mắt",
+      "cộm rát mắt",
+      "cộm xốn",
+      "cộm cộm",
+      "xốn mắt",
+      "xốn xốn",
+      "cay xè mắt",
+      "rát mắt",
+      "như có cát trong mắt",
+      "như có hạt bụi trong mắt"
+    ],
+    "category": "Mắt",
+    "is_red_flag_potential": false
+  },
+  "sym_nhin_mo": {
+    "standard_term": "Nhìn mờ / Giảm thị lực",
+    "icd_mapping": "H52.4",
+    "synonyms": [
+      "nhìn mờ",
+      "mờ mắt",
+      "mờ mờ",
+      "nhòe nhòe",
+      "mờ nhòe",
+      "nhìn không rõ",
+      "nhìn không thấy rõ",
+      "mắt nhìn mờ",
+      "mắt mờ nhòe",
+      "nhìn gần mờ",
+      "nhìn xa mờ",
+      "nheo mắt"
+    ],
+    "category": "Mắt",
+    "is_red_flag_potential": false
+  },
+  "sym_do_mat": {
+    "standard_term": "Đỏ mắt / Viêm kết mạc",
+    "icd_mapping": "H10.9",
+    "synonyms": [
+      "đỏ mắt",
+      "mắt đỏ",
+      "đau mắt đỏ",
+      "chảy nước mắt",
+      "ghèn mắt",
+      "rỉ mắt"
+    ],
+    "category": "Mắt",
+    "is_red_flag_potential": false
+  },
+  "phu_mach_di_ung": {
+    "standard_term": "Phù mạch / Phù môi mắt",
+    "icd_mapping": "T78.3",
+    "synonyms": [
+      "phù môi",
+      "sưng môi",
+      "sưng phù môi",
+      "tê phù môi",
+      "phù mặt",
+      "sưng mặt",
+      "phù mạch",
+      "phù quincke",
+      "sưng mắt",
+      "húp mắt"
+    ],
+    "category": "Dị ứng / Miễn dịch",
+    "is_red_flag_potential": true
+  },
+  "tho_rit_thanh_quan": {
+    "standard_term": "Thở rít thanh quản",
+    "icd_mapping": "R06.1",
+    "synonyms": [
+      "thở rít",
+      "thở rít nhẹ",
+      "tiếng thở rít",
+      "rít thanh quản",
+      "tiếng rít khi thở",
+      "thở có tiếng rít",
+      "thở khò khè rít"
+    ],
+    "category": "Hô hấp",
+    "is_red_flag_potential": true
+  },
+  "may_day_cap": {
+    "standard_term": "Mày đay cấp tính",
+    "icd_mapping": "L50.0",
+    "synonyms": [
+      "mày đay",
+      "mề đay",
+      "nổi mề đay",
+      "nổi mày đay",
+      "nổi mảng đỏ ngứa",
+      "nổi cục đỏ ngứa",
+      "mẩn ngứa phù nề",
+      "nổi mẩn đỏ khắp người"
+    ],
+    "category": "Da liễu / Dị ứng",
+    "is_red_flag_potential": false
+  },
+  "tiep_xuc_di_nguyen_thuc_pham": {
+    "standard_term": "Tiếp xúc dị nguyên thực phẩm",
+    "icd_mapping": "Z91.01",
+    "synonyms": [
+      "ăn hải sản",
+      "ăn tôm",
+      "ăn cua",
+      "ăn nhộng",
+      "ăn đậu phộng",
+      "sau khi ăn hải sản",
+      "ăn đồ lạ",
+      "uống thuốc lạ"
+    ],
+    "category": "Tiền sử / Dị nguyên",
+    "is_red_flag_potential": false
+  },
   "dau_dau": {
     "standard_term": "Đau đầu",
     "icd_mapping": "R51",

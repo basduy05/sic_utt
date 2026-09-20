@@ -12,7 +12,8 @@ interface UseWebSocketOptions {
     fullText: string,
     latency_ms?: number,
     pipeline_breakdown?: any,
-    alternative_answers?: Array<{ text: string; provider: string }>
+    alternative_answers?: Array<{ text: string; provider: string }>,
+    telemetry?: TelemetryData
   ) => void;
   onTelemetryUpdate?: (telemetry: TelemetryData) => void;
   onError?: (err: any) => void;
@@ -107,7 +108,8 @@ export function useWebSocket({
                   data.full_text,
                   data.latency_ms,
                   data.pipeline_breakdown,
-                  data.alternative_answers || []
+                  data.alternative_answers || [],
+                  data.telemetry
                 );
                 break;
               case 'pong':

@@ -19,7 +19,7 @@ from .triage_service import triage_service
 from .rag_service import rag_service
 from .gemini_service import gemini_service
 from .clinical_reasoning_service import clinical_reasoning_service
-from .dialogue_state_service import dialogue_state_service
+from .dialogue_state_service import dialogue_state_service, resolve_question_topic, SLOT_TOPIC_MAP
 
 logger = logging.getLogger(__name__)
 clarification_engine = ClarificationEngine()
@@ -363,6 +363,97 @@ class ChatService:
             "clarification_turns_count": clarification_turns_count
         }
 
+    def _classify_conversational_intent(
+        self,
+        user_message: str,
+        is_emergency: bool,
+        top_preds: List[Dict[str, Any]],
+        symptoms: List[Dict[str, Any]],
+        clinical_stage: str,
+        dst_state: Any
+    ) -> Optional[str]:
+        """
+        Phân loại ý định hội thoại nâng cao (Tầng 4: Conversational Intent Handler):
+        1. INQUIRY_EMERGENCY_NEED: Hỏi có cần đi viện / cấp cứu / có nguy hiểm không.
+        2. INQUIRY_MEDICATION: Hỏi về thuốc điều trị, mua thuốc gì.
+        3. INQUIRY_SYMPTOM_MEANING: Hỏi nguyên nhân, thế là bị bệnh gì.
+        4. INQUIRY_NUTRITION: Chế độ ăn uống, kiêng gì, nên ăn gì.
+        5. INQUIRY_PROGNOSIS: Tiên lượng bệnh, bao lâu khỏi, có tự khỏi không.
+        """
+        msg_lower = user_message.lower().strip()
+        top_disease = top_preds[0].get("disease_name_vi", "tình trạng sức khỏe hiện tại") if top_preds else "tình trạng của bạn"
+        symptom_names = [s.get("standard_term", "") for s in symptoms if isinstance(s, dict)]
+        sym_str = ", ".join(symptom_names[:3]) if symptom_names else "các dấu hiệu bạn mô tả"
+
+        # 1. INQUIRY_EMERGENCY_NEED
+        if re.search(r'(?:có cần.*(?:đi viện|vào viện|cấp cứu|đi khám)|có phải.*(?:đi viện|vào viện|cấp cứu|đi khám)|khi nào.*(?:cần|phải).*(?:đi viện|vào viện|cấp cứu)|có nguy hiểm không|nguy hiểm lắm không|có sao không)', msg_lower):
+            if is_emergency:
+                return (
+                    f"⚠️ **ĐÁNH GIÁ MỨC ĐỘ KHẨN CẤP: BẮT BUỘC ĐI VIỆN NGAY!**\n\n"
+                    f"Dựa trên các dấu hiệu lâm sàng ({sym_str}), tình trạng của bạn đang ở mức **Báo động đỏ khẩn cấp** có nguy cơ đe dọa đường thở hoặc tuần hoàn. "
+                    f"Bạn **CẦN ĐẾN KHOA CẤP CỨU GẦN NHẤT HOẶC GỌI 115 NGAY**, không nên chần chừ hay tự theo dõi tại nhà!"
+                )
+            else:
+                return (
+                    f"🩺 **ĐÁNH GIÁ MỨC ĐỘ NGUY HIỂM & CHỈ ĐỊNH NHẬP VIỆN:**\n\n"
+                    f"Hiện tại, hệ thống chưa phát hiện dấu hiệu đe dọa tính mạng tức thì từ các triệu chứng ({sym_str}). Tuy nhiên, bạn **CẦN ĐI VIỆN HOẶC GỌI CẤP CỨU NGAY** nếu xuất hiện bất kỳ 'dấu hiệu cờ đỏ' (Red Flags) sau:\n"
+                    f"- Cảm giác khó thở, thở rít, tức nghẹn cổ họng hoặc tím tái môi/đầu chi.\n"
+                    f"- Đau thắt ngực dữ dội, vã mồ hôi lạnh, choáng váng hoặc ngất xỉu.\n"
+                    f"- Sốt cao liên tục trên 39°C không hạ sau khi dùng thuốc hạ sốt, li bì hoặc co giật.\n"
+                    f"- Nôn liên tục không uống được nước hoặc xuất huyết dưới da/chảy máu cam/chảy máu chân răng.\n\n"
+                    f"Nếu không có các dấu hiệu nguy cấp trên, bạn nên đến cơ sở y tế chuyên khoa để được bác sĩ thăm khám trực tiếp trong vòng 24 - 48 giờ."
+                )
+
+        # 2. INQUIRY_MEDICATION
+        if re.search(r'(?:uống thuốc gì|dùng thuốc gì|mua thuốc gì|thuốc gì.*đỡ|thuốc gì.*hết|có thuốc gì|uống gì cho đỡ|uống gì để hạ)', msg_lower):
+            return (
+                f"💊 **HƯỚNG DẪN XỬ TRÍ & DÙNG THUỐC AN TOÀN:**\n\n"
+                f"Đối với nghi vấn liên quan đến **{top_disease}** ({sym_str}):\n"
+                f"- **Nguyên tắc an toàn:** Tuyệt đối không tự ý mua thuốc kháng sinh hoặc thuốc chứa Corticoid (như Medrol, Dexamethasone...) mà chưa có chỉ định của bác sĩ.\n"
+                f"- **Xử trí ban đầu thông thường:**\n"
+                f"  + Nếu sốt trên 38.5°C hoặc đau nhức nhiều: Có thể dùng Paracetamol (10-15 mg/kg mỗi lần, cách nhau 4-6 giờ; người lớn 500mg/lần, không quá 3g/ngày).\n"
+                f"  + Nếu ngứa, dị ứng da: Uống nhiều nước, có thể dùng dung dịch nước muối sinh lý làm sạch, tránh cào gãi làm xước da nhiễm trùng.\n"
+                f"  + Nếu cảm cúm/viêm mũi họng: Súc họng nước muối sinh lý ấm, bổ sung vitamin C.\n"
+                f"- **Lưu ý quan trọng:** Hãy đến gặp bác sĩ hoặc dược sĩ chuyên môn để được kê đơn thuốc đúng liều lượng và phù hợp với cơ địa của bạn."
+            )
+
+        # 3. INQUIRY_SYMPTOM_MEANING
+        if re.search(r'(?:thế là bị.*(?:gì|sao|bệnh gì)|bị bệnh gì|nghĩa là gì|dấu hiệu của bệnh gì|tại sao lại bị|là bệnh gì vậy)', msg_lower):
+            prob_percent = int(top_preds[0].get("probability", 0.0) * 100) if top_preds else 50
+            return (
+                f"🔍 **PHÂN TÍCH NGUYÊN NHÂN & TRIỆU CHỨNG LÂM SÀNG:**\n\n"
+                f"Dựa trên các dấu hiệu ({sym_str}), hệ thống nhận định khả năng cao nhất là **{top_disease}** (Độ tin cậy ước tính: **{prob_percent}%**).\n\n"
+                f"**Cơ chế bệnh sinh thường gặp:**\n"
+                f"- Các triệu chứng của bạn phản ánh phản ứng viêm hoặc kích ứng tại cơ quan đích.\n"
+                f"- Phân tầng lâm sàng hiện tại: **{clinical_stage}**.\n"
+                f"- Để chẩn đoán xác định, bác sĩ có thể cần thực hiện thêm các xét nghiệm cận lâm sàng hoặc nội soi chuyên sâu."
+            )
+
+        # 4. INQUIRY_NUTRITION
+        if re.search(r'(?:ăn gì|kiêng gì|ăn uống.*thế nào|chế độ ăn|thực đơn|uống nước gì|có được ăn.*không)', msg_lower):
+            allergen = dst_state.clinical_slots.get("allergen_trigger") if (hasattr(dst_state, "clinical_slots") and isinstance(dst_state.clinical_slots, dict)) else ""
+            allergy_advice = f"\n- **Kiêng tuyệt đối:** Không ăn lại món nghi ngờ dị ứng ({allergen or 'hải sản, tôm, cua, đồ tanh, đậu phộng'}) và hạn chế đồ uống có cồn/bia rượu." if ("dị ứng" in top_disease.lower() or "mày đay" in top_disease.lower() or allergen) else ""
+            return (
+                f"🥗 **CHẾ ĐỘ DINH DƯỠNG & CHĂM SÓC:**\n\n"
+                f"Đối với tình trạng **{top_disease}** hiện tại:\n"
+                f"- **Nên bổ sung:**\n"
+                f"  + Uống đủ nước (2 - 2.5 lít/ngày), ưu tiên nước lọc, nước oresol (nếu sốt/tiêu chảy), nước ép trái cây giàu vitamin C.\n"
+                f"  + Ăn thức ăn mềm, dễ tiêu hóa, chia nhỏ thành nhiều bữa trong ngày (cháo, súp, canh).\n"
+                f"- **Cần kiêng cữ:**{allergy_advice}\n"
+                f"  + Hạn chế đồ ăn cay nóng, dầu mỡ nhiều, nước có ga và các chất kích thích."
+            )
+
+        # 5. INQUIRY_PROGNOSIS
+        if re.search(r'(?:bao lâu.*(?:khỏi|hết|đỡ)|có tự khỏi không|có lâu không|tiên lượng|khi nào thì khỏi)', msg_lower):
+            return (
+                f"⏱️ **TIÊN LƯỢNG & DIỄN BIẾN HỒI PHỤC:**\n\n"
+                f"- Đối với tình trạng **{top_disease}**:\n"
+                f"  + Nếu là phản ứng kích ứng hoặc viêm cấp tính nhẹ, triệu chứng thường cải thiện sau **2 - 5 ngày** khi được chăm sóc đúng cách và loại bỏ nguyên nhân gây kích thích.\n"
+                f"  + Nếu sau **3 ngày** triệu chứng không có dấu hiệu thuyên giảm hoặc có xu hướng trầm trọng hơn, bạn cần tái khám bác sĩ ngay để điều chỉnh phác đồ."
+            )
+
+        return None
+
     async def process_patient_message(
         self,
         session_id: str,
@@ -471,6 +562,15 @@ class ChatService:
         top_preds = triage_data.get("triage_results", [])
         top_prob = top_preds[0].get("probability", 0.0) if top_preds else 0.0
 
+        # Tầng 1: Tăng độ tin cậy (Confidence Boost) nếu slot dị nguyên đã được người bệnh xác nhận
+        allergen_slot = dst_state.clinical_slots.get("allergen_trigger", "")
+        if allergen_slot and allergen_slot not in ["không rõ dị nguyên tiếp xúc"]:
+            if top_preds:
+                primary_code = str(top_preds[0].get("icd_code", ""))
+                if any(primary_code.startswith(pfx) for pfx in ["L20", "L50", "T78", "Z91"]):
+                    top_prob = min(0.95, round(top_prob + 0.15, 3))
+                    top_preds[0]["probability"] = top_prob
+
         # 3. XÁC ĐỊNH PHÂN TẦNG LÂM SÀNG (3-Tier Clinical Confidence Stage)
         clinical_stage = clarification_engine.determine_clinical_stage(
             top_probability=top_prob,
@@ -486,12 +586,21 @@ class ChatService:
             re.IGNORECASE
         ))
 
-        # Đảm bảo tiến trình lâm sàng tăng tiến, không tụt lùi khi bệnh nhân đã chia sẻ nhiều triệu chứng
-        if len(symptoms) >= 3 and top_prob >= 0.65:
+        # Đảm bảo tiến trình lâm sàng tăng tiến có kiểm soát:
+        # Chỉ chuyển sang 'definitive_conclusion' khi ĐÃ QUA ÍT NHẤT 1 LƯỢT LÀM RÕ (clarification_turns_count >= 1)
+        # HOẶC số triệu chứng nhiều (>= 4) và xác suất rất cao (>= 0.85).
+        # Ở lượt đầu tiên (clarification_turns_count == 0), duy trì 'provisional_assumption' hoặc 'initial_screening'
+        # để luôn đặt câu hỏi làm rõ phân biệt cho bệnh nhân trả lời.
+        if clarification_turns_count >= 1 and len(symptoms) >= 3 and top_prob >= 0.70:
             clinical_stage = "definitive_conclusion"
-        elif len(symptoms) >= 2 or clarification_turns_count >= 1 or is_asking_followup:
-            if clinical_stage == "initial_screening":
+        elif len(symptoms) >= 4 and top_prob >= 0.85 and not is_asking_followup:
+            clinical_stage = "definitive_conclusion"
+        else:
+            if clinical_stage == "definitive_conclusion" and clarification_turns_count == 0:
                 clinical_stage = "provisional_assumption"
+            elif len(symptoms) >= 2 or clarification_turns_count >= 1 or is_asking_followup:
+                if clinical_stage == "initial_screening":
+                    clinical_stage = "provisional_assumption"
 
         clarification = {
             "needs_clarification": (clinical_stage != "definitive_conclusion" and not is_asking_followup),
@@ -503,15 +612,29 @@ class ChatService:
         # Sinh câu hỏi làm rõ phân biệt nếu chưa đạt kết luận sơ bộ xác định và không phải đang hỏi xử trí
         if clinical_stage != "definitive_conclusion" and not is_asking_followup:
             top_codes = [p.get("icd_code") for p in top_preds if p.get("icd_code")]
-            clarification["questions"] = clarification_engine.generate_context_aware_questions(
+            generated_qs = clarification_engine.generate_context_aware_questions(
                 user_text=active_text,
                 detected_symptoms=[s.get("standard_term", "") if isinstance(s, dict) else str(s) for s in symptoms],
                 top_disease_codes=top_codes,
                 already_asked_texts=already_asked_texts
             )
+            # Lọc bỏ các câu hỏi mà topic tương ứng đã có trong bệnh án động DST
+            filtered_qs = []
+            for q in generated_qs:
+                q_top = resolve_question_topic(q)
+                if f"answered_{q_top}" in dst_state.clinical_slots:
+                    continue
+                if q_top == "allergen_trigger" and dst_state.clinical_slots.get("allergen_trigger"):
+                    continue
+                if q_top == "fever_pattern" and dst_state.clinical_slots.get("fever_pattern"):
+                    continue
+                filtered_qs.append(q)
+            clarification["questions"] = filtered_qs
 
         if clarification.get("questions"):
-            dst_state.pending_question = clarification.get("questions")[0]
+            q0 = dict(clarification.get("questions")[0])
+            q0["topic"] = resolve_question_topic(q0)
+            dst_state.pending_question = q0
         dst_state.is_emergency = is_emergency
         dst_state.active_hypotheses = top_preds
         await dialogue_state_service.save_state(dst_state)
@@ -519,7 +642,37 @@ class ChatService:
         # 4. RAG Knowledge Retrieval (Redis Cached)
         t_rag_start = time.time()
         primary_code = top_preds[0].get("icd_code") if top_preds else None
-        rag_docs = await rag_service.a_retrieve_medical_knowledge(active_text, disease_code=primary_code)
+        top_name = top_preds[0].get("disease_name_vi", "") if top_preds else ""
+        sym_text = " ".join([s.get("standard_term", "") for s in symptoms[:3] if isinstance(s, dict) and s.get("standard_term")])
+        
+        # Tạo truy vấn RAG tập trung vào mặt bệnh và triệu chứng cốt lõi, tránh bị nhiễu bởi các option làm rõ
+        if top_name and sym_text:
+            rag_query = f"{top_name} {sym_text}"
+        elif top_name:
+            rag_query = f"{top_name} {user_message}"
+        elif sym_text:
+            rag_query = f"{sym_text} {user_message}"
+        else:
+            rag_query = user_message
+
+        raw_rag_docs = await rag_service.a_retrieve_medical_knowledge(rag_query, disease_code=primary_code)
+
+        # Lọc bỏ phác đồ lạc đề giải phẫu (ví dụ: đang khám Mắt tuyệt đối không đưa phụ khoa/âm đạo/tiết niệu)
+        has_eye = any("mắt" in s.get("standard_term", "").lower() for s in symptoms if isinstance(s, dict)) or (primary_code and primary_code.startswith("H")) or any(k in user_message.lower() for k in ["mắt", "nhìn mờ", "thị lực", "mỏi mắt", "cộm mắt"])
+        rag_docs = []
+        for doc in raw_rag_docs:
+            dept = doc.get("department", "").lower()
+            title = doc.get("title", "").lower()
+            content = doc.get("content", "").lower()
+            
+            # Nếu đang có triệu chứng mắt, loại trừ tài liệu sinh dục, phụ khoa, tiết niệu
+            if has_eye:
+                if any(x in dept or x in title or x in content for x in ["âm đạo", "sinh dục", "phụ khoa", "tiền liệt tuyến", "vỡ lách", "kinh nguyệt"]):
+                    continue
+            rag_docs.append(doc)
+            
+        if not rag_docs:
+            rag_docs = raw_rag_docs[:2]
         rag_ms = max(int((time.time() - t_rag_start) * 1000), 1)
 
         # 5. Suy luận lâm sàng đa tầng (Local LLM -> Cloud Gemini -> Deterministic Template)
@@ -541,14 +694,28 @@ class ChatService:
         llm_ms = max(int((time.time() - t_llm_start) * 1000), 1)
         ai_response_text = clinical_advice.get("text", "")
 
+        # Tầng 4: Đánh giá ý định người bệnh (Intent Classification)
+        intent_response = self._classify_conversational_intent(
+            user_message=user_message,
+            is_emergency=is_emergency,
+            top_preds=top_preds,
+            symptoms=symptoms,
+            clinical_stage=clinical_stage,
+            dst_state=dst_state
+        )
+
         response_text = ""
 
         if is_emergency:
             rf = triage_data.get("red_flag_details", {}).get("triggered_flags", [{}])[0]
             action = rf.get("action_vi", "Cần gọi cấp cứu 115 ngay!")
             response_text = f"🚨 **BÁO ĐỘNG ĐỎ CẤP CỨU Y TẾ** 🚨\n\n{action}\n\n**Khuyến cáo khẩn cấp:**\n- Giữ người bệnh ở tư thế an toàn, không tự ý di chuyển hoặc vận động mạnh.\n- Chuẩn bị sẵn sổ khám bệnh và các đơn thuốc đang dùng.\n- Hệ thống đã kích hoạt cửa sổ cấp cứu 115 trên màn hình của bạn."
+            if intent_response:
+                response_text += f"\n\n{intent_response}"
         elif ai_response_text:
             response_text = ai_response_text
+        elif intent_response:
+            response_text = intent_response
         elif is_summary_query and len(session_problems) > 1:
             # Phản hồi tổng kết đa bệnh lý hoàn chỉnh
             response_text = f"Chào bạn, tôi đã ghi nhớ và tổng hợp toàn bộ các vấn đề bạn đã chia sẻ từ đầu buổi khám. Hiện tại bạn đang có **{len(session_problems)} vấn đề sức khỏe độc lập** cần lưu ý:\n\n"

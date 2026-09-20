@@ -97,7 +97,8 @@ async def stream_chat_message(
             "full_text": full_text,
             "telemetry": telemetry,
             "latency_ms": res.get("latency_ms", 0),
-            "pipeline_breakdown": res.get("pipeline_breakdown", {})
+            "pipeline_breakdown": res.get("pipeline_breakdown", {}),
+            "alternative_answers": res.get("alternative_answers", []),
         }
         yield f"data: {json.dumps(done_payload, ensure_ascii=False)}\n\n"
 

@@ -4,6 +4,8 @@ import re
 import logging
 import numpy as np
 from typing import Dict, List, Any, Optional
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +22,7 @@ class EntityNormalizer:
         self.embedder = None
         self.concepts: List[Dict[str, str]] = []
         self.exact_lookup: Dict[str, Dict[str, str]] = {}
+        self.vectorizer: Optional[TfidfVectorizer] = None
         self.concept_embeddings = None
         self.synonyms_map = {}  # Backward-compatible view
 
@@ -111,6 +114,11 @@ class EntityNormalizer:
             ("dau_khop", "Đau nhức khớp", "Cơ xương khớp"),
             ("sym_cham_xuat_huyet", "Chấm xuất huyết dưới da", "Truyền nhiễm"),
             ("sym_dau_nhuc_hoc_mat", "Đau nhức hốc mắt", "Truyền nhiễm"),
+            ("sym_moi_mat", "Mỏi mắt điều tiết (Asthenopia)", "Mắt"),
+            ("sym_dau_nhuc_mat", "Đau nhức mắt", "Mắt"),
+            ("sym_kho_mat", "Khô mắt (Dry eye)", "Mắt"),
+            ("sym_nhin_mo", "Nhìn mờ / Giảm thị lực", "Mắt"),
+            ("sym_do_mat", "Đỏ mắt / Viêm kết mạc", "Mắt"),
         ]
         for cid, cterm, cat in default_clinical_concepts:
             if cterm.lower() not in seen_terms:
@@ -119,8 +127,40 @@ class EntityNormalizer:
             if cterm.lower() not in self.exact_lookup:
                 self.exact_lookup[cterm.lower()] = {"id": cid, "standard_term": cterm, "category": cat}
 
-        # Bổ sung các cụm từ đặc hiệu lâm sàng sốt xuất huyết & truyền nhiễm vào exact lookup
+        # Bổ sung các cụm từ đặc hiệu lâm sàng sốt xuất huyết & truyền nhiễm & chuyên khoa mắt vào exact lookup
         specific_synonyms = {
+            "mỏi mắt": {"id": "sym_moi_mat", "standard_term": "Mỏi mắt điều tiết (Asthenopia)", "category": "Mắt"},
+            "bị mỏi mắt": {"id": "sym_moi_mat", "standard_term": "Mỏi mắt điều tiết (Asthenopia)", "category": "Mắt"},
+            "mắt mỏi": {"id": "sym_moi_mat", "standard_term": "Mỏi mắt điều tiết (Asthenopia)", "category": "Mắt"},
+            "mắt mệt mỏi": {"id": "sym_moi_mat", "standard_term": "Mỏi mắt điều tiết (Asthenopia)", "category": "Mắt"},
+            "nhức mỏi mắt": {"id": "sym_moi_mat", "standard_term": "Mỏi mắt điều tiết (Asthenopia)", "category": "Mắt"},
+            "mỏi mắt khi đọc sách": {"id": "sym_moi_mat", "standard_term": "Mỏi mắt điều tiết (Asthenopia)", "category": "Mắt"},
+            "mỏi mắt nhìn máy tính": {"id": "sym_moi_mat", "standard_term": "Mỏi mắt điều tiết (Asthenopia)", "category": "Mắt"},
+            "mỏi mắt khi làm việc": {"id": "sym_moi_mat", "standard_term": "Mỏi mắt điều tiết (Asthenopia)", "category": "Mắt"},
+            "mắt căng thẳng": {"id": "sym_moi_mat", "standard_term": "Mỏi mắt điều tiết (Asthenopia)", "category": "Mắt"},
+            "đau mắt": {"id": "sym_dau_nhuc_mat", "standard_term": "Đau nhức mắt", "category": "Mắt"},
+            "nhức mắt": {"id": "sym_dau_nhuc_mat", "standard_term": "Đau nhức mắt", "category": "Mắt"},
+            "đau nhức mắt": {"id": "sym_dau_nhuc_mat", "standard_term": "Đau nhức mắt", "category": "Mắt"},
+            "nhức nhối mắt": {"id": "sym_dau_nhuc_mat", "standard_term": "Đau nhức mắt", "category": "Mắt"},
+            "thốn mắt": {"id": "sym_dau_nhuc_mat", "standard_term": "Đau nhức mắt", "category": "Mắt"},
+            "xót mắt": {"id": "sym_dau_nhuc_mat", "standard_term": "Đau nhức mắt", "category": "Mắt"},
+            "khô mắt": {"id": "sym_kho_mat", "standard_term": "Khô mắt (Dry eye)", "category": "Mắt"},
+            "cộm mắt": {"id": "sym_kho_mat", "standard_term": "Khô mắt (Dry eye)", "category": "Mắt"},
+            "cộm rát mắt": {"id": "sym_kho_mat", "standard_term": "Khô mắt (Dry eye)", "category": "Mắt"},
+            "xốn mắt": {"id": "sym_kho_mat", "standard_term": "Khô mắt (Dry eye)", "category": "Mắt"},
+            "cay xè mắt": {"id": "sym_kho_mat", "standard_term": "Khô mắt (Dry eye)", "category": "Mắt"},
+            "như có cát trong mắt": {"id": "sym_kho_mat", "standard_term": "Khô mắt (Dry eye)", "category": "Mắt"},
+            "nhìn mờ": {"id": "sym_nhin_mo", "standard_term": "Nhìn mờ / Mắt mờ", "category": "Mắt"},
+            "mờ mắt": {"id": "sym_nhin_mo", "standard_term": "Nhìn mờ / Mắt mờ", "category": "Mắt"},
+            "mắt nhìn mờ": {"id": "sym_nhin_mo", "standard_term": "Nhìn mờ / Mắt mờ", "category": "Mắt"},
+            "mắt mờ nhòe": {"id": "sym_nhin_mo", "standard_term": "Nhìn mờ / Mắt mờ", "category": "Mắt"},
+            "nhìn gần mờ": {"id": "sym_nhin_mo", "standard_term": "Nhìn mờ / Mắt mờ", "category": "Mắt"},
+            "nhìn xa mờ": {"id": "sym_nhin_mo", "standard_term": "Nhìn mờ / Mắt mờ", "category": "Mắt"},
+            "nheo mắt": {"id": "sym_nhin_mo", "standard_term": "Nhìn mờ / Mắt mờ", "category": "Mắt"},
+            "đỏ mắt": {"id": "sym_do_mat", "standard_term": "Đỏ mắt / Viêm kết mạc", "category": "Mắt"},
+            "mắt đỏ": {"id": "sym_do_mat", "standard_term": "Đỏ mắt / Viêm kết mạc", "category": "Mắt"},
+            "đau mắt đỏ": {"id": "sym_do_mat", "standard_term": "Đỏ mắt / Viêm kết mạc", "category": "Mắt"},
+            "chảy nước mắt": {"id": "sym_chay_nuoc_mat", "standard_term": "Chảy nước mắt", "category": "Mắt"},
             "chấm đỏ li ti": {"id": "sym_cham_xuat_huyet", "standard_term": "Chấm xuất huyết dưới da", "category": "Truyền nhiễm"},
             "chấm đỏ": {"id": "sym_cham_xuat_huyet", "standard_term": "Chấm xuất huyết dưới da", "category": "Truyền nhiễm"},
             "chấm đỏ li ti ở tay": {"id": "sym_cham_xuat_huyet", "standard_term": "Chấm xuất huyết dưới da", "category": "Truyền nhiễm"},
@@ -151,6 +191,38 @@ class EntityNormalizer:
             "mảng sưng đỏ": {"id": "sym_may_day", "standard_term": "Mày đay sẩn ngứa cấp tính", "category": "Dị ứng - Da liễu"},
             "sưng đỏ như muỗi đốt": {"id": "sym_may_day", "standard_term": "Mày đay sẩn ngứa cấp tính", "category": "Dị ứng - Da liễu"},
             "ngứa dữ dội": {"id": "sym_ngua_du_doi", "standard_term": "Ngứa dữ dội da niêm mạc", "category": "Dị ứng - Da liễu"},
+            # Triệu chứng ngắn & Khẩu ngữ tiếng Việt đời thường
+            "ho": {"id": "ho_khan", "standard_term": "Ho khan", "category": "Hô hấp"},
+            "sốt": {"id": "sot_cao", "standard_term": "Sốt cao", "category": "Toàn thân"},
+            "sốt nhẹ": {"id": "sot_cao", "standard_term": "Sốt cao", "category": "Toàn thân"},
+            "hâm hấp": {"id": "sot_cao", "standard_term": "Sốt cao", "category": "Toàn thân"},
+            "hâm hấp sốt": {"id": "sot_cao", "standard_term": "Sốt cao", "category": "Toàn thân"},
+            "đờm": {"id": "ho_co_dom", "standard_term": "Ho có đờm", "category": "Hô hấp"},
+            "ngứa": {"id": "sym_ngua_du_doi", "standard_term": "Ngứa dữ dội da niêm mạc", "category": "Da liễu"},
+            "ngứa ngáy": {"id": "sym_ngua_du_doi", "standard_term": "Ngứa dữ dội da niêm mạc", "category": "Da liễu"},
+            "rát": {"id": "di_ung_da", "standard_term": "Viêm da dị ứng / Dị ứng da mặt", "category": "Da liễu"},
+            "rát da": {"id": "di_ung_da", "standard_term": "Viêm da dị ứng / Dị ứng da mặt", "category": "Da liễu"},
+            "rát họng": {"id": "ho_khan", "standard_term": "Ho khan / Đau rát họng", "category": "Hô hấp"},
+            "đau họng": {"id": "ho_khan", "standard_term": "Ho khan / Đau rát họng", "category": "Hô hấp"},
+            "nôn": {"id": "non_oi", "standard_term": "Buồn nôn và nôn", "category": "Tiêu hóa"},
+            "ói": {"id": "non_oi", "standard_term": "Buồn nôn và nôn", "category": "Tiêu hóa"},
+            "buồn nôn": {"id": "non_oi", "standard_term": "Buồn nôn và nôn", "category": "Tiêu hóa"},
+            "nôn nao": {"id": "non_oi", "standard_term": "Buồn nôn và nôn", "category": "Tiêu hóa"},
+            "mắc ói": {"id": "non_oi", "standard_term": "Buồn nôn và nôn", "category": "Tiêu hóa"},
+            "ậm ạch": {"id": "dau_bung", "standard_term": "Đầy bụng / Khó tiêu ậm ạch", "category": "Tiêu hóa"},
+            "cồn cào": {"id": "dau_bung", "standard_term": "Đau bụng / Cồn cào dạ dày", "category": "Tiêu hóa"},
+            "tức tức": {"id": "dau_nguc", "standard_term": "Đau ngực / Tức ngực", "category": "Tim mạch"},
+            "tức tức ngực": {"id": "dau_nguc", "standard_term": "Đau ngực / Tức ngực", "category": "Tim mạch"},
+            "tức ngực": {"id": "dau_nguc", "standard_term": "Đau ngực / Tức ngực", "category": "Tim mạch"},
+            "khó thở": {"id": "kho_tho", "standard_term": "Khó thở", "category": "Hô hấp"},
+            "chóng mặt": {"id": "chong_mat", "standard_term": "Chóng mặt", "category": "Thần kinh"},
+            "nhức đầu": {"id": "dau_dau", "standard_term": "Đau đầu", "category": "Thần kinh"},
+            "đau đầu": {"id": "dau_dau", "standard_term": "Đau đầu", "category": "Thần kinh"},
+            "mờ mờ": {"id": "sym_nhin_mo", "standard_term": "Nhìn mờ / Giảm thị lực", "category": "Mắt"},
+            "nhòe nhòe": {"id": "sym_nhin_mo", "standard_term": "Nhìn mờ / Giảm thị lực", "category": "Mắt"},
+            "cộm xốn": {"id": "sym_kho_mat", "standard_term": "Khô mắt / Cộm rát mắt", "category": "Mắt"},
+            "xốn xốn": {"id": "sym_kho_mat", "standard_term": "Khô mắt / Cộm rát mắt", "category": "Mắt"},
+            "cộm cộm": {"id": "sym_kho_mat", "standard_term": "Khô mắt / Cộm rát mắt", "category": "Mắt"},
         }
         for phr, entry in specific_synonyms.items():
             self.exact_lookup[phr] = entry
@@ -162,34 +234,23 @@ class EntityNormalizer:
         for c in self.concepts:
             self.synonyms_map[c["id"]] = {"standard_term": c["standard_term"], "synonyms": []}
 
-    def _encode_text_fast(self, text: str) -> np.ndarray:
-        dim = 256
-        vec = np.zeros(dim, dtype=np.float32)
-        for w in text.lower().split():
-            h = hash(w) % dim
-            vec[h] += 1.0
-        norm = np.linalg.norm(vec)
-        if norm > 0:
-            vec /= norm
-        return vec
-
     def _init_dense_embedder(self):
-        """Khởi tạo không gian vector nhanh (Fast Hashing Vector Space - 0.002s, 0% CPU lock)."""
+        """Khởi tạo không gian vector ngữ nghĩa ký tự (Character N-gram TF-IDF Vector Space)."""
         terms = [c["standard_term"] for c in self.concepts]
         if not terms:
             return
-        dim = 256
-        mat = np.zeros((len(terms), dim), dtype=np.float32)
-        for i, term in enumerate(terms):
-            mat[i] = self._encode_text_fast(term)
-        self.concept_embeddings = mat
-        logger.info(f"Fast Dense Semantic Normalizer initialized with {len(terms)} concepts in <2ms.")
+        try:
+            self.vectorizer = TfidfVectorizer(analyzer='char_wb', ngram_range=(2, 4))
+            self.concept_embeddings = self.vectorizer.fit_transform(terms)
+            logger.info(f"TF-IDF Char N-Gram Normalizer initialized with {len(terms)} concepts and {self.concept_embeddings.shape[1]} features.")
+        except Exception as e:
+            logger.error(f"Error initializing TF-IDF Char N-Gram Normalizer: {e}")
 
     def normalize(self, raw_entity: str) -> Dict[str, Any]:
         """
         Ánh xạ một thực thể lâm sàng về khái niệm y khoa chuẩn sử dụng:
         1. Tra cứu chính xác từ vựng lâm sàng (Exact & Synonym Lookup O(1)).
-        2. Cosine Similarity trong Không gian Vector Ngữ nghĩa Sâu (Dense Semantic Vector Space).
+        2. Cosine Similarity trong Không gian Vector TF-IDF Char N-gram.
         3. Tích hợp Bộ Lọc Ranh Giới Giải Phẫu (Anatomical Domain Consistency) để triệt tiêu False Positives.
         """
         cleaned = raw_entity.strip()
@@ -215,10 +276,10 @@ class EntityNormalizer:
             }
 
         # 2. Nếu mô hình nhúng vector hoạt động
-        if self.concept_embeddings is not None and len(self.concepts) > 0:
+        if self.concept_embeddings is not None and self.vectorizer is not None and len(self.concepts) > 0:
             try:
-                query_vec = self._encode_text_fast(cleaned)
-                similarities = np.dot(self.concept_embeddings, query_vec)
+                query_vec = self.vectorizer.transform([cleaned])
+                similarities = cosine_similarity(self.concept_embeddings, query_vec).flatten()
                 best_idx = int(np.argmax(similarities))
                 best_score = float(similarities[best_idx])
                 matched_concept = self.concepts[best_idx]
@@ -256,6 +317,12 @@ class EntityNormalizer:
                 # 6. Nhi khoa / Khuyết tật: Cấm map sang chậm phát triển ngôn ngữ
                 if "cham_phat_trien" in target_id or "ngôn ngữ" in target_term:
                     best_score = 0.0
+
+                # 7. Mắt & Thị giác: Nếu cụm từ chứa mắt/nhìn, tuyệt đối cấm map sang cơ toàn thân hoặc da liễu
+                eye_roots = ["mắt", "mat", "thị", "nhìn", "nhãn"]
+                if any(er in cleaned_lower for er in eye_roots):
+                    if not any(er in target_id or er in target_term for er in eye_roots):
+                        best_score = 0.0
 
                 # Ngưỡng cosine similarity lâm sàng nghiêm ngặt: nâng lên >= 0.65
                 if best_score >= 0.65:

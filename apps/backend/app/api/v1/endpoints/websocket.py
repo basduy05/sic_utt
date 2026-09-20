@@ -133,6 +133,7 @@ async def websocket_chat_endpoint(websocket: WebSocket, session_id: str = None):
                     "latency_ms": response.get("latency_ms", 0),
                     "pipeline_breakdown": response.get("pipeline_breakdown", {}),
                     "alternative_answers": response.get("alternative_answers", []),
+                    "telemetry": response.get("telemetry", {})
                 })
             except Exception as e:
                 logger.error(f"Error processing patient message in websocket: {e}", exc_info=True)

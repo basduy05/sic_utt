@@ -68,6 +68,10 @@ class TelemetryPayload(BaseModel):
     latency_ms: Optional[int] = 0
     pipeline_breakdown: Optional[Dict[str, Any]] = None
 
+class AlternativeAnswer(BaseModel):
+    text: str
+    provider: str
+
 class ChatMessageResponse(BaseModel):
     message_id: str
     session_id: str
@@ -77,3 +81,4 @@ class ChatMessageResponse(BaseModel):
     latency_ms: Optional[int] = 0
     pipeline_breakdown: Optional[Dict[str, Any]] = None
     telemetry: Optional[TelemetryPayload] = None
+    alternative_answers: Optional[List[AlternativeAnswer]] = []

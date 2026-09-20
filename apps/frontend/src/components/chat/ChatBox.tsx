@@ -134,6 +134,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
             sessionId={sessionId}
             onSetActiveAnswerIndex={onSetActiveAnswerIndex}
             onSubmitFeedback={onSubmitFeedback}
+            onSelectClarificationAnswer={onSendMessage}
           />
         ))}
       </div>

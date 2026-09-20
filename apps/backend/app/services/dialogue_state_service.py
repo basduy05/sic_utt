@@ -9,6 +9,70 @@ from ..core.config import settings
 
 logger = logging.getLogger(__name__)
 
+SLOT_TOPIC_MAP: Dict[str, str] = {
+    "q_skin_trigger": "allergen_trigger",
+    "q_derma_triggers": "allergen_trigger",
+    "q_fever_temp": "fever_pattern",
+    "q_fever_pattern": "fever_pattern",
+    "q_fever_days": "onset",
+    "q_dengue_day": "onset",
+    "q_resp_duration": "onset",
+    "q_migraine_duration": "onset",
+    "q_chest_duration": "onset",
+    "q_dynamic_duration_stage2": "onset",
+    "q_dynamic_medication_response": "medication_response",
+    "q_migraine_aggravating": "medication_response",
+    "q_cardio_pain_type": "chest_nature",
+    "q_chest_spread": "chest_nature",
+    "q_resp_cough_nature": "respiratory_nature",
+    "q_cough_sputum": "respiratory_nature",
+    "q_derma_sensation": "skin_sensation",
+    "q_skin_itch": "skin_sensation",
+    "q_bleeding": "bleeding_signs",
+    "q_stomach_timing": "gi_symptoms",
+    "q_heartburn": "gi_symptoms",
+    "q_stool_nature": "gi_symptoms",
+    "q_gerd_throat": "gi_symptoms",
+    "q_kidney_urinate": "urinary_symptoms",
+    "q_flank_pain": "urinary_symptoms",
+    "q_eye_symptoms": "eye_symptoms",
+    "q_eye_vision_impact": "eye_vision",
+    "q_eye_habits": "eye_habits",
+    "q_presbyopia_read": "eye_vision",
+    "q_presbyopia_age": "eye_vision",
+    "q_dry_eye_sensation": "eye_symptoms",
+    "q_eye_triggers": "eye_habits",
+    "q_myopia_signs": "eye_vision",
+    "q_conjunctivitis_signs": "eye_symptoms",
+}
+
+def resolve_question_topic(question: Optional[Dict[str, Any]]) -> str:
+    """Xác định topic chuẩn của câu hỏi làm rõ từ ID hoặc nội dung."""
+    if not question:
+        return "general"
+    qid = question.get("id", "")
+    if qid in SLOT_TOPIC_MAP:
+        return SLOT_TOPIC_MAP[qid]
+    
+    q_text = question.get("question", "").lower()
+    if any(k in q_text for k in ["dị ứng", "tiếp xúc", "thức ăn", "hải sản", "mỹ phẩm", "dị nguyên"]):
+        return "allergen_trigger"
+    if any(k in q_text for k in ["nhiệt độ", "sốt cao", "thân nhiệt", "cơn sốt"]):
+        return "fever_pattern"
+    if any(k in q_text for k in ["mấy ngày", "bao lâu", "thời gian", "khởi phát"]):
+        return "onset"
+    if any(k in q_text for k in ["uống thuốc", "xử trí", "đỡ không", "giảm đau", "hạ sốt"]):
+        return "medication_response"
+    if any(k in q_text for k in ["ngực", "bóp nghẹt", "nhịp tim"]):
+        return "chest_nature"
+    if any(k in q_text for k in ["mắt", "thị giác", "nhìn mờ", "thị lực", "mỏi mắt", "khô mắt", "nhức mắt"]):
+        return "eye_symptoms"
+    if any(k in q_text for k in ["ho", "đờm", "khó thở", "khò khè"]):
+        return "respiratory_nature"
+    if any(k in q_text for k in ["vùng da", "ngứa", "nổi mẩn", "mề đay", "dị ứng da", "mụn nước"]):
+        return "skin_sensation"
+    return "general"
+
 class ClinicalSessionState:
     """
     Trạng thái lâm sàng động của phiên khám (Dynamic Clinical Session State).
@@ -22,6 +86,7 @@ class ClinicalSessionState:
         self.negated_symptoms: Dict[str, Dict[str, Any]] = {}
         self.clinical_slots: Dict[str, Any] = {
             "triggers": [],              # Dị nguyên, thức ăn, bia rượu, yếu tố khởi phát
+            "allergen_trigger": "",      # Chi tiết dị nguyên xác định (hải sản, phấn hoa, thuốc)
             "onset": "",                 # Thời gian bắt đầu (tối qua, 3 ngày trước)
             "duration": "",              # Kéo dài bao lâu
             "progression": "",           # Diễn biến (tăng dần, liên tục)
@@ -121,7 +186,7 @@ class DialogueStateService:
 
         # 1. Quét Dị nguyên / Thức ăn / Chất kích thích (Triggers)
         trigger_patterns = [
-            (r'(?:ăn|dùng|uống)\s*(?:hải sản|tôm|cua|cá|mực|ghẹ|sò|ốc|đồ tanh)', 'hải sản'),
+            (r'(?:ăn|dùng|uống)?\s*(?:hải sản|tôm|cua|cá|mực|ghẹ|sò|ốc|đồ tanh|đậu phộng|nhộng)', 'hải sản'),
             (r'(?:uống|dùng)\s*(?:chút\s*)?(?:bia|rượu|cồn)', 'bia / rượu'),
             (r'(?:dùng|bôi|xức)\s*(?:mỹ phẩm|kem|sữa rửa mặt|thuốc bôi)', 'mỹ phẩm / hóa chất bôi ngoài'),
             (r'(?:tiếp xúc|đi vào|nguồn)\s*(?:nước lạ|ánh nắng|khói bụi)', 'môi trường lạ / ánh nắng'),
@@ -130,6 +195,8 @@ class DialogueStateService:
         for pat, tag in trigger_patterns:
             if re.search(pat, msg_lower) and tag not in state.clinical_slots["triggers"]:
                 state.clinical_slots["triggers"].append(tag)
+                if tag == "hải sản" and not state.clinical_slots.get("allergen_trigger"):
+                    state.clinical_slots["allergen_trigger"] = "hải sản / đồ tanh"
 
         # 2. Quét Thời gian / Khởi phát (Timeline)
         if re.search(r'(?:tối qua|đêm qua)', msg_lower):
@@ -174,8 +241,29 @@ class DialogueStateService:
 
         # 8. Giải quyết Pending Question nếu lượt trước AI đã hỏi
         if state.pending_question:
-            q_topic = state.pending_question.get("topic", "")
+            q_topic = state.pending_question.get("topic") or resolve_question_topic(state.pending_question)
             state.clinical_slots[f"answered_{q_topic}"] = user_message
+
+            if q_topic == "allergen_trigger":
+                if any(kw in msg_lower for kw in ["hải sản", "tôm", "cua", "mực", "cá", "đồ tanh", "đậu phộng", "nhộng"]):
+                    state.clinical_slots["allergen_trigger"] = "hải sản / thức ăn lạ"
+                elif any(kw in msg_lower for kw in ["mỹ phẩm", "sữa rửa mặt", "kem", "thuốc bôi"]):
+                    state.clinical_slots["allergen_trigger"] = "mỹ phẩm / hóa chất bôi"
+                elif any(kw in msg_lower for kw in ["nắng", "ánh nắng", "nước lạ"]):
+                    state.clinical_slots["allergen_trigger"] = "ánh nắng / nguồn nước lạ"
+                elif any(kw in msg_lower for kw in ["không", "tự nhiên", "chưa rõ", "không rõ"]):
+                    state.clinical_slots["allergen_trigger"] = "không rõ dị nguyên tiếp xúc"
+                else:
+                    state.clinical_slots["allergen_trigger"] = user_message.strip()
+
+                # Tăng xác suất giả thuyết dị ứng khi đã xác nhận dị nguyên
+                if state.clinical_slots.get("allergen_trigger") not in ["", "không rõ dị nguyên tiếp xúc"]:
+                    for hyp in state.active_hypotheses:
+                        code = str(hyp.get("icd_code", ""))
+                        if any(code.startswith(pfx) for pfx in ["L20", "L50", "T78", "Z91"]):
+                            cur = hyp.get("probability", 0.0)
+                            hyp["probability"] = min(0.95, round(cur + 0.15, 3))
+
             state.pending_question = None
 
         return state

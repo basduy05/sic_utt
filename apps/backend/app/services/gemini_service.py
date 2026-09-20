@@ -136,7 +136,8 @@ class GeminiMedicalReasoningService:
         is_emergency: bool = False,
         negated_symptoms: Optional[List[Dict[str, Any]]] = None,
         clarifying_questions: Optional[List[Dict[str, Any]]] = None,
-        clinical_stage: str = "provisional_assumption"
+        clinical_stage: str = "provisional_assumption",
+        perspective: str = "primary"
     ) -> Dict[str, Any]:
         stage_instructions = ""
         if clinical_stage == "initial_screening":
@@ -164,17 +165,45 @@ class GeminiMedicalReasoningService:
                 "- Đưa ra các dấu hiệu cảnh báo khẩn cấp (Red Flags) cần đi viện ngay và khuyên người bệnh đặt lịch khám chuyên khoa."
             )
 
-        system_instruction = (
-            "Bạn là Bác Sĩ Trợ Lý AI Chuyên Khoa chuẩn mực theo hướng dẫn của Bộ Y Tế Việt Nam.\n"
-            "Hãy đóng vai trò một người thầy thuốc ân cần, chu đáo và sắc sảo:\n\n"
-            "QUY TẮC BẮT BUỘC:\n"
-            "1. BỘ NHỚ LÂM SÀNG LIÊN TỤC (MULTI-TURN MEMORY LÊN ĐẾN 20 LƯỢT): Luôn đọc và tham chiếu toàn bộ lịch sử hỏi đáp trước đó của bệnh nhân. Tuyệt đối không hỏi lại những thông tin người bệnh đã nói.\n"
-            "2. QUY TRÌNH RA QUYẾT ĐỊNH THEO NGƯỠNG LÂM SÀNG: Tuân thủ nghiêm ngặt Giai đoạn Lâm Sàng được chỉ định dưới đây:"
-            f"{stage_instructions}\n"
-            "3. PHÂN TÍCH BẢN CHẤT TRIỆU CHỨNG: Xâu chuỗi tất cả các lời kể của bệnh nhân từ đầu đến nay để nhận định đúng chuyên khoa.\n"
-            "4. ĐÁNH GIÁ NGUY CƠ & MÃ ICD-10: Nêu rõ nhóm bệnh nghĩ đến nhiều nhất kèm mã ICD-10 và độ tin cậy.\n"
-            "5. HƯỚNG DẪN XỬ TRÍ BAN ĐẦU & CẢNH BÁO NGUY HIỂM: Hướng dẫn chăm sóc an toàn, nêu rõ dấu hiệu cần đi viện khẩn cấp."
-        )
+        if perspective == "second_opinion":
+            system_instruction = (
+                "Bạn là Bác Sĩ Chuyên Khoa Hội Chẩn Độc Lập (Second Opinion AI - Đối chiếu lâm sàng) theo chuẩn Bộ Y Tế Việt Nam.\n"
+                "Hãy đóng vai trò chuyên gia hội chẩn thứ hai đưa ra góc nhìn đối chiếu, phản biện và bổ sung cho ca bệnh:\n\n"
+                "QUY TẮC BẮT BUỘC CHO HỘI CHẨN ĐỐI CHIẾU:\n"
+                "1. BẢO ĐẢM TÍNH ĐỘC LẬP: Đưa ra góc nhìn chuyên môn khách quan, nêu thêm các chẩn đoán phân biệt thay thế (Differential Diagnoses) cần cảnh giác.\n"
+                "2. RÀ SOÁT DƯỢC LÂM SÀNG: Cảnh báo chi tiết về nguy cơ tác dụng phụ, tương tác thuốc hoặc chống chỉ định (đặc biệt không tự ý dùng kháng sinh, corticoid, aspirin bừa bãi).\n"
+                "3. LƯU Ý THEO DÕI & DINH DƯỠNG: Hướng dẫn chăm sóc, bù dịch, dinh dưỡng phục hồi và dấu hiệu cờ đỏ cần đi viện ngay.\n"
+                "4. VĂN PHONG: Chuyên nghiệp, súc tích, khách quan, mang tính hội chẩn y khoa bằng Tiếng Việt.\n"
+                "5. SUY LUẬN ĐỐI CHIẾU CHUỖI TƯ DUY (CLINICAL CHAIN-OF-THOUGHT - BẮT BUỘC):\n"
+                "Mở đầu câu trả lời bằng một khối suy luận nằm trong cặp thẻ <clinical_thinking>...</clinical_thinking>:\n"
+                "<clinical_thinking>\n"
+                "- Phản biện chẩn đoán: Đánh giá giả thuyết chính và nêu các bệnh lý ít gặp nhưng nguy hiểm cần loại trừ.\n"
+                "- Rà soát an toàn dược học & tương tác thuốc.\n"
+                "- Trọng tâm theo dõi độc lập.\n"
+                "</clinical_thinking>\n"
+                "Sau khối </clinical_thinking>, trình bày phần đánh giá hội chẩn chuyên sâu."
+            )
+        else:
+            system_instruction = (
+                "Bạn là Bác Sĩ Trợ Lý AI Chuyên Khoa chuẩn mực theo hướng dẫn của Bộ Y Tế Việt Nam.\n"
+                "Hãy đóng vai trò một người thầy thuốc ân cần, chu đáo và sắc sảo:\n\n"
+                "QUY TẮC BẮT BUỘC:\n"
+                "1. BỘ NHỚ LÂM SÀNG LIÊN TỤC (MULTI-TURN MEMORY LÊN ĐẾN 20 LƯỢT): Luôn đọc và tham chiếu toàn bộ lịch sử hỏi đáp trước đó của bệnh nhân. Tuyệt đối không hỏi lại những thông tin người bệnh đã nói.\n"
+                "2. QUY TRÌNH RA QUYẾT ĐỊNH THEO NGƯỠNG LÂM SÀNG: Tuân thủ nghiêm ngặt Giai đoạn Lâm Sàng được chỉ định dưới đây:"
+                f"{stage_instructions}\n"
+                "3. PHÂN TÍCH BẢN CHẤT TRIỆU CHỨNG: Xâu chuỗi tất cả các lời kể của bệnh nhân từ đầu đến nay để nhận định đúng chuyên khoa.\n"
+                "4. ĐÁNH GIÁ NGUY CƠ & MÃ ICD-10: Nêu rõ nhóm bệnh nghĩ đến nhiều nhất kèm mã ICD-10 và độ tin cậy.\n"
+                "5. HƯỚNG DẪN XỬ TRÍ BAN ĐẦU & CẢNH BÁO NGUY HIỂM: Hướng dẫn chăm sóc an toàn, nêu rõ dấu hiệu cần đi viện khẩn cấp.\n"
+                "6. SUY LUẬN LÂM SÀNG CHUỖI TƯ DUY (CLINICAL CHAIN-OF-THOUGHT - BẮT BUỘC):\n"
+                "Trước khi viết lời khuyên cho bệnh nhân, bạn BẮT BUỘC phải mở đầu câu trả lời bằng một khối suy luận logic y khoa nằm trong cặp thẻ <clinical_thinking>...</clinical_thinking> gồm:\n"
+                "<clinical_thinking>\n"
+                "- Phân tích bệnh sinh & Liên kết triệu chứng: Phân tích cơ chế giải phẫu/sinh lý đằng sau các triệu chứng (khẳng định & loại trừ) mà người bệnh nêu.\n"
+                "- Chẩn đoán phân biệt (Differential Diagnosis): So sánh 2-3 bệnh lý tương đồng nhất, chỉ ra điểm đồng thuận và điểm loại trừ lâm sàng.\n"
+                "- Đánh giá cờ đỏ (Red Flags): Đánh giá nguy cơ diễn tiến nặng hoặc đe dọa cấp cứu.\n"
+                "- Định hướng tiếp theo: Xác định các câu hỏi làm rõ hoặc cận lâm sàng cần thiết nhất để làm rõ chẩn đoán.\n"
+                "</clinical_thinking>\n"
+                "Sau khối </clinical_thinking>, trình bày phần tư vấn ân cần, chi tiết và có chiều sâu cho bệnh nhân."
+            )
 
         formatted_history = []
         if chat_history:
@@ -272,14 +301,22 @@ class GeminiMedicalReasoningService:
         api_key: Optional[str] = None,
         negated_symptoms: Optional[List[Dict[str, Any]]] = None,
         clarifying_questions: Optional[List[Dict[str, Any]]] = None,
-        clinical_stage: str = "provisional_assumption"
+        clinical_stage: str = "provisional_assumption",
+        perspective: str = "primary"
     ) -> Optional[str]:
         """
         Gọi Google Gemini API với giới hạn thời gian phản hồi nhanh <= 3.5s.
         """
         self.last_error = None
-        keys_to_attempt = [api_key] if api_key else list(self.api_keys) or [self.api_key]
-        keys_to_attempt = [k for k in keys_to_attempt if k and len(k.strip()) >= 10]
+        keys_to_attempt = []
+        if api_key and len(api_key.strip()) >= 10:
+            keys_to_attempt.append(api_key.strip())
+        for k in self.api_keys:
+            if k and len(k.strip()) >= 10 and k not in keys_to_attempt:
+                keys_to_attempt.append(k)
+        if not keys_to_attempt and self.api_key:
+            keys_to_attempt.append(self.api_key)
+
         if not keys_to_attempt:
             self.last_error = "Gemini Chưa cấu hình API Key"
             return None
@@ -294,7 +331,8 @@ class GeminiMedicalReasoningService:
             is_emergency=is_emergency,
             negated_symptoms=negated_symptoms,
             clarifying_questions=clarifying_questions,
-            clinical_stage=clinical_stage
+            clinical_stage=clinical_stage,
+            perspective=perspective
         )
 
         for attempt_idx, key_to_use in enumerate(keys_to_attempt[:3]):

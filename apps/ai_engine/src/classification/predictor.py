@@ -13,11 +13,18 @@ from .clarification_engine import ClarificationEngine
 logger = logging.getLogger(__name__)
 
 
+OVERLAP_STOPWORDS = {
+    "người", "chứng", "tình", "triệu", "bị", "thấy", "khi", "lúc", "vùng", "khu",
+    "vực", "ở", "tại", "có", "do", "nhẹ", "vừa", "nhiều", "ít", "đang", "cảm",
+    "thể", "chất", "mức", "độ", "gây", "ra", "lại", "qua", "lần"
+}
+
 def _token_overlap(a: str, b: str) -> bool:
-    """Kiểm tra xem hai chuỗi có chia sẻ ít nhất 1 từ chung không (word-level overlap)."""
-    tokens_a = set(a.split())
-    tokens_b = set(b.split())
+    """Kiểm tra xem hai chuỗi có chia sẻ ít nhất 1 từ y khoa có nghĩa không (trừ stopword)."""
+    tokens_a = {w for w in a.split() if w not in OVERLAP_STOPWORDS and len(w) >= 2}
+    tokens_b = {w for w in b.split() if w not in OVERLAP_STOPWORDS and len(w) >= 2}
     return bool(tokens_a & tokens_b)
+
 
 
 class HybridClinicalPredictor:
@@ -201,6 +208,10 @@ class HybridClinicalPredictor:
         has_petechiae = any(kw in all_syms_str for kw in ["chấm đỏ", "chấm xuất huyết", "xuat_huyet", "không mất", "ban xuất huyết", "nốt xuất huyết"])
         has_retro_orbital = any(kw in all_syms_str for kw in ["hốc mắt", "hoc_mat", "mắt"])
         has_arthralgia = any(kw in all_syms_str for kw in ["khớp", "khop", "đau nhức khắp", "đau mỏi"])
+        has_respiratory = any(kw in all_syms_str for kw in ["ho", "đờm", "sổ mũi", "ngạt mũi", "nghẹt mũi", "chảy nước mũi", "rát họng", "đau họng", "viêm họng", "hắt hơi", "khó thở", "thở khò khè"])
+        has_neck_shoulder = any(kw in all_syms_str for kw in ["mỏi cổ", "đau cổ", "cổ vai gáy", "đau mỏi cổ", "mỏi vai", "đau vai", "cổ gáy", "mỏi gáy", "cứng cổ", "thoái hóa cổ", "mỏi bả vai", "vai gáy"])
+        has_back_spine = any(kw in all_syms_str for kw in ["đau lưng", "mỏi lưng", "thắt lưng", "cột sống", "thoát vị", "đĩa đệm"])
+        has_eye_symptoms = any(kw in all_syms_str for kw in ["mỏi mắt", "đau mắt", "đỏ mắt", "cộm mắt", "khô mắt", "chảy nước mắt", "nhìn mờ", "thị lực"])
 
         for idx, d in enumerate(self.disease_classes):
             code = d.get("code")
@@ -220,6 +231,28 @@ class HybridClinicalPredictor:
                 elif has_petechiae:
                     p_final[idx] *= 0.1  # Cúm rất hiếm khi nổi chấm xuất huyết ấn không mất
 
+            # 3. Phạt nặng các bệnh hô hấp (URI / Cảm / Viêm mũi họng) nếu hoàn toàn KHÔNG CÓ triệu chứng hô hấp và KHÔNG sốt
+            if code.startswith("J0") or code.startswith("J1") or code.startswith("J2"):
+                if not has_respiratory and not has_fever:
+                    p_final[idx] *= 0.05
+
+            # 4. Hội chứng Thoái hóa cột sống cổ / Hội chứng đau mỏi vai gáy (M47.9) & Thoát vị cổ (M50.9)
+            if code == "M47.9":
+                if has_neck_shoulder:
+                    p_final[idx] *= 6.5
+                elif has_back_spine:
+                    p_final[idx] *= 3.0
+            elif code == "M50.9":
+                if has_neck_shoulder:
+                    p_final[idx] *= 4.5
+
+            # 5. Bệnh lý Mắt (H10.9, H52.4, H57.0)
+            if code.startswith("H10") or code.startswith("H52") or code.startswith("H57"):
+                if has_eye_symptoms:
+                    p_final[idx] *= 5.0
+                elif not has_eye_symptoms:
+                    p_final[idx] *= 0.05
+
         if np.sum(p_final) > 0:
             p_final = p_final / np.sum(p_final)
 
@@ -233,18 +266,25 @@ class HybridClinicalPredictor:
             + [s.lower() for s in symptom_ids if s]
         )
 
-        # Sinh unigram, bigram và trigram từ user_text để bắt khớp tốt hơn với cardinal symptoms
+        CONVERSATIONAL_STOPWORDS = {
+            "chào", "bạn", "tôi", "đang", "hơi", "rất", "quá", "lắm", "thấy", "bị", "cảm",
+            "giúp", "bác", "sĩ", "cho", "hỏi", "với", "này", "kia", "người", "ngày", "nào",
+            "gì", "được", "không", "nhé", "dạ", "ạ", "ơi", "alo", "thưa"
+        }
+
+        # Sinh unigram (trừ stopwords), bigram và trigram từ user_text
         words = re.sub(r'[^\w\s]', ' ', user_text_lower).split()
-        ngrams: set = set(words)  # unigrams
+        ngrams: set = {w for w in words if w not in CONVERSATIONAL_STOPWORDS and len(w) >= 2}
         for i in range(len(words) - 1):
-            ngrams.add(f"{words[i]} {words[i+1]}")  # bigrams
+            if words[i] not in CONVERSATIONAL_STOPWORDS or words[i+1] not in CONVERSATIONAL_STOPWORDS:
+                ngrams.add(f"{words[i]} {words[i+1]}")  # bigrams
         for i in range(len(words) - 2):
             ngrams.add(f"{words[i]} {words[i+1]} {words[i+2]}")  # trigrams
         patient_tokens_raw += list(ngrams)
 
         # Bổ sung từ khóa giải phẫu học rút gọn từ symptom IDs (e.g. "di_ung_da" -> ["di", "ung", "da"])
         for sid in symptom_ids:
-            parts = sid.replace("_", " ").split()
+            parts = [p for p in sid.replace("_", " ").split() if p not in CONVERSATIONAL_STOPWORDS]
             patient_tokens_raw += parts
 
         patient_tokens = set(t.strip() for t in patient_tokens_raw if t and len(t.strip()) >= 2)
@@ -313,10 +353,10 @@ class HybridClinicalPredictor:
         sorted_indices = np.argsort(p_final)[::-1]
         top_predictions = []
 
-        # Chỉ nhận những bệnh có xác suất >= 15% (0.15) VÀ có overlap
+        # Chỉ nhận những bệnh có xác suất >= 8% (0.08) VÀ có overlap
         for idx in sorted_indices:
             prob = float(p_final[idx])
-            if prob < 0.15:  # Ngưỡng sàn tin cậy - loại bỏ hoàn toàn các bệnh 1-2%
+            if prob < 0.08:  # Ngưỡng sàn tin cậy - loại bỏ các bệnh dưới 8%
                 break
             if not overlap_mask[idx]:
                 continue
@@ -337,6 +377,28 @@ class HybridClinicalPredictor:
             })
             if len(top_predictions) >= 3:
                 break
+
+        # Nếu chưa đủ bệnh do ngưỡng nhưng có bệnh overlap rõ ràng, nhận tối đa 2 bệnh cao nhất
+        if not top_predictions:
+            for idx in sorted_indices:
+                prob = float(p_final[idx])
+                if prob <= 0.02 or not overlap_mask[idx]:
+                    continue
+                disease = self.disease_classes[idx]
+                code = disease.get("code")
+                icd_info = self.icd_db.get(code, {})
+                top_predictions.append({
+                    "rank": len(top_predictions) + 1,
+                    "icd_code": code,
+                    "disease_name_vi": disease.get("name"),
+                    "department": disease.get("dept"),
+                    "probability": round(prob, 4),
+                    "probability_percentage": f"{round(prob * 100, 1)}%",
+                    "severity": icd_info.get("severity", "Medium"),
+                    "recommendation": icd_info.get("emergency_warning", "Theo dõi và thăm khám chuyên khoa khi có bất thường.")
+                })
+                if len(top_predictions) >= 2:
+                    break
 
         # 6. Clarification Assessment với 3 tầng phân định lâm sàng
         top_prob = float(top_predictions[0]["probability"]) if top_predictions else (float(p_final[sorted_indices[0]]) if len(sorted_indices) > 0 else 0.0)

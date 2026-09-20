@@ -117,11 +117,21 @@ class MedicalNER:
                 logger.error(f"Error during PhoBERT NER inference: {e}")
 
         # 1.5. Bổ trợ quét các cụm từ lâm sàng đặc hiệu (Clinical Lexicon Scanner)
-        # Giúp bắt trọn các triệu chứng quan trọng như "chấm đỏ li ti", "ấn vào không mất", "ê buốt hai hốc mắt", "đau nhức khắp các khớp"
-        for phrase, concept in self.normalizer.exact_lookup.items():
-            if len(phrase) >= 5 and phrase in lower_text:
-                p_idx = lower_text.find(phrase)
-                if self._is_negated(lower_text, p_idx):
+        # Sắp xếp từ dài nhất đến ngắn nhất để ưu tiên bắt trọn cụm từ ghép đặc hiệu trước
+        # Áp dụng ranh giới từ (word boundary) (?<!\w)...(?!\w) để bắt chính xác các triệu chứng ngắn ("ho", "sốt", "đờm", "đau", "mỏi", "ngứa", "nôn", "khô", "rát")
+        # và triệt tiêu hoàn toàn false positives (như "ho" trong "không", "da" trong "đau").
+        sorted_lookup = sorted(self.normalizer.exact_lookup.items(), key=lambda x: len(x[0]), reverse=True)
+        matched_spans = []
+        for phrase, concept in sorted_lookup:
+            if len(phrase) < 2:
+                continue
+            pattern = rf"(?<!\w){re.escape(phrase)}(?!\w)"
+            for m in re.finditer(pattern, lower_text):
+                start, end = m.start(), m.end()
+                if any(s <= start and end <= e for (s, e) in matched_spans):
+                    continue
+                matched_spans.append((start, end))
+                if self._is_negated(lower_text, start):
                     raw_negated.append(phrase)
                 else:
                     raw_symptoms.append(phrase)

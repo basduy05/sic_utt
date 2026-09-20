@@ -65,6 +65,74 @@ class ClarificationEngine:
         "N20.0": [
             {"id": "q_kidney_urinate", "question": "Tình trạng đi tiểu và màu sắc nước tiểu của bạn thế nào?", "options": ["Cảm giác tiểu buốt, tiểu rắt buốt dọc niệu đạo", "Nước tiểu có màu đỏ hồng hoặc nâu sẫm", "Nước tiểu đục, có cặn lắng", "Đi tiểu bình thường"]},
             {"id": "q_flank_pain", "question": "Bạn có bị đau vùng hông lưng thắt lưng không?", "options": ["Đau quặn từng cơn dữ dội một bên hông lưng", "Đau lan xuống vùng bẹn và đùi trong", "Đau âm ỉ mỏi vùng thắt lưng", "Không đau thắt lưng"]}
+        ],
+        "H52.4": [
+            {
+                "id": "q_presbyopia_read",
+                "question": "Khả năng nhìn gần và đọc sách của bạn có biểu hiện nào dưới đây?",
+                "options": [
+                    "Nhìn gần mờ, phải đưa sách hoặc điện thoại ra xa mới đọc được",
+                    "Mỏi mắt, nhức đầu vùng trán khi cố gắng đọc chữ nhỏ lâu",
+                    "Cần ánh sáng rất mạnh mới nhìn rõ chữ ở cự ly gần",
+                    "Khó chuyển đổi tiêu cự từ nhìn xa sang nhìn gần"
+                ]
+            },
+            {
+                "id": "q_presbyopia_age",
+                "question": "Độ tuổi và tiền sử điều tiết mắt của bạn như thế nào?",
+                "options": [
+                    "Độ tuổi trên 40 tuổi, trước đây nhìn bình thường nay nhìn gần mờ",
+                    "Đã từng đeo kính cận thị hoặc viễn thị từ trước",
+                    "Dưới 40 tuổi nhưng thường xuyên mỏi mắt khi làm việc máy tính lâu",
+                    "Mới xuất hiện tình trạng mỏi mắt và nhìn mờ gần đây"
+                ]
+            }
+        ],
+        "H57": [
+            {
+                "id": "q_dry_eye_sensation",
+                "question": "Cảm giác bề mặt nhãn cầu và phản xạ mắt của bạn ra sao?",
+                "options": [
+                    "Khô rát, cộm xốn như có hạt cát hoặc dị vật trong mắt",
+                    "Chảy nước mắt sống phản xạ khi mắt bị khô cay kích thích",
+                    "Mỏi mắt, mệt mỏi căng thẳng thị giác sau nhiều giờ nhìn màn hình",
+                    "Chớp mắt vài cái thì sáng rõ sau đó lại mờ nhòe"
+                ]
+            },
+            {
+                "id": "q_eye_triggers",
+                "question": "Tình trạng mỏi mắt và khô mắt xuất hiện nhiều nhất khi nào?",
+                "options": [
+                    "Sau nhiều giờ làm việc liên tục với máy tính, điện thoại",
+                    "Đi ngoài trời nhiều gió bụi, ánh nắng gắt hoặc phòng máy lạnh",
+                    "Vào buổi chiều tối hoặc sau một ngày làm việc căng thẳng",
+                    "Xuất hiện liên tục cả ngày dù đã nghỉ ngơi nhắm mắt"
+                ]
+            }
+        ],
+        "H52.1": [
+            {
+                "id": "q_myopia_signs",
+                "question": "Tầm nhìn xa và khả năng quan sát của bạn có đặc điểm nào dưới đây?",
+                "options": [
+                    "Nhìn xa bị mờ nhòe, phải nheo mắt mới nhìn rõ",
+                    "Mỏi mắt, nhức đầu vùng thái dương khi học tập / làm việc",
+                    "Nhìn gần (sách, điện thoại) vẫn rõ bình thường",
+                    "Thị lực nhìn xa suy giảm dần trong vài tháng qua"
+                ]
+            }
+        ],
+        "H10": [
+            {
+                "id": "q_conjunctivitis_signs",
+                "question": "Mắt của bạn có tiết dịch, ghèn rỉ mắt hoặc sưng đỏ không?",
+                "options": [
+                    "Mắt đỏ rực, nhiều ghèn rỉ mắt dính mi khó mở mắt buổi sáng",
+                    "Chảy nước mắt trong, ngứa mắt nhiều (nghi do dị ứng)",
+                    "Sưng nề mi mắt, cộm rát khó chịu",
+                    "Không có ghèn rỉ mắt, chỉ đỏ nhẹ"
+                ]
+            }
         ]
     }
 
@@ -225,8 +293,47 @@ class ClarificationEngine:
                 if is_question_usable(c) and c not in questions and len(questions) < 2:
                     questions.append(c)
 
-        # D. Da liễu & Dị ứng
-        if len(questions) < 2 and any(kw in combined for kw in ["da", "ngứa", "nổi mẩn", "rát", "đỏ", "phát ban", "mề đay", "dị ứng", "mụn nước"]):
+        # D. Mắt & Thị giác (Chuyên khoa Mắt, Khúc xạ, Khô mắt, Mỏi mắt)
+        if len(questions) < 2 and any(kw in combined for kw in ["mắt", "thị giác", "nhìn mờ", "thị lực", "mỏi mắt", "khô mắt", "cộm mắt", "nhức mắt", "đau mắt", "đỏ mắt", "điều tiết", "cận thị", "lão thị"]):
+            candidates = [
+                {
+                    "id": "q_eye_symptoms",
+                    "question": "Cảm giác khó chịu và biểu hiện tại mắt của bạn diễn ra như thế nào?",
+                    "options": [
+                        "Mỏi mắt, căng tức vùng mắt khi nhìn màn hình/đọc sách lâu",
+                        "Khô rát, cộm xốn như có hạt cát hoặc dị vật trong mắt",
+                        "Mắt nhìn mờ nhòe, dao động lúc rõ lúc mờ",
+                        "Đau nhức mắt, sợ ánh sáng hoặc đỏ mắt chảy nước mắt"
+                    ]
+                },
+                {
+                    "id": "q_eye_vision_impact",
+                    "question": "Tầm nhìn và thị lực của bạn có đặc điểm nào dưới đây?",
+                    "options": [
+                        "Nhìn gần mờ, phải đưa sách hoặc điện thoại ra xa mới đọc được",
+                        "Nhìn xa bị nhòe mờ, phải nheo mắt mới nhìn rõ",
+                        "Thị lực bình thường, chỉ mỏi mệt khi làm việc điều tiết nhiều",
+                        "Mắt bị hoa mắt, nhìn đôi hoặc thấy quầng sáng"
+                    ]
+                },
+                {
+                    "id": "q_eye_habits",
+                    "question": "Tình trạng mỏi và khó chịu ở mắt xuất hiện nhiều nhất trong hoàn cảnh nào?",
+                    "options": [
+                        "Sau nhiều giờ làm việc liên tục với máy tính, điện thoại",
+                        "Đi ngoài trời gió bụi, nắng gắt hoặc ngồi phòng điều hòa máy lạnh",
+                        "Vào buổi chiều tối sau một ngày làm việc căng thẳng",
+                        "Xuất hiện liên tục cả ngày dù đã nghỉ ngơi nhắm mắt"
+                    ]
+                }
+            ]
+            for c in candidates:
+                if is_question_usable(c) and c not in questions and len(questions) < 2:
+                    questions.append(c)
+
+        # E. Da liễu & Dị ứng (Tránh dùng substring ngắn 'da' để không nhầm với 'đau', 'dạ dày')
+        derma_keywords = ["ngứa", "nổi mẩn", "rát da", "đỏ da", "phát ban", "mề đay", "dị ứng da", "mụn nước", "sẩn ngứa", "mẩn đỏ"]
+        if len(questions) < 2 and (any(kw in combined for kw in derma_keywords) or bool(re.search(r'\bda\b', combined, re.IGNORECASE))):
             candidates = [
                 {
                     "id": "q_derma_sensation",
@@ -279,12 +386,41 @@ class ClarificationEngine:
                 if is_question_usable(c) and c not in questions and len(questions) < 2:
                     questions.append(c)
 
-        # G. Dynamic Follow-up: Nếu các câu hỏi chuyên biệt đã hết
+        # G. Cơ Xương Khớp, Cột sống & Vai gáy (Mỏi cổ, đau vai gáy, mỏi người, cứng cổ, đau lưng, khớp)
+        if len(questions) < 2 and any(kw in combined for kw in ["cổ", "vai", "gáy", "lưng", "khớp", "mỏi người", "mỏi cổ", "cột sống", "xương", "mỏi cơ", "cơ bắp"]):
+            candidates = [
+                {
+                    "id": "q_ortho_position_character",
+                    "question": "Vị trí và tính chất cảm giác đau mỏi ở vùng cổ gáy / cơ thể của bạn thế nào?",
+                    "options": [
+                        "Đau mỏi căng cứng vùng cổ vai gáy, khó xoay hoặc cúi ngửa đầu",
+                        "Mỏi ê ẩm toàn thân sau khi làm việc máy tính hoặc ngồi lâu một tư thế",
+                        "Đau mỏi cổ kèm tê rần, tê bì lan xuống vai hoặc cánh tay/ngón tay",
+                        "Đau nhức các khớp khi cử động hoặc khi thời tiết thay đổi"
+                    ]
+                },
+                {
+                    "id": "q_ortho_triggers_relief",
+                    "question": "Triệu chứng mỏi xuất hiện nhiều nhất khi nào và có đỡ khi nghỉ ngơi không?",
+                    "options": [
+                        "Tăng nặng khi ngồi làm việc máy tính, cúi bấm điện thoại lâu",
+                        "Đỡ hẳn khi được nghỉ ngơi nằm thư giãn hoặc xoa bóp chườm ấm",
+                        "Xuất hiện liên tục cả ngày, ê ẩm vùng vai gáy và thắt lưng",
+                        "Đã uống thuốc giảm đau nhưng chỉ đỡ tạm thời rồi đau lại"
+                    ]
+                }
+            ]
+            for c in candidates:
+                if is_question_usable(c) and c not in questions and len(questions) < 2:
+                    questions.append(c)
+
+        # H. Dynamic Follow-up: Nếu các câu hỏi chuyên biệt đã hết
         if not questions:
-            clean_snippet = user_text.strip()
-            if len(clean_snippet) > 40:
-                clean_snippet = clean_snippet[:40] + "..."
-            snippet_label = f'"{clean_snippet}"' if clean_snippet else "triệu chứng của bạn"
+            clean_symptoms = [str(s).strip() for s in (detected_symptoms or []) if str(s).strip()]
+            if clean_symptoms:
+                snippet_label = f'"{", ".join(clean_symptoms[:2])}"'
+            else:
+                snippet_label = "triệu chứng khó chịu bạn vừa chia sẻ"
 
             fallback_candidates = [
                 {

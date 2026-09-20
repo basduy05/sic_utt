@@ -364,7 +364,8 @@ export function useChat() {
     fullText: string,
     latency_ms?: number,
     pipeline_breakdown?: any,
-    alternative_answers?: Array<{ text: string; provider: string }>
+    alternative_answers?: Array<{ text: string; provider: string }>,
+    telemetry?: any
   ) => {
     if (processingTimeoutRef.current) {
       clearTimeout(processingTimeoutRef.current);
@@ -384,18 +385,33 @@ export function useChat() {
               alternative_answers: alternative_answers && alternative_answers.length > 0
                 ? alternative_answers
                 : msg.alternative_answers,
+              telemetry: telemetry ?? msg.telemetry,
               active_answer_index: 0,
             }
           : msg
       )
     );
-    if (latency_ms) {
+    if (telemetry) {
+      setTelemetry((prev) => ({
+        ...(prev || {}),
+        ...telemetry,
+        latency_ms: latency_ms ?? prev?.latency_ms,
+        pipeline_breakdown: pipeline_breakdown ?? prev?.pipeline_breakdown,
+      }));
+    } else if (latency_ms) {
       setTelemetry((prev) => (prev ? { ...prev, latency_ms, pipeline_breakdown } : prev));
     }
   }, []);
 
   const handleTelemetryUpdate = useCallback((newTelemetry: TelemetryData) => {
     setTelemetry(newTelemetry);
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.isStreaming && msg.sender === 'assistant'
+          ? { ...msg, telemetry: newTelemetry }
+          : msg
+      )
+    );
     if (newTelemetry.is_emergency) {
       setIsEmergencyModalOpen(true);
     }
@@ -473,6 +489,8 @@ export function useChat() {
                     telemetry: res.telemetry,
                     latency_ms: res.latency_ms,
                     pipeline_breakdown: res.pipeline_breakdown,
+                    alternative_answers: res.alternative_answers || [],
+                    active_answer_index: 0,
                   }
                 : msg
             )
@@ -555,6 +573,8 @@ export function useChat() {
                         telemetry: doneData.telemetry,
                         latency_ms: doneData.latency_ms,
                         pipeline_breakdown: doneData.pipeline_breakdown,
+                        alternative_answers: doneData.alternative_answers || [],
+                        active_answer_index: 0,
                       }
                     : msg
                 )
@@ -587,6 +607,8 @@ export function useChat() {
                       telemetry: res.telemetry,
                       latency_ms: res.latency_ms,
                       pipeline_breakdown: res.pipeline_breakdown,
+                      alternative_answers: res.alternative_answers || [],
+                      active_answer_index: 0,
                     }
                   : msg
               )
